@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Safety Fusion Dashboard · Gate Gourmet YYZ</title>
+<!--
+  GroundWatch Safety Suite — Safety Fusion Dashboard v1.0
+  Fuses SQOR observation data with investigation data
+  Developed by Chris Black | CF Black Aviation
+-->
+<style>
+:root{
+  --dark:#0D1117;--card:#161B22;--border:#30363D;--mid:#8B949E;--white:#E6EDF3;
+  --green:#2EA043;--amber:#D29922;--orange:#BD561D;--red:#DA3633;--blue:#1F6FEB;
+  --gg:#48AF44;--navy:#1A3A6B;--purple:#6A1B9A;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;background:var(--dark);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:14px}
+body{padding-bottom:40px}
+
+/* Header */
+.dash-hdr{background:var(--card);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.dash-hdr .brand{font-size:20px;font-weight:900;color:var(--white)}
+.dash-hdr .brand span{color:var(--gg)}
+.dash-hdr .sub{font-size:12px;color:var(--mid);margin-top:2px}
+.dash-hdr-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filter-pill{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--mid);cursor:pointer;font-family:inherit}
+.filter-pill.active{background:var(--gg);border-color:var(--gg);color:#fff}
+.import-btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.export-btn{background:var(--navy);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* Summary cards */
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px}
+@media(max-width:700px){.summary-grid{grid-template-columns:1fr 1fr}}
+.sum-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;border-top:3px solid var(--border)}
+.sum-card.sqor{border-top-color:var(--gg)}
+.sum-card.inv{border-top-color:var(--orange)}
+.sum-card.ar{border-top-color:var(--red)}
+.sum-card.compliance{border-top-color:var(--blue)}
+.sc-val{font-size:32px;font-weight:900;color:var(--white);line-height:1;margin-bottom:4px}
+.sc-lbl{font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:.05em}
+.sc-sub{font-size:11px;color:var(--mid);margin-top:4px}
+
+/* Chart cards */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 20px 14px}
+@media(max-width:700px){.charts-grid{grid-template-columns:1fr}}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.chart-card.full{grid-column:1/-1}
+.cc-title{font-size:11px;font-weight:700;color:var(--mid);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+canvas{display:block;width:100%!important}
+
+/* Correlation table */
+.corr-table{width:100%;border-collapse:collapse;font-size:12px}
+.corr-table th{background:rgba(255,255,255,.05);color:var(--mid);padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+.corr-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.corr-table tr:hover td{background:rgba(255,255,255,.02)}
+.corr-bar{height:8px;border-radius:4px;display:inline-block;vertical-align:middle;margin-left:8px}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px}
+.badge-red{background:rgba(218,54,51,.2);color:var(--red)}
+.badge-amber{background:rgba(210,153,34,.2);color:var(--amber)}
+.badge-green{background:rgba(46,160,67,.2);color:var(--green)}
+.badge-blue{background:rgba(31,111,235,.2);color:var(--blue)}
+
+/* Driver heatmap */
+.heatmap-wrap{overflow-x:auto}
+.heatmap-table{border-collapse:collapse;font-size:11px;min-width:500px;width:100%}
+.heatmap-table th{padding:6px 8px;text-align:center;font-size:10px;color:var(--mid);white-space:nowrap;font-weight:600}
+.heatmap-table td{padding:5px 8px;text-align:center;border:1px solid var(--border)}
+.heatmap-table .driver-cell{text-align:left;color:var(--white);font-weight:600}
+.hm-cell-green{background:rgba(46,160,67,.4);color:#A8E6A3}
+.hm-cell-amber{background:rgba(210,153,34,.35);color:#FFE082}
+.hm-cell-red{background:rgba(218,54,51,.4);color:#FFCDD2}
+.hm-cell-empty{background:rgba(255,255,255,.04);color:var(--mid)}
+
+/* No data */
+.no-data{text-align:center;padding:32px;color:var(--mid);font-size:13px;font-style:italic}
+.no-data .nd-icon{font-size:36px;margin-bottom:8px;display:block}
+
+/* Import panel */
+.import-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:0 20px 14px}
+.import-panel h3{font-size:13px;font-weight:700;color:var(--white);margin-bottom:10px}
+.import-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.import-row label{font-size:12px;color:var(--mid);min-width:140px}
+.import-row input[type=file]{font-size:12px;color:var(--mid);flex:1}
+.import-status{font-size:11px;padding:4px 10px;border-radius:6px;flex-shrink:0}
+.is-ok{background:rgba(46,160,67,.2);color:var(--green)}
+.is-none{background:rgba(255,255,255,.05);color:var(--mid)}
+.data-source-note{font-size:11px;color:var(--mid);margin-top:8px;line-height:1.5;padding:8px;background:rgba(255,255,255,.03);border-radius:6px}
+</style>
+</head>
+<body>
+
+<div class="dash-hdr">
+  <div>
+    <div class="brand">Safety<span>Fusion</span> Dashboard</div>
+    <div class="sub">Gate Gourmet YYZ · SQOR + Investigation Analytics · CF Black Aviation</div>
+  </div>
+  <div class="dash-hdr-right">
+    <button class="filter-pill active" onclick="setFilter('30d',this)">30 Days</button>
+    <button class="filter-pill" onclick="setFilter('90d',this)">90 Days</button>
+    <button class="filter-pill" onclick="setFilter('6m',this)">6 Months</button>
+    <button class="filter-pill" onclick="setFilter('1y',this)">1 Year</button>
+    <button class="filter-pill" onclick="setFilter('all',this)">All</button>
+    <button class="import-btn" onclick="document.getElementById('importPanel').style.display=document.getElementById('importPanel').style.display==='none'?'block':'none'">📥 Import Data</button>
+    <button class="export-btn" onclick="exportCSV()">📊 Export CSV</button>
+  </div>
+</div>
+
+<!-- IMPORT PANEL -->
+<div class="import-panel" id="importPanel" style="display:none">
+  <h3>📥 Import Data Files</h3>
+  <div class="import-row">
+    <label>SQOR Archive (JSON)</label>
+    <input type="file" accept=".json" onchange="importSQOR(this)">
+    <span class="import-status" id="sqor_import_status">No file</span>
+  </div>
+  <div class="import-row">
+    <label>Investigation Archive (JSON)</label>
+    <input type="file" accept=".json" onchange="importInvestigations(this)">
+    <span class="import-status" id="inv_import_status">No file</span>
+  </div>
+  <div class="data-source-note">
+    💡 Data is read automatically from the GroundWatch and SQOR Module localStorage on this device.
+    Use file import to fuse data from other devices. Imported data merges with local data — duplicates (same id) are skipped.
+  </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="summary-grid" id="summary_grid">
+  <div class="sum-card sqor"><div class="sc-val" id="s_sqors">—</div><div class="sc-lbl">SQORs Conducted</div><div class="sc-sub" id="s_sqors_sub"></div></div>
+  <div class="sum-card inv"><div class="sc-val" id="s_invs">—</div><div class="sc-lbl">Investigations</div><div class="sc-sub" id="s_invs_sub"></div></div>
+  <div class="sum-card ar"><div class="sc-val" id="s_atrisk">—</div><div class="sc-lbl">At-Risk Observations</div><div class="sc-sub" id="s_atrisk_sub"></div></div>
+  <div class="sum-card compliance"><div class="sc-val" id="s_compliance">—</div><div class="sc-lbl">SQOR Compliance Rate</div><div class="sc-sub" id="s_compliance_sub"></div></div>
+</div>
+
+<!-- CHARTS ROW 1 -->
+<div class="charts-grid">
+  <div class="chart-card full">
+    <div class="cc-title">📈 Leading vs Lagging — Monthly (SQOR At-Risk Rate vs Incident Rate)</div>
+    <canvas id="chart_leading_lagging" height="180"></canvas>
+    <div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--mid)">
+      <span><span style="display:inline-block;width:12px;height:3px;background:var(--gg);vertical-align:middle;margin-right:4px"></span>SQOR At-Risk Rate (%)</span>
+      <span><span style="display:inline-block;width:12px;height:3px;background:var(--orange);vertical-align:middle;margin-right:4px"></span>Incidents per month</span>
+    </div>
+  </div>
+
+  <div class="chart-card">
+    <div class="cc-title">⚠ Top At-Risk SQOR Behaviors</div>
+    <canvas id="chart_atrisk" height="200"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <div class="cc-title">🔍 REDA Factor Frequency (Investigations)</div>
+    <canvas id="chart_reda" height="200"></canvas>
+  </div>
+</div>
+
+<!-- REDA BRIDGE TABLE -->
+<div class="charts-grid">
+  <div class="chart-card full">
+    <div class="cc-title">🌉 REDA Bridge — SQOR Categories vs Investigation Root Causes</div>
+    <div id="reda_bridge_body">
+      <div class="no-data"><span class="nd-icon">🔗</span>Archive SQOR observations and investigations to see the predictive correlation.</div>
+    </div>
+  </div>
+</div>
+
+<!-- DRIVER HEATMAP -->
+<div class="charts-grid">
+  <div class="chart-card full">
+    <div class="cc-title">👤 Driver SQOR Compliance Heatmap — by Category</div>
+    <div class="heatmap-wrap">
+      <div id="heatmap_body">
+        <div class="no-data"><span class="nd-icon">🗺</span>Archive SQORs to see per-driver compliance by procedure category.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INCIDENT PREDICTION TABLE -->
+<div class="charts-grid">
+  <div class="chart-card full">
+    <div class="cc-title">🔮 Predictive Indicators — Drivers with SQOR At-Risk History Before Incidents</div>
+    <div id="prediction_body">
+      <div class="no-data"><span class="nd-icon">🔮</span>Links SQOR at-risk observations to subsequent investigations by driver. Archive both to see correlations.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ DATA SOURCES ══════════════════════════════════════
+let sqorData = [];
+let invData  = [];
+let period   = '30d';
+
+function getSQORArchive() {
+  try { return JSON.parse(localStorage.getItem('gw_sqor_archive')||'[]'); } catch(e) { return []; }
+}
+function getInvArchive() {
+  try { return JSON.parse(localStorage.getItem('gw_archive')||'[]'); } catch(e) { return []; }
+}
+
+function loadAllData() {
+  const localSqor = getSQORArchive();
+  const localInv  = getInvArchive();
+  // Merge with any imported data (deduplicate by id)
+  const sqorIds = new Set(sqorData.map(r=>r.id));
+  const invIds  = new Set(invData.map(r=>r.id));
+  localSqor.forEach(r=>{ if(!sqorIds.has(r.id)){ sqorData.push(r); sqorIds.add(r.id); } });
+  localInv.forEach(r=>{ if(!invIds.has(r.id)){ invData.push(r); invIds.add(r.id); } });
+  renderAll();
+}
+
+function importSQOR(input) {
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const arr = Array.isArray(parsed) ? parsed : (parsed.records || []);
+      const existing = new Set(sqorData.map(r=>r.id));
+      let added = 0;
+      arr.forEach(r=>{ if(!existing.has(r.id)){ sqorData.push(r); added++; } });
+      document.getElementById('sqor_import_status').textContent = `✅ +${added} records`;
+      document.getElementById('sqor_import_status').className = 'import-status is-ok';
+      renderAll();
+    } catch(err) {
+      document.getElementById('sqor_import_status').textContent = '❌ Parse error';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function importInvestigations(input) {
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const arr = Array.isArray(parsed) ? parsed : (parsed.records || []);
+      const existing = new Set(invData.map(r=>r.id));
+      let added = 0;
+      arr.forEach(r=>{ if(!existing.has(r.id)){ invData.push(r); added++; } });
+      document.getElementById('inv_import_status').textContent = `✅ +${added} records`;
+      document.getElementById('inv_import_status').className = 'import-status is-ok';
+      renderAll();
+    } catch(err) {
+      document.getElementById('inv_import_status').textContent = '❌ Parse error';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ══ FILTER ════════════════════════════════════════════
+function setFilter(p, btn) {
+  period = p;
+  document.querySelectorAll('.filter-pill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function filterByPeriod(arr) {
+  if (period === 'all') return arr;
+  const cutoffs = {'30d':30,'90d':90,'6m':182,'1y':365};
+  const days = cutoffs[period] || 30;
+  const cutoff = Date.now() - days*86400000;
+  return arr.filter(r => new Date(r.archived_at||r.date||0).getTime() >= cutoff);
+}
+
+// ══ RENDER ALL ════════════════════════════════════════
+function renderAll() {
+  const sq = filterByPeriod(sqorData);
+  const iv = filterByPeriod(invData);
+  renderSummary(sq, iv);
+  renderLeadingLagging(sq, iv);
+  renderAtRiskChart(sq);
+  renderRedaChart(iv);
+  renderRedaBridge(sq, iv);
+  renderDriverHeatmap(sq);
+  renderPrediction(sq, iv);
+}
+
+// ══ SUMMARY ═══════════════════════════════════════════
+function renderSummary(sq, iv) {
+  document.getElementById('s_sqors').textContent = sq.length;
+  document.getElementById('s_sqors_sub').textContent = `${sqorData.length} total archived`;
+  document.getElementById('s_invs').textContent = iv.length;
+  document.getElementById('s_invs_sub').textContent = `${invData.length} total archived`;
+  const totalAR = sq.reduce((s,r)=>s+(r.at_risk_count||0),0);
+  document.getElementById('s_atrisk').textContent = totalAR;
+  document.getElementById('s_atrisk_sub').textContent = sq.length ? `avg ${(totalAR/sq.length).toFixed(1)} per SQOR` : '';
+  const totalSafe = sq.reduce((s,r)=>s+(r.safe_count||0),0);
+  const totalScored = sq.reduce((s,r)=>s+(r.scored_count||0),0);
+  const comp = totalScored > 0 ? Math.round(totalSafe/totalScored*100) : null;
+  document.getElementById('s_compliance').textContent = comp !== null ? comp+'%' : '—';
+  document.getElementById('s_compliance_sub').textContent = comp !== null
+    ? (comp >= 90 ? '✅ Target met' : comp >= 75 ? '⚠ Monitor' : '🔴 Below target')
+    : 'No data';
+}
+
+// ══ LEADING VS LAGGING ════════════════════════════════
+function renderLeadingLagging(sq, iv) {
+  const canvas = document.getElementById('chart_leading_lagging');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 600;
+  canvas.height = 180;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Build 12-month buckets
+  const now = new Date();
+  const months = [];
+  for (let i=11; i>=0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({label:d.toLocaleString('en-CA',{month:'short'}), year:d.getFullYear(), month:d.getMonth(), sqorAR:0, sqorTotal:0, invCount:0});
+  }
+
+  sq.forEach(r => {
+    const d = new Date(r.archived_at||r.date);
+    const m = months.find(m=>m.year===d.getFullYear()&&m.month===d.getMonth());
+    if (m) { m.sqorAR += (r.at_risk_count||0); m.sqorTotal += (r.scored_count||1); }
+  });
+  iv.forEach(r => {
+    const d = new Date(r.archived_at||r.date);
+    const m = months.find(m=>m.year===d.getFullYear()&&m.month===d.getMonth());
+    if (m) m.invCount++;
+  });
+
+  const arRates = months.map(m => m.sqorTotal > 0 ? Math.round(m.sqorAR/m.sqorTotal*100) : 0);
+  const maxRate = Math.max(...arRates, 1);
+  const maxInv  = Math.max(...months.map(m=>m.invCount), 1);
+  const W=canvas.width, H=canvas.height;
+  const pad={t:10,r:10,b:28,l:32};
+  const barW = Math.floor((W-pad.l-pad.r)/months.length*0.4);
+  const barGap = Math.floor((W-pad.l-pad.r)/months.length);
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1;
+  [0,25,50,75,100].forEach(v=>{
+    const y=pad.t+(H-pad.t-pad.b)*(1-v/100);
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='9px Arial';ctx.textAlign='right';
+    ctx.fillText(v+'%',pad.l-3,y+3);
+  });
+
+  months.forEach((m,i) => {
+    const x = pad.l+i*barGap;
+    // SQOR AR rate bar (GG green)
+    const bh = Math.max(2,(arRates[i]/100)*(H-pad.t-pad.b));
+    const by = pad.t+(H-pad.t-pad.b)-bh;
+    ctx.fillStyle='rgba(72,175,68,.7)';
+    ctx.fillRect(x+(barGap-barW*2-4)/2, by, barW, bh);
+
+    // Incident count line (orange)
+    const y = pad.t+(H-pad.t-pad.b)*(1-m.invCount/maxInv);
+    if (i === 0) { ctx.beginPath(); ctx.strokeStyle='#BD561D'; ctx.lineWidth=2; ctx.moveTo(x+barGap/2,y); }
+    else { ctx.lineTo(x+barGap/2,y); }
+    if (i === months.length-1) ctx.stroke();
+
+    // Month label
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.font='9px Arial';ctx.textAlign='center';
+    ctx.fillText(m.label,x+barGap/2,H-pad.b+12);
+  });
+
+  // Incident dots
+  months.forEach((m,i) => {
+    const x = pad.l+i*barGap;
+    const y = pad.t+(H-pad.t-pad.b)*(1-m.invCount/maxInv);
+    ctx.fillStyle='#BD561D';
+    ctx.beginPath();ctx.arc(x+barGap/2,y,3,0,Math.PI*2);ctx.fill();
+    if (m.invCount > 0) {
+      ctx.fillStyle='#fff';ctx.font='bold 9px Arial';ctx.textAlign='center';
+      ctx.fillText(m.invCount,x+barGap/2,y-6);
+    }
+  });
+}
+
+// ══ AT-RISK CHART ═════════════════════════════════════
+function renderAtRiskChart(sq) {
+  const canvas = document.getElementById('chart_atrisk');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 300;
+  canvas.height = 200;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const counts = {};
+  sq.forEach(r => {
+    (r.at_risk_items||[]).forEach(it => {
+      const k = it.label||it.item_id;
+      counts[k] = (counts[k]||0)+1;
+    });
+  });
+
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if (!entries.length) {
+    ctx.fillStyle=var2css('mid');ctx.font='12px Arial';ctx.textAlign='center';
+    ctx.fillText('No at-risk observations yet',canvas.width/2,100);
+    return;
+  }
+
+  const W=canvas.width, H=canvas.height;
+  const maxVal = entries[0][1];
+  const rowH = Math.floor(H/entries.length);
+  const labelW = W*0.55;
+
+  entries.forEach(([label,count],i) => {
+    const y = i*rowH;
+    const intensity = count/maxVal;
+    const bw = Math.max(4, intensity*(W-labelW-36));
+    // Label
+    ctx.fillStyle=var2css('white');ctx.font='9px Arial';ctx.textAlign='right';
+    const shortLabel = label.length > 22 ? label.slice(0,22)+'…' : label;
+    ctx.fillText(shortLabel, labelW-4, y+rowH/2+3);
+    // Bar
+    const r = Math.round(218*intensity), g = Math.round(54*(1-intensity)), b = 51;
+    ctx.fillStyle = `rgb(${r},${g+80},${b+Math.round(100*(1-intensity))})`;
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(labelW,y+4,bw,rowH-8,3);
+    else ctx.rect(labelW,y+4,bw,rowH-8);
+    ctx.fill();
+    ctx.fillStyle=var2css('white');ctx.font='bold 10px Arial';ctx.textAlign='left';
+    ctx.fillText(count, labelW+bw+4, y+rowH/2+3);
+  });
+}
+
+// ══ REDA CHART ════════════════════════════════════════
+function renderRedaChart(iv) {
+  const canvas = document.getElementById('chart_reda');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 300;
+  canvas.height = 200;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const counts = {};
+  iv.forEach(r => {
+    (r.reda_factors||[]).forEach(f => { counts[f] = (counts[f]||0)+1; });
+  });
+
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if (!entries.length) {
+    ctx.fillStyle=var2css('mid');ctx.font='12px Arial';ctx.textAlign='center';
+    ctx.fillText('No investigation data yet',canvas.width/2,100);
+    return;
+  }
+
+  const W=canvas.width, H=canvas.height;
+  const maxVal=entries[0][1];
+  const rowH=Math.floor(H/entries.length);
+  const labelW=W*0.45;
+
+  entries.forEach(([factor,count],i) => {
+    const y=i*rowH;
+    const bw=Math.max(4,(count/maxVal)*(W-labelW-36));
+    ctx.fillStyle=var2css('white');ctx.font='9px Arial';ctx.textAlign='right';
+    ctx.fillText(factor.slice(0,18),labelW-4,y+rowH/2+3);
+    ctx.fillStyle='#1F6FEB';
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(labelW,y+4,bw,rowH-8,3);
+    else ctx.rect(labelW,y+4,bw,rowH-8);
+    ctx.fill();
+    ctx.fillStyle=var2css('white');ctx.font='bold 10px Arial';ctx.textAlign='left';
+    ctx.fillText(count,labelW+bw+4,y+rowH/2+3);
+  });
+}
+
+// ══ REDA BRIDGE ═══════════════════════════════════════
+const SQOR_REDA_MAP = {
+  pre_approach:     ['Individual Factors','Skills & Knowledge'],
+  circle_of_safety: ['Job/Tasks','Technical Knowledge'],
+  marshal_approach: ['Skills & Knowledge','Communication'],
+  chocking:         ['Skills & Knowledge','Technical Knowledge'],
+  platform_ops:     ['Technical Knowledge','Individual Factors'],
+  catering:         ['Job/Tasks','Information'],
+  departure:        ['Technical Knowledge','Job/Tasks'],
+  ppe:              ['Individual Factors','Organizational'],
+};
+const CAT_LABELS = {
+  pre_approach:'Pre-Approach',circle_of_safety:'Circle of Safety',marshal_approach:'Marshal Approach',
+  chocking:'Chocking',platform_ops:'Platform Ops',catering:'Catering',departure:'Departure',ppe:'PPE'
+};
+
+function renderRedaBridge(sq, iv) {
+  const el = document.getElementById('reda_bridge_body');
+  if (!sq.length && !iv.length) {
+    el.innerHTML = '<div class="no-data"><span class="nd-icon">🔗</span>Archive SQOR observations and investigations to see the predictive correlation.</div>';
+    return;
+  }
+
+  // For each SQOR category, count at-risk observations
+  const sqorByCat = {};
+  sq.forEach(r => {
+    (r.at_risk_items||[]).forEach(it => {
+      const cat = it.category||'';
+      sqorByCat[cat] = (sqorByCat[cat]||0)+1;
+    });
+  });
+
+  // For each REDA factor in investigations, count frequency
+  const redaFreq = {};
+  iv.forEach(r => { (r.reda_factors||[]).forEach(f => { redaFreq[f]=(redaFreq[f]||0)+1; }); });
+  const maxReda = Math.max(...Object.values(redaFreq),1);
+
+  let html = '<table class="corr-table"><thead><tr><th>SQOR Category</th><th>At-Risk Obs.</th><th>Maps to REDA</th><th>REDA Frequency in Investigations</th><th>Signal</th></tr></thead><tbody>';
+
+  Object.entries(SQOR_REDA_MAP).forEach(([cat, redas]) => {
+    const arCount = sqorByCat[cat] || 0;
+    const redaLabel = redas.join(' / ');
+    const redaCount = redas.reduce((s,r)=>s+(redaFreq[r]||0),0);
+    const barW = Math.round(redaCount/maxReda*80);
+    const signal = (arCount >= 3 && redaCount >= 2) ? '<span class="badge badge-red">Correlated</span>'
+      : (arCount >= 1 && redaCount >= 1) ? '<span class="badge badge-amber">Watch</span>'
+      : arCount === 0 && redaCount === 0 ? '<span class="badge badge-blue">No data</span>'
+      : '<span class="badge badge-green">Normal</span>';
+    html += `<tr><td>${CAT_LABELS[cat]||cat}</td><td style="font-weight:700;color:${arCount>=3?'var(--red)':arCount>=1?'var(--amber)':'var(--green)'}">${arCount}</td><td style="color:var(--mid);font-size:11px">${redaLabel}</td><td><span style="display:inline-block;height:8px;width:${barW}px;background:var(--blue);border-radius:4px;vertical-align:middle"></span><span style="margin-left:6px;font-size:11px;color:var(--mid)">${redaCount}</span></td><td>${signal}</td></tr>`;
+  });
+
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ══ DRIVER HEATMAP ════════════════════════════════════
+function renderDriverHeatmap(sq) {
+  const el = document.getElementById('heatmap_body');
+  if (!sq.length) {
+    el.innerHTML = '<div class="no-data"><span class="nd-icon">🗺</span>Archive SQORs to see per-driver compliance by procedure category.</div>';
+    return;
+  }
+
+  const drivers = {};
+  const cats = ['pre_approach','circle_of_safety','chocking','platform_ops','catering','departure','ppe'];
+
+  sq.forEach(r => {
+    const d = r.driver_name || 'Unknown';
+    if (!drivers[d]) drivers[d] = {};
+    cats.forEach(cat => {
+      if (!drivers[d][cat]) drivers[d][cat] = {safe:0,total:0};
+    });
+    (r.items||[]).forEach(it => {
+      const cat = it.category;
+      if (!drivers[d][cat]) drivers[d][cat]={safe:0,total:0};
+      if (it.result) {
+        drivers[d][cat].total++;
+        if (it.result==='safe') drivers[d][cat].safe++;
+      }
+    });
+  });
+
+  const catNames = {
+    pre_approach:'Pre-App.',circle_of_safety:'CoS',chocking:'Chocking',
+    platform_ops:'Platform',catering:'Catering',departure:'Departure',ppe:'PPE'
+  };
+
+  let html = '<table class="heatmap-table"><thead><tr><th style="text-align:left">Driver</th>';
+  cats.forEach(c => { html += `<th>${catNames[c]||c}</th>`; });
+  html += '<th>Overall</th></tr></thead><tbody>';
+
+  Object.entries(drivers).slice(0,20).forEach(([driver, catData]) => {
+    html += `<tr><td class="driver-cell">${driver}</td>`;
+    let totalSafe=0, totalScored=0;
+    cats.forEach(cat => {
+      const {safe,total} = catData[cat]||{safe:0,total:0};
+      totalSafe += safe; totalScored += total;
+      if (!total) { html += `<td class="hm-cell-empty">—</td>`; return; }
+      const pct = Math.round(safe/total*100);
+      const cls = pct>=90?'hm-cell-green':pct>=70?'hm-cell-amber':'hm-cell-red';
+      html += `<td class="${cls}">${pct}%</td>`;
+    });
+    const overall = totalScored > 0 ? Math.round(totalSafe/totalScored*100) : null;
+    const cls = !overall?'hm-cell-empty':overall>=90?'hm-cell-green':overall>=70?'hm-cell-amber':'hm-cell-red';
+    html += `<td class="${cls}" style="font-weight:700">${overall!==null?overall+'%':'—'}</td></tr>`;
+  });
+
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ══ PREDICTION TABLE ══════════════════════════════════
+function renderPrediction(sq, iv) {
+  const el = document.getElementById('prediction_body');
+  if (!sq.length || !iv.length) {
+    el.innerHTML = '<div class="no-data"><span class="nd-icon">🔮</span>Links SQOR at-risk observations to subsequent investigations by driver. Archive both to see correlations.</div>';
+    return;
+  }
+
+  // Find drivers who appear in both SQORs (with at-risk) and investigations
+  const sqorDriverAR = {};
+  sq.forEach(r => {
+    if (r.at_risk_count > 0 && r.driver_name) {
+      if (!sqorDriverAR[r.driver_name]) sqorDriverAR[r.driver_name] = {totalAR:0,sqors:[],lastAR:null};
+      sqorDriverAR[r.driver_name].totalAR += r.at_risk_count;
+      sqorDriverAR[r.driver_name].sqors.push(r);
+      const d = new Date(r.archived_at||r.date);
+      if (!sqorDriverAR[r.driver_name].lastAR || d > new Date(sqorDriverAR[r.driver_name].lastAR))
+        sqorDriverAR[r.driver_name].lastAR = r.archived_at||r.date;
+    }
+  });
+
+  const invDrivers = {};
+  iv.forEach(r => {
+    const emp = r.employees||r.driver||'';
+    if (emp) {
+      if (!invDrivers[emp]) invDrivers[emp] = [];
+      invDrivers[emp].push(r);
+    }
+  });
+
+  // Find matches (fuzzy — check if driver name appears in investigation employees field)
+  const matches = [];
+  Object.entries(sqorDriverAR).forEach(([driver, sqorInfo]) => {
+    Object.entries(invDrivers).forEach(([emp, invList]) => {
+      const driverLast = driver.split(',')[0]?.trim().split(' ').pop()?.toUpperCase();
+      const empUpper = emp.toUpperCase();
+      if (driverLast && empUpper.includes(driverLast) && driverLast.length >= 4) {
+        matches.push({ driver, emp, sqorAR:sqorInfo.totalAR, invCount:invList.length,
+          lastAR: sqorInfo.lastAR, invTypes: invList.map(r=>r.incident_type||r.inc_type||'').filter(Boolean) });
+      }
+    });
+  });
+
+  if (!matches.length) {
+    el.innerHTML = '<div class="no-data">No driver matches found across SQOR and investigation records in this period. Matching uses driver last name — ensure consistent naming.</div>';
+    return;
+  }
+
+  let html = '<table class="corr-table"><thead><tr><th>Driver</th><th>SQOR At-Risk Obs.</th><th>Subsequent Investigations</th><th>Incident Types</th><th>Risk Signal</th></tr></thead><tbody>';
+  matches.sort((a,b)=>b.sqorAR-a.sqorAR).forEach(m => {
+    const signal = m.invCount >= 2 ? '<span class="badge badge-red">High Signal</span>'
+      : m.invCount >= 1 ? '<span class="badge badge-amber">Signal</span>'
+      : '<span class="badge badge-green">Monitoring</span>';
+    const types = [...new Set(m.invTypes)].slice(0,3).join(', ') || '—';
+    html += `<tr><td style="color:var(--white);font-weight:600">${m.driver}</td><td style="color:var(--red);font-weight:700">${m.sqorAR}</td><td style="font-weight:700;color:${m.invCount>0?'var(--orange)':'var(--mid)'}">${m.invCount}</td><td style="font-size:11px;color:var(--mid)">${types}</td><td>${signal}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+// ══ EXPORT CSV ════════════════════════════════════════
+function exportCSV() {
+  const sq = filterByPeriod(sqorData);
+  const iv = filterByPeriod(invData);
+
+  // SQOR flat export
+  let csv = 'record_type,id,date,truck_num,driver_name,airline,aircraft_type,approach_type,safe_count,not_observed_count,at_risk_count,compliance_rate,at_risk_behaviors,reda_categories_observed,observer_name,sqor_observed,archived_at\n';
+  sq.forEach(r => {
+    const ar_labels = (r.at_risk_items||[]).map(it=>it.label).join('|').replace(/"/g,'""');
+    const reda_cats = [...new Set((r.at_risk_items||[]).flatMap(it=>[it.reda_primary,it.reda_secondary].filter(Boolean)))].join('|');
+    csv += `"sqor","${r.id}","${r.date||''}","${r.truck_num||''}","${r.driver_name||''}","${r.airline||''}","${r.aircraft_type||''}","${r.approach_type||''}",${r.safe_count||0},${r.not_observed_count||0},${r.at_risk_count||0},${r.compliance_rate||0},"${ar_labels}","${reda_cats}","${r.observer_name||''}","${r.sqor_observed||''}","${r.archived_at||''}"\n`;
+  });
+
+  // Investigation flat export
+  csv += '\nrecord_type,id,date,gate,employees,incident_type,risk_code,sms_ref,da_confirmed,reda_factors,root_cause_summary,notif_compliant,archived_at\n';
+  iv.forEach(r => {
+    const reda = (r.reda_factors||[]).join('|');
+    csv += `"investigation","${r.id}","${r.date||''}","${r.gate||''}","${r.employees||''}","${r.incident_type||''}","${r.risk_code||''}","${r.sms_ref||''}",${r.da_confirmed||false},"${reda}","${(r.root_cause_summary||'').replace(/"/g,'""')}",${r.notif_compliant||false},"${r.archived_at||''}"\n`;
+  });
+
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url;a.download=`GW_SafetyFusion_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();URL.revokeObjectURL(url);
+}
+
+function var2css(v){return getComputedStyle(document.documentElement).getPropertyValue('--'+v).trim()||(v==='white'?'#E6EDF3':'#8B949E');}
+
+// ══ INIT ══════════════════════════════════════════════
+loadAllData();
+window.addEventListener('resize',()=>renderAll());
+</script>
+</body>
+</html>

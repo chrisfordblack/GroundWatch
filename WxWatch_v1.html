@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>WxWatch · Aerodrome Weather</title>
+<!--
+  WxWatch v1.0 — Aerodrome Weather Companion
+  Developed by Chris Black | CF Black Aviation
+  Part of the GroundWatch Safety Suite
+  Copyright Chris Black. All rights reserved.
+-->
+<style>
+:root {
+  --dark:   #0D1117;
+  --card:   #161B22;
+  --border: #30363D;
+  --mid:    #8B949E;
+  --white:  #E6EDF3;
+  --green:  #2EA043;
+  --amber:  #D29922;
+  --orange: #BD561D;
+  --red:    #DA3633;
+  --blue:   #1F6FEB;
+  --teal:   #0D8A6F;
+  --primary:#E8500A;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--dark)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','SF Pro Display',Arial,sans-serif;
+  color:var(--white);font-size:14px;display:flex;flex-direction:column}
+
+/* ── HEADER ────────────────────────────────────────────────── */
+.wx-header{flex-shrink:0;background:var(--dark);border-bottom:1px solid var(--border);
+  padding:10px 14px;display:flex;align-items:center;gap:12px}
+.wx-logo{font-size:16px;font-weight:900;color:#fff;letter-spacing:-.01em}
+.wx-logo span{color:var(--primary)}
+.wx-airport-select{flex:1}
+.wx-airport-select label{font-size:9px;color:var(--mid);text-transform:uppercase;
+  letter-spacing:.06em;display:block;margin-bottom:3px}
+.airport-input-row{display:flex;gap:6px}
+.airport-input-row input{background:rgba(255,255,255,.06);border:1px solid var(--border);
+  border-radius:6px;padding:6px 10px;font-size:13px;font-family:inherit;
+  color:#fff;outline:none;width:80px;text-transform:uppercase}
+.airport-input-row input:focus{border-color:var(--primary)}
+.airport-input-row button{background:var(--primary);color:#fff;border:none;
+  border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+.wx-clock{text-align:right;flex-shrink:0}
+.wx-clock .time{font-size:19px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1}
+.wx-clock .utc{font-size:9px;color:var(--mid);text-transform:uppercase;letter-spacing:.06em}
+
+/* ── SCROLL AREA ────────────────────────────────────────────── */
+.wx-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-bottom:70px}
+
+/* ── OPERATIONAL STATUS ─────────────────────────────────────── */
+.ops-banner{padding:14px;transition:background .5s;flex-shrink:0}
+.ops-banner.green {background:linear-gradient(135deg,rgba(46,160,67,.2),rgba(46,160,67,.05))}
+.ops-banner.amber {background:linear-gradient(135deg,rgba(210,153,34,.25),rgba(210,153,34,.05))}
+.ops-banner.orange{background:linear-gradient(135deg,rgba(189,86,29,.3),rgba(189,86,29,.05))}
+.ops-banner.red   {background:linear-gradient(135deg,rgba(218,54,51,.35),rgba(218,54,51,.05))}
+.ops-status-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.ops-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;transition:background .4s}
+.ops-banner.green  .ops-dot{background:var(--green);box-shadow:0 0 10px var(--green)}
+.ops-banner.amber  .ops-dot{background:var(--amber);box-shadow:0 0 10px var(--amber);animation:pulse 1.5s ease-in-out infinite}
+.ops-banner.orange .ops-dot{background:var(--orange);box-shadow:0 0 10px var(--orange);animation:pulse 1s ease-in-out infinite}
+.ops-banner.red    .ops-dot{background:var(--red);box-shadow:0 0 14px var(--red);animation:blink .6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.ops-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mid)}
+.ops-status{font-size:22px;font-weight:900;letter-spacing:.02em;line-height:1}
+.ops-banner.green  .ops-status{color:var(--green)}
+.ops-banner.amber  .ops-status{color:var(--amber)}
+.ops-banner.orange .ops-status{color:var(--orange)}
+.ops-banner.red    .ops-status{color:var(--red)}
+.ops-reason{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;line-height:1.5}
+
+/* ── ALERT SCROLLER ─────────────────────────────────────────── */
+.scroller-wrap{flex-shrink:0;background:rgba(255,255,255,.04);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  height:34px;overflow:hidden;position:relative;cursor:pointer}
+.scroller-track{display:flex;align-items:center;height:100%;
+  white-space:nowrap;animation:scroll-left 40s linear infinite;padding:0 14px}
+.scroller-track.paused{animation-play-state:paused}
+.scroller-item{display:inline-flex;align-items:center;gap:8px;
+  padding-right:60px;font-size:12px;font-weight:600;color:var(--mid)}
+.scroller-item.alert{color:var(--amber)}
+.scroller-item.warn{color:var(--orange)}
+.scroller-item.critical{color:var(--red);font-weight:700}
+.scroller-item.good{color:var(--green)}
+.scroller-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+@keyframes scroll-left{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+.scroller-alarm-btn{position:absolute;right:0;top:0;bottom:0;width:40px;
+  background:rgba(0,0,0,.5);border:none;border-left:1px solid var(--border);
+  color:var(--mid);font-size:16px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center}
+.scroller-alarm-btn.active{color:var(--amber)}
+
+/* ── CARD ───────────────────────────────────────────────────── */
+.wx-card{background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:12px 14px;margin:10px 12px 0}
+.wx-card-title{font-size:10px;font-weight:700;color:var(--mid);
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+
+/* ── CURRENT CONDITIONS ─────────────────────────────────────── */
+.conditions-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cond-item{background:rgba(255,255,255,.04);border-radius:8px;padding:10px;text-align:center}
+.cond-val{font-size:22px;font-weight:900;color:#fff;line-height:1;margin-bottom:3px}
+.cond-val.big{font-size:28px}
+.cond-lbl{font-size:9px;color:var(--mid);text-transform:uppercase;letter-spacing:.06em}
+.cond-sub{font-size:11px;color:var(--mid);margin-top:2px}
+.cond-flag{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;
+  border-radius:10px;margin-top:4px}
+.cf-green{background:rgba(46,160,67,.2);color:var(--green)}
+.cf-amber{background:rgba(210,153,34,.2);color:var(--amber)}
+.cf-orange{background:rgba(189,86,29,.2);color:var(--orange)}
+.cf-red{background:rgba(218,54,51,.2);color:var(--red)}
+
+/* ── WIND ROSE ──────────────────────────────────────────────── */
+.wind-section{display:flex;align-items:center;gap:14px}
+.wind-rose-wrap{flex-shrink:0}
+.wind-details{flex:1}
+.wind-detail-row{display:flex;justify-content:space-between;padding:4px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);font-size:13px}
+.wind-detail-row:last-child{border-bottom:none}
+.wdr-lbl{color:var(--mid)}
+.wdr-val{font-weight:700;color:#fff}
+.wdr-val.warn{color:var(--amber)}
+.wdr-val.danger{color:var(--red)}
+
+/* ── LIGHTNING WATCH ─────────────────────────────────────────── */
+.lightning-bar{display:flex;gap:3px;margin-bottom:6px}
+.lb-slot{flex:1;border-radius:4px;height:50px;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;padding-bottom:4px;
+  font-size:9px;color:rgba(255,255,255,.4);position:relative;transition:background .3s}
+.lb-slot.active{outline:2px solid var(--amber);outline-offset:-2px}
+.lb-fill{position:absolute;bottom:0;left:0;right:0;border-radius:4px;transition:height .4s}
+.lb-slot-time{position:absolute;bottom:4px;font-size:8px;color:rgba(255,255,255,.4);z-index:1}
+.lb-slot-pct{position:absolute;top:4px;font-size:9px;font-weight:700;z-index:1}
+.lightning-status{display:flex;align-items:center;gap:8px;padding:8px 10px;
+  background:rgba(255,255,255,.04);border-radius:8px}
+.ls-icon{font-size:22px;flex-shrink:0}
+.ls-text{font-size:12px;line-height:1.5}
+.ls-level{font-weight:700}
+
+/* ── FORECAST STRIP ─────────────────────────────────────────── */
+.forecast-strip{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.forecast-strip::-webkit-scrollbar{display:none}
+.fc-slot{flex-shrink:0;background:rgba(255,255,255,.05);border-radius:8px;
+  padding:8px 8px;text-align:center;min-width:52px;border:1px solid transparent}
+.fc-slot.now{border-color:var(--primary);background:rgba(232,80,10,.1)}
+.fc-slot .fc-time{font-size:9px;color:var(--mid);margin-bottom:4px}
+.fc-slot .fc-icon{font-size:18px;margin-bottom:3px}
+.fc-slot .fc-temp{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px}
+.fc-slot .fc-wind{font-size:9px;color:var(--mid)}
+.fc-slot .fc-wx{font-size:9px;color:var(--blue)}
+.fc-slot .fc-lt{font-size:9px;color:var(--amber)}
+
+/* ── METAR RAW ──────────────────────────────────────────────── */
+.metar-raw{background:rgba(0,0,0,.4);border-radius:8px;padding:10px;
+  font-family:'SF Mono','Courier New',monospace;font-size:11px;color:var(--mid);
+  word-break:break-all;line-height:1.6;letter-spacing:.04em}
+.metar-raw span{color:#fff}
+
+/* ── SIGMET / PIREP ─────────────────────────────────────────── */
+.sigmet-item{background:rgba(218,54,51,.08);border:1px solid rgba(218,54,51,.3);
+  border-radius:8px;padding:10px;margin-bottom:8px}
+.sigmet-item:last-child{margin-bottom:0}
+.sigmet-hdr{font-size:11px;font-weight:700;color:var(--red);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.sigmet-text{font-size:12px;color:rgba(255,255,255,.6);line-height:1.5}
+.pirep-item{background:rgba(31,111,235,.08);border:1px solid rgba(31,111,235,.25);
+  border-radius:8px;padding:10px;margin-bottom:8px}
+.pirep-item:last-child{margin-bottom:0}
+.pirep-hdr{font-size:11px;font-weight:700;color:var(--blue);margin-bottom:4px}
+.no-reports{text-align:center;font-size:12px;color:var(--mid);padding:12px 0;font-style:italic}
+
+/* ── WORKER SAFETY ──────────────────────────────────────────── */
+.safety-row{display:flex;align-items:center;gap:10px;padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.06)}
+.safety-row:last-child{border-bottom:none}
+.sr-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center}
+.sr-body{flex:1}
+.sr-title{font-size:13px;font-weight:700;color:#fff}
+.sr-desc{font-size:11px;color:var(--mid);margin-top:2px;line-height:1.4}
+.sr-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;
+  flex-shrink:0;white-space:nowrap}
+
+/* ── ALARM SETTINGS ─────────────────────────────────────────── */
+.alarm-row{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.alarm-row:last-child{border-bottom:none}
+.alarm-row label{font-size:13px;color:#fff}
+.alarm-row .ar-sub{font-size:11px;color:var(--mid);margin-top:2px}
+.alarm-toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.alarm-toggle input{opacity:0;width:0;height:0;position:absolute}
+.alarm-slider{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:11px;cursor:pointer;transition:.25s}
+.alarm-slider::before{content:'';position:absolute;width:18px;height:18px;
+  border-radius:50%;background:var(--mid);left:2px;top:2px;transition:.25s}
+.alarm-toggle input:checked+.alarm-slider{background:var(--primary)}
+.alarm-toggle input:checked+.alarm-slider::before{transform:translateX(18px);background:#fff}
+
+/* ── BOTTOM BAR ─────────────────────────────────────────────── */
+.wx-bottom{position:fixed;bottom:0;left:0;right:0;
+  background:var(--card);border-top:1px solid var(--border);
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));
+  display:flex;gap:6px}
+.wb-btn{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);
+  color:var(--mid);border-radius:8px;padding:10px 6px;font-size:11px;
+  font-weight:700;font-family:inherit;cursor:pointer;text-align:center;
+  -webkit-tap-highlight-color:transparent;transition:all .15s}
+.wb-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.wb-btn:active{opacity:.75}
+
+/* ── TABS ───────────────────────────────────────────────────── */
+.wx-tab{display:none}
+.wx-tab.active{display:block}
+
+/* loading */
+.wx-loading{text-align:center;padding:40px 20px;color:var(--mid);font-size:13px}
+.wx-loading .ld-icon{font-size:36px;margin-bottom:12px;animation:spin 2s linear infinite;display:block}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:#fff;color:#111;padding:10px 22px;border-radius:20px;font-size:13px;
+  font-weight:700;z-index:9999;opacity:0;transition:all .2s;pointer-events:none;
+  white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────── -->
+<div class="wx-header">
+  <div class="wx-logo">Wx<span>Watch</span></div>
+  <div class="wx-airport-select">
+    <label>Aerodrome</label>
+    <div class="airport-input-row">
+      <input type="text" id="airport_input" maxlength="4" placeholder="CYYZ"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter')loadAerodrome()">
+      <button onclick="loadAerodrome()">Load</button>
+    </div>
+  </div>
+  <div class="wx-clock">
+    <div class="time" id="hdr_clock">--:--</div>
+    <div class="utc" id="hdr_utc">-- UTC</div>
+  </div>
+</div>
+
+<!-- ── OPERATIONAL STATUS ──────────────────────────────────── -->
+<div class="ops-banner green" id="ops_banner">
+  <div class="ops-status-row">
+    <div class="ops-dot" id="ops_dot"></div>
+    <div class="ops-label">Ramp Operations Status</div>
+  </div>
+  <div class="ops-status" id="ops_status">Loading...</div>
+  <div class="ops-reason" id="ops_reason">Fetching weather data...</div>
+</div>
+
+<!-- ── ALERT SCROLLER ──────────────────────────────────────── -->
+<div class="scroller-wrap" onclick="toggleScrollerPause()">
+  <div class="scroller-track" id="scroller_track">
+    <span class="scroller-item">⏳ Loading weather data — please wait</span>
+    <!-- Items duplicated for seamless loop -->
+    <span class="scroller-item">⏳ Loading weather data — please wait</span>
+  </div>
+  <button class="scroller-alarm-btn" id="alarm_toggle_btn" onclick="toggleAlarm(event)" title="Toggle alarm">🔕</button>
+</div>
+
+<!-- ── SCROLL AREA ─────────────────────────────────────────── -->
+<div class="wx-scroll" id="wx_scroll">
+
+  <!-- TAB: CONDITIONS -->
+  <div class="wx-tab active" id="tab_cond">
+
+    <div class="wx-card">
+      <div class="wx-card-title">🌡 Current Conditions — <span id="cond_station">—</span></div>
+      <div id="cond_body">
+        <div class="wx-loading"><span class="ld-icon">🔄</span>Fetching METAR...</div>
+      </div>
+    </div>
+
+    <div class="wx-card">
+      <div class="wx-card-title">💨 Wind</div>
+      <div id="wind_body" class="wind-section">
+        <div class="wx-loading" style="width:100%">Loading...</div>
+      </div>
+    </div>
+
+    <div class="wx-card">
+      <div class="wx-card-title">👷 Worker Safety</div>
+      <div id="safety_body">
+        <div class="wx-loading">Loading...</div>
+      </div>
+    </div>
+
+    <div class="wx-card">
+      <div class="wx-card-title">📡 Raw METAR</div>
+      <div class="metar-raw" id="metar_raw">Loading...</div>
+    </div>
+
+  </div>
+
+  <!-- TAB: LIGHTNING -->
+  <div class="wx-tab" id="tab_lt">
+
+    <div class="wx-card">
+      <div class="wx-card-title">⚡ Lightning Watch — Next 12 Hours</div>
+      <div id="lightning_status" class="lightning-status" style="margin-bottom:10px">
+        <span class="ls-icon">⚡</span>
+        <div class="ls-text"><span class="ls-level" id="lt_level">Loading...</span><br><span id="lt_desc" style="color:var(--mid)"></span></div>
+      </div>
+      <div class="lightning-bar" id="lt_bar"></div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--mid);margin-top:4px;padding:0 2px">
+        <span>Now</span><span>+3h</span><span>+6h</span><span>+9h</span><span>+12h</span>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--mid);line-height:1.6;padding:8px;background:rgba(255,255,255,.03);border-radius:6px">
+        ⚠ Lightning potential index based on forecast convective parameters. Not a substitute for the GTAA Ground Stop System or official lightning detection. Treat values above 60% as a WATCH condition.
+      </div>
+    </div>
+
+    <div class="wx-card">
+      <div class="wx-card-title">📅 12-Hour Forecast</div>
+      <div class="forecast-strip" id="lt_forecast"></div>
+    </div>
+
+    <!-- Ground Stop thresholds reference -->
+    <div class="wx-card">
+      <div class="wx-card-title">📋 Ground Stop Reference</div>
+      <div style="font-size:12px;line-height:1.8;color:rgba(255,255,255,.6)">
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>⚡ &lt; 30% lightning potential</span><span style="color:var(--green);font-weight:700">Normal</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>⚡ 30–60% lightning potential</span><span style="color:var(--amber);font-weight:700">Watch</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>⚡ 60–80% lightning potential</span><span style="color:var(--orange);font-weight:700">Warning</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>⚡ &gt;80% / TS in METAR</span><span style="color:var(--red);font-weight:700">Suspend Ops</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>💨 Wind &gt; 40kt gusts</span><span style="color:var(--orange);font-weight:700">Warning</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>🌫 Visibility &lt; 1600m</span><span style="color:var(--amber);font-weight:700">LVP Watch</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span>🌧 Freezing precip (FZRA/FZDZ)</span><span style="color:var(--orange);font-weight:700">Warning</span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 0"><span>🌪 Wx code 95+ (severe T-storm)</span><span style="color:var(--red);font-weight:700">Suspend Ops</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TAB: REPORTS -->
+  <div class="wx-tab" id="tab_rep">
+
+    <div class="wx-card">
+      <div class="wx-card-title">🚨 Active SIGMETs</div>
+      <div id="sigmet_body"><div class="no-reports">Loading SIGMETs...</div></div>
+    </div>
+
+    <div class="wx-card">
+      <div class="wx-card-title">✈️ Recent PIREPs — <span id="pirep_station">—</span></div>
+      <div id="pirep_body"><div class="no-reports">Loading PIREPs...</div></div>
+    </div>
+
+    <div class="wx-card">
+      <div class="wx-card-title">📅 TAF — Terminal Forecast</div>
+      <div id="taf_body"><div class="no-reports">Loading TAF...</div></div>
+    </div>
+
+  </div>
+
+  <!-- TAB: SETTINGS -->
+  <div class="wx-tab" id="tab_set">
+
+    <div class="wx-card">
+      <div class="wx-card-title">🔔 Alarm Settings</div>
+      <div id="alarm_settings">
+        <div class="alarm-row">
+          <div><div style="font-size:13px;font-weight:700;color:#fff">Alarm Enabled</div><div class="ar-sub">Audible alert + vibration on status change</div></div>
+          <label class="alarm-toggle"><input type="checkbox" id="alarm_enabled" checked onchange="saveAlarmSettings()"><span class="alarm-slider"></span></label>
+        </div>
+        <div class="alarm-row">
+          <div><div style="font-size:13px;font-weight:700;color:#fff">Alert on WATCH</div><div class="ar-sub">Alarm when status reaches Amber</div></div>
+          <label class="alarm-toggle"><input type="checkbox" id="alarm_watch" checked onchange="saveAlarmSettings()"><span class="alarm-slider"></span></label>
+        </div>
+        <div class="alarm-row">
+          <div><div style="font-size:13px;font-weight:700;color:#fff">Alert on WARNING</div><div class="ar-sub">Alarm when status reaches Orange</div></div>
+          <label class="alarm-toggle"><input type="checkbox" id="alarm_warning" checked onchange="saveAlarmSettings()"><span class="alarm-slider"></span></label>
+        </div>
+        <div class="alarm-row">
+          <div><div style="font-size:13px;font-weight:700;color:#fff">Alert on SUSPEND OPS</div><div class="ar-sub">Alarm when status reaches Red — always on</div></div>
+          <label class="alarm-toggle"><input type="checkbox" id="alarm_suspend" checked disabled><span class="alarm-slider"></span></label>
+        </div>
+        <div class="alarm-row">
+          <div><div style="font-size:13px;font-weight:700;color:#fff">Repeat Alarm</div><div class="ar-sub">Re-alarm every 5 minutes while status is active</div></div>
+          <label class="alarm-toggle"><input type="checkbox" id="alarm_repeat" onchange="saveAlarmSettings()"><span class="alarm-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="wx-card">
+      <div class="wx-card-title">⏱ Data Refresh</div>
+      <div class="alarm-row">
+        <div><div style="font-size:13px;font-weight:700;color:#fff">Auto-Refresh</div><div class="ar-sub" id="refresh_status">Refreshes every 10 minutes</div></div>
+        <label class="alarm-toggle"><input type="checkbox" id="auto_refresh" checked onchange="toggleAutoRefresh()"><span class="alarm-slider"></span></label>
+      </div>
+      <button onclick="loadAllData()" style="width:100%;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px">🔄 Refresh Now</button>
+    </div>
+
+    <div class="wx-card">
+      <div class="wx-card-title">ℹ About WxWatch</div>
+      <div style="font-size:12px;color:var(--mid);line-height:1.7">
+        <div>WxWatch v1.0 · CF Black Aviation</div>
+        <div>Part of the GroundWatch Safety Suite</div>
+        <div style="margin-top:6px">Data sources: aviationweather.gov (METAR/TAF/SIGMET/PIREP) · Open-Meteo (forecast/lightning index)</div>
+        <div style="margin-top:6px;color:rgba(255,255,255,.35);font-size:11px">WxWatch is a decision-support tool. Always defer to official GTAA or airport authority Ground Stop notifications. Chris Black / CF Black Aviation accepts no liability for operational decisions made on the basis of this application.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ── BOTTOM NAV ──────────────────────────────────────────── -->
+<div class="wx-bottom">
+  <button class="wb-btn active" id="nav_cond" onclick="switchTab('cond')">🌡<br>Conditions</button>
+  <button class="wb-btn" id="nav_lt"   onclick="switchTab('lt')">⚡<br>Lightning</button>
+  <button class="wb-btn" id="nav_rep"  onclick="switchTab('rep')">📡<br>Reports</button>
+  <button class="wb-btn" id="nav_set"  onclick="switchTab('set')">⚙<br>Settings</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ CORE DATA ════════════════════════════════════════════════
+let currentIcao    = localStorage.getItem('wxwatch_icao') || 'CYYZ';
+let wxMetar        = null;
+let wxOpenMeteo    = null;
+let wxTaf          = null;
+let currentStatus  = 'green';
+let prevStatus     = 'green';
+let alarmEnabled   = true;
+let refreshTimer   = null;
+let repeatTimer    = null;
+let scrollPaused   = false;
+
+// Airport coords for Open-Meteo
+const ICAO_COORDS = {
+  'CYYZ':[43.6777,-79.6248],'CYVR':[49.1947,-123.1839],'CYUL':[45.4706,-73.7408],
+  'CYYC':[51.1131,-114.01],'CYEG':[53.3097,-113.58],'CYOW':[45.3225,-75.6692],
+  'CYHZ':[44.8808,-63.5086],'CYWG':[49.91,-97.24],'CYXE':[52.1708,-106.70],
+  'CYQB':[46.7911,-71.3933],'CYYZ':[43.6777,-79.6248],'CYQM':[46.1122,-64.6789],
+  'EGLL':[51.4775,-0.4614],'EGKK':[51.1481,-0.1903],'EGCC':[53.3537,-2.2750],
+  'KLAX':[33.9425,-118.4081],'KJFK':[40.6413,-73.7781],'KORD':[41.9742,-87.9073],
+  'KSFO':[37.6213,-122.379],'KATL':[33.6407,-84.4277],'KMIA':[25.7959,-80.287],
+  'EDDF':[50.0333,8.5706],'EHAM':[52.3086,4.7639],'YSSY':[-33.9461,151.1772],
+  'WSSS':[1.3644,103.9915],'RJTT':[35.5533,139.7811],
+};
+
+// ══ CLOCK ═══════════════════════════════════════════════════
+function startClock() {
+  const tick = () => {
+    const now = new Date();
+    const loc = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    const utcH = String(now.getUTCHours()).padStart(2,'0');
+    const utcM = String(now.getUTCMinutes()).padStart(2,'0');
+    document.getElementById('hdr_clock').textContent = loc;
+    document.getElementById('hdr_utc').textContent   = `${utcH}${utcM}Z UTC`;
+  };
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ══ LOAD AERODROME ══════════════════════════════════════════
+function loadAerodrome() {
+  const input = document.getElementById('airport_input').value.trim().toUpperCase() || currentIcao;
+  currentIcao = input;
+  localStorage.setItem('wxwatch_icao', input);
+  loadAllData();
+}
+
+function loadAllData() {
+  document.getElementById('cond_station').textContent = currentIcao;
+  document.getElementById('pirep_station').textContent = currentIcao;
+  Promise.all([
+    fetchMetar(currentIcao),
+    fetchOpenMeteo(currentIcao),
+    fetchTaf(currentIcao),
+    fetchSigmets(),
+    fetchPireps(currentIcao),
+  ]).then(() => {
+    renderAll();
+    if (document.getElementById('auto_refresh').checked) scheduleRefresh();
+  });
+}
+
+// ══ FETCH ════════════════════════════════════════════════════
+function fetchMetar(icao) {
+  return fetch(`https://aviationweather.gov/api/data/metar?ids=${icao}&format=json`)
+    .then(r => r.json())
+    .then(d => { if (d && d.length) wxMetar = d[0]; })
+    .catch(() => {});
+}
+
+function fetchTaf(icao) {
+  return fetch(`https://aviationweather.gov/api/data/taf?ids=${icao}&format=json`)
+    .then(r => r.json())
+    .then(d => { if (d && d.length) wxTaf = d[0]; })
+    .catch(() => {});
+}
+
+function fetchSigmets() {
+  return fetch('https://aviationweather.gov/api/data/sigmet?format=json&hazard=CONVECTIVE,TURB,ICE,PCPN')
+    .then(r => r.json())
+    .then(d => { window._sigmets = d || []; })
+    .catch(() => { window._sigmets = []; });
+}
+
+function fetchPireps(icao) {
+  return fetch(`https://aviationweather.gov/api/data/pirep?id=${icao}&format=json&distance=100&age=3`)
+    .then(r => r.json())
+    .then(d => { window._pireps = d || []; })
+    .catch(() => { window._pireps = []; });
+}
+
+function fetchOpenMeteo(icao) {
+  const coords = ICAO_COORDS[icao];
+  if (!coords) return Promise.resolve();
+  const [lat, lon] = coords;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}`
+    + `&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,precipitation_probability,cape,lightning_potential`
+    + `&current=temperature_2m,wind_speed_10m,wind_gusts_10m,weather_code,apparent_temperature`
+    + `&wind_speed_unit=kmh&temperature_unit=celsius&timezone=auto&forecast_days=2`;
+  return fetch(url).then(r => r.json()).then(d => { wxOpenMeteo = d; }).catch(() => {});
+}
+
+// ══ RENDER ALL ══════════════════════════════════════════════
+function renderAll() {
+  assessStatus();
+  renderScroller();
+  renderConditions();
+  renderWind();
+  renderLightning();
+  renderForecast();
+  renderSafety();
+  renderMetarRaw();
+  renderSigmets();
+  renderPireps();
+  renderTaf();
+}
+
+// ══ STATUS ASSESSMENT ════════════════════════════════════════
+function assessStatus() {
+  const reasons = [];
+  let level = 0; // 0=green, 1=amber, 2=orange, 3=red
+
+  const m = wxMetar;
+  if (m) {
+    const wx = (m.wxString || '').toUpperCase();
+    const wgst = m.wgst || 0;
+    const wspd = m.wspd || 0;
+    const visib = m.visib !== null ? parseFloat(m.visib) : 99;
+
+    // Thunderstorm — immediate suspend
+    if (wx.includes('TS')) {
+      level = Math.max(level, 3);
+      reasons.push('⚡ THUNDERSTORM OBSERVED IN METAR');
+    }
+    // Freezing precip
+    if (wx.includes('FZRA') || wx.includes('FZDZ') || wx.includes('FZFG')) {
+      level = Math.max(level, 2);
+      reasons.push('🧊 Freezing precipitation reported');
+    }
+    // Heavy snow
+    if (wx.includes('+SN') || wx.includes('BLSN')) {
+      level = Math.max(level, 2);
+      reasons.push('❄️ Heavy snow or blowing snow');
+    }
+    // Wind
+    if (wgst > 50 || wspd > 45) {
+      level = Math.max(level, 3);
+      reasons.push(`💨 EXTREME WIND — ${Math.round(wspd)}KT gusting ${Math.round(wgst)}KT`);
+    } else if (wgst > 40 || wspd > 35) {
+      level = Math.max(level, 2);
+      reasons.push(`💨 Strong wind — ${Math.round(wspd)}KT gusting ${Math.round(wgst)}KT`);
+    } else if (wgst > 30 || wspd > 25) {
+      level = Math.max(level, 1);
+      reasons.push(`💨 Elevated wind — ${Math.round(wspd)}KT gusting ${Math.round(wgst)}KT`);
+    }
+    // Visibility
+    if (visib < 0.25) {
+      level = Math.max(level, 3);
+      reasons.push(`🌫 NEAR-ZERO VISIBILITY — ${visib}SM`);
+    } else if (visib < 0.5) {
+      level = Math.max(level, 2);
+      reasons.push(`🌫 Very low visibility — ${visib}SM (LVP)`);
+    } else if (visib < 1.5) {
+      level = Math.max(level, 1);
+      reasons.push(`🌫 Reduced visibility — ${visib}SM`);
+    }
+    // Snow / rain without explicit freezing
+    if (wx.includes('+RA') || wx.includes('SN') || wx.includes('SH')) {
+      level = Math.max(level, 1);
+      reasons.push('🌧 Precipitation reported');
+    }
+  }
+
+  // Lightning from Open-Meteo
+  if (wxOpenMeteo) {
+    const lt = getCurrentLightningPotential();
+    if (lt >= 80) {
+      level = Math.max(level, 3);
+      reasons.push(`⚡ LIGHTNING POTENTIAL ${lt}% — SUSPEND OPERATIONS`);
+    } else if (lt >= 60) {
+      level = Math.max(level, 2);
+      reasons.push(`⚡ Lightning potential ${lt}% — WARNING`);
+    } else if (lt >= 30) {
+      level = Math.max(level, 1);
+      reasons.push(`⚡ Lightning potential ${lt}% — WATCH`);
+    }
+    // Weather code check
+    const wc = wxOpenMeteo.current?.weather_code || 0;
+    if (wc >= 95) {
+      level = Math.max(level, 3);
+      reasons.push('⛈ Severe thunderstorm in forecast');
+    }
+  }
+
+  const levels = ['green','amber','orange','red'];
+  const labels = {
+    green:  'NORMAL OPERATIONS',
+    amber:  'WEATHER WATCH — Monitor Conditions',
+    orange: 'WEATHER WARNING — Prepare for Restrictions',
+    red:    'SUSPEND RAMP OPERATIONS',
+  };
+  const newStatus = levels[level];
+
+  // Trigger alarm if status changed
+  if (newStatus !== currentStatus) {
+    prevStatus = currentStatus;
+    currentStatus = newStatus;
+    checkAlarmTrigger(newStatus);
+  } else {
+    currentStatus = newStatus;
+  }
+
+  const banner = document.getElementById('ops_banner');
+  banner.className = 'ops-banner ' + currentStatus;
+  document.getElementById('ops_status').textContent = labels[currentStatus];
+  document.getElementById('ops_reason').textContent = reasons.length
+    ? reasons.join('  ·  ')
+    : currentStatus === 'green' ? 'All parameters within normal limits' : '';
+}
+
+function getCurrentLightningPotential() {
+  if (!wxOpenMeteo?.hourly?.lightning_potential) return 0;
+  const now = new Date();
+  const times = wxOpenMeteo.hourly.time;
+  for (let i = 0; i < times.length; i++) {
+    const t = new Date(times[i]);
+    if (Math.abs(t - now) < 3600000) return Math.round(wxOpenMeteo.hourly.lightning_potential[i] || 0);
+  }
+  return 0;
+}
+
+// ══ SCROLLER ════════════════════════════════════════════════
+function renderScroller() {
+  const items = [];
+  const m = wxMetar;
+  if (m) {
+    // Station and time
+    const obs = m.reportTime ? new Date(m.reportTime+'Z') : null;
+    const obsStr = obs ? obs.toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit'}) : '';
+    items.push({ text: `${currentIcao} OBS ${obsStr} — ${formatCondSummary(m)}`, cls: 'good' });
+
+    const wx = (m.wxString || '').toUpperCase();
+    if (wx.includes('TS')) items.push({ text: '⚡ THUNDERSTORM IN METAR — CONSIDER GROUND STOP', cls: 'critical' });
+    if (wx.includes('FZRA')) items.push({ text: '🧊 FREEZING RAIN — TRACTION HAZARD — RAMP CAUTION', cls: 'warn' });
+    if (wx.includes('FZDZ')) items.push({ text: '🧊 FREEZING DRIZZLE REPORTED', cls: 'warn' });
+    if (wx.includes('+SN') || wx.includes('BLSN')) items.push({ text: '❄️ HEAVY / BLOWING SNOW — TRACTION HAZARD', cls: 'warn' });
+    const wspd = m.wspd || 0, wgst = m.wgst || 0;
+    if (wgst > 40) items.push({ text: `💨 WIND GUSTS ${Math.round(wgst)}KT — HIGH WIND ADVISORY`, cls: 'critical' });
+    else if (wgst > 30) items.push({ text: `💨 Wind gusts ${Math.round(wgst)}kt — Elevated wind caution`, cls: 'alert' });
+    const vis = m.visib !== null ? parseFloat(m.visib) : 99;
+    if (vis < 1) items.push({ text: `🌫 VISIBILITY ${vis}SM — LVP IN EFFECT`, cls: 'critical' });
+    else if (vis < 3) items.push({ text: `🌫 Reduced visibility ${vis}SM — LVP watch`, cls: 'alert' });
+    const ceil = getCeiling(m.clouds);
+    if (ceil !== null && ceil < 300) items.push({ text: `☁️ CEILING ${ceil.toLocaleString()} FEET — VERY LOW — LVP`, cls: 'critical' });
+    else if (ceil !== null && ceil < 1000) items.push({ text: `☁️ Ceiling ${ceil.toLocaleString()} feet — Low — LVP conditions`, cls: 'alert' });
+    items.push({ text: `🌡 Temp ${Math.round(m.temp||0)}°C  Dew ${Math.round(m.dewp||0)}°C  Alt ${m.altim ? m.altim.toFixed(2) : '—'} inHg`, cls: '' });
+  }
+  if (wxOpenMeteo) {
+    const lt = getCurrentLightningPotential();
+    if (lt >= 80) items.push({ text: `⚡ LIGHTNING POTENTIAL ${lt}% — RAMP OPERATIONS SHOULD SUSPEND`, cls: 'critical' });
+    else if (lt >= 60) items.push({ text: `⚡ Lightning potential ${lt}% — WARNING — prepare for ground stop`, cls: 'warn' });
+    else if (lt >= 30) items.push({ text: `⚡ Lightning potential ${lt}% — WATCH — monitor closely`, cls: 'alert' });
+    else items.push({ text: `⚡ Lightning potential ${lt}% — No immediate threat`, cls: 'good' });
+  }
+  if (window._sigmets && window._sigmets.length) {
+    items.push({ text: `🚨 ${window._sigmets.length} ACTIVE SIGMET${window._sigmets.length>1?'S':''} — See Reports tab`, cls: 'warn' });
+  } else {
+    items.push({ text: '📡 No active SIGMETs in region', cls: 'good' });
+  }
+  if (!m) items.push({ text: '⚠ METAR unavailable — using forecast data only', cls: 'alert' });
+  items.push({ text: `Last updated ${new Date().toLocaleTimeString()} — Auto-refresh active`, cls: '' });
+
+  const track = document.getElementById('scroller_track');
+  const makeItems = () => items.map(it =>
+    `<span class="scroller-item ${it.cls}"><span class="scroller-dot"></span>${it.text}</span>`
+  ).join('');
+  // Duplicate for seamless loop
+  track.innerHTML = makeItems() + makeItems();
+  if (scrollPaused) track.classList.add('paused');
+  else track.classList.remove('paused');
+}
+
+function formatCondSummary(m) {
+  const parts = [];
+  const wx = m.wxString;
+  if (wx) parts.push(decodeWx(wx));
+  if (m.wspd) parts.push(`Wind ${Math.round(m.wspd)}${m.wgst?'G'+Math.round(m.wgst):''}KT`);
+  if (m.visib !== null) parts.push(`Vis ${m.visib}SM`);
+  const ceil = getCeiling(m.clouds);
+  if (ceil !== null) parts.push(`Ceil ${ceil}ft`);
+  if (m.temp !== null) parts.push(`${Math.round(m.temp)}°C`);
+  return parts.join(' — ') || 'VFR';
+}
+
+function toggleScrollerPause() {
+  scrollPaused = !scrollPaused;
+  const t = document.getElementById('scroller_track');
+  if (scrollPaused) t.classList.add('paused'); else t.classList.remove('paused');
+}
+
+// ══ CONDITIONS ══════════════════════════════════════════════
+function renderConditions() {
+  const m = wxMetar;
+  if (!m && !wxOpenMeteo) return;
+  const temp = m ? Math.round(m.temp || 0) : Math.round(wxOpenMeteo.current?.temperature_2m || 0);
+  const dewp = m ? Math.round(m.dewp || 0) : null;
+  const wx   = m ? (m.wxString || '') : '';
+  const vis  = m ? m.visib : null;
+  const ceil = m ? getCeiling(m.clouds) : null;
+  const wspd = m ? Math.round(m.wspd || 0) : Math.round(wxOpenMeteo?.current?.wind_speed_10m || 0);
+  const wgst = m ? Math.round(m.wgst || 0) : Math.round(wxOpenMeteo?.current?.wind_gusts_10m || 0);
+  const icon = getWxIcon(wx, m?.clouds);
+  const lvp  = (vis !== null && vis < 1.5) || (ceil !== null && ceil < 500);
+
+  let html = `<div class="conditions-grid">
+    <div class="cond-item"><div class="cond-val big">${temp}°C</div><div class="cond-lbl">Temperature</div>${getApparent(temp,wspd,dewp)}</div>
+    <div class="cond-item"><div class="cond-val" style="font-size:32px">${icon}</div><div class="cond-lbl">${decodeWx(wx)||'No precip'}</div></div>
+    <div class="cond-item"><div class="cond-val">${vis !== null ? vis+'SM' : '—'}</div><div class="cond-lbl">Visibility</div>${lvp?'<div class="cond-flag cf-amber">LVP</div>':''}</div>
+    <div class="cond-item"><div class="cond-val" style="font-size:13px;padding-top:4px">${m ? formatCeiling(m.clouds) : 'CAVOK'}</div><div class="cond-lbl">Ceiling</div></div>
+    <div class="cond-item"><div class="cond-val">${wspd}${wgst?'/G'+wgst:''}KT</div><div class="cond-lbl">Wind Speed</div>${getRiskFlag('wind',wspd,wgst)}</div>
+    <div class="cond-item"><div class="cond-val">${dewp !== null ? dewp+'°C' : '—'}</div><div class="cond-lbl">Dew Point</div>${dewp !== null && (temp-dewp) < 3 ? '<div class="cond-flag cf-amber">Fog risk</div>':''}</div>
+  </div>`;
+  document.getElementById('cond_body').innerHTML = html;
+}
+
+function getApparent(temp, wspd, dewp) {
+  // Wind chill (if cold + wind)
+  if (temp <= 10 && wspd >= 10) {
+    const wc = 13.12 + 0.6215*temp - 11.37*Math.pow(wspd,0.16) + 0.3965*temp*Math.pow(wspd,0.16);
+    const feel = Math.round(wc);
+    const cls = feel < -20 ? 'cf-red' : feel < -10 ? 'cf-orange' : feel < 0 ? 'cf-amber' : '';
+    return `<div class="cond-sub">Feels ${feel}°C</div>${cls?`<div class="cond-flag ${cls}">Wind chill</div>`:''}`;
+  }
+  // Heat index (if warm + humid)
+  if (temp >= 25 && dewp !== null) {
+    const hi = -8.78469475556 + 1.61139411*temp + 2.33854883889*dewp
+      - 0.14611605*temp*dewp - 0.012308094*temp*temp
+      - 0.0164248277778*dewp*dewp + 0.002211732*temp*temp*dewp
+      + 0.00072546*temp*dewp*dewp - 0.000003582*temp*temp*dewp*dewp;
+    const feel = Math.round(hi);
+    const cls = feel > 39 ? 'cf-red' : feel > 32 ? 'cf-orange' : feel > 27 ? 'cf-amber' : '';
+    return `<div class="cond-sub">Feels ${feel}°C</div>${cls?`<div class="cond-flag ${cls}">Heat stress</div>`:''}`;
+  }
+  return '';
+}
+
+function getRiskFlag(type, spd, gust) {
+  if (type === 'wind') {
+    if (gust > 50 || spd > 45) return '<div class="cond-flag cf-red">EXTREME</div>';
+    if (gust > 40 || spd > 35) return '<div class="cond-flag cf-orange">WARNING</div>';
+    if (gust > 30 || spd > 25) return '<div class="cond-flag cf-amber">CAUTION</div>';
+  }
+  return '';
+}
+
+// ══ WIND ROSE ═══════════════════════════════════════════════
+function renderWind() {
+  const m = wxMetar;
+  const wspd = m ? Math.round(m.wspd || 0) : Math.round(wxOpenMeteo?.current?.wind_speed_10m || 0);
+  const wgst = m ? Math.round(m.wgst || 0) : Math.round(wxOpenMeteo?.current?.wind_gusts_10m || 0);
+  const wdir = m ? (m.wdir || 0) : 0;
+  const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+  const dirStr = wdir === 0 && !m ? 'VRB' : dirs[Math.round(wdir/45)%8];
+
+  // Canvas wind rose
+  const size = 90;
+  const cvs = `<canvas id="wind_rose_canvas" width="${size}" height="${size}"></canvas>`;
+
+  const rows = [
+    ['Direction', wdir === 0 ? 'Variable' : `${wdir}° (${dirStr})`],
+    ['Speed', `${wspd} kt${wgst ? ' / G'+wgst+' kt' : ''}`],
+    ['Speed (km/h)', `${Math.round(wspd*1.852)} km/h${wgst ? ' / G'+Math.round(wgst*1.852) : ''}`],
+    ['FOD Risk', wspd > 30 ? '<span class="cond-flag cf-orange">HIGH — secure loose items</span>' : wspd > 20 ? '<span class="cond-flag cf-amber">MODERATE</span>' : '<span class="cond-flag cf-green">LOW</span>'],
+  ];
+
+  let details = rows.map(([l,v]) => `<div class="wind-detail-row"><span class="wdr-lbl">${l}</span><span class="wdr-val${wspd>35?' danger':wspd>25?' warn':''}">${v}</span></div>`).join('');
+
+  document.getElementById('wind_body').innerHTML = `
+    <div class="wind-rose-wrap">${cvs}</div>
+    <div class="wind-details">${details}</div>`;
+
+  // Draw wind rose
+  const canvas = document.getElementById('wind_rose_canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    const cx=size/2, cy=size/2, r=size/2-8;
+    ctx.clearRect(0,0,size,size);
+    // Background circle
+    ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+    // Cardinal labels
+    ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='8px Arial';ctx.textAlign='center';
+    [['N',cy-r+8],['S',cy+r-1],['E',null],['W',null]].forEach(([d,y])=>{
+      if(d==='N'||d==='S') ctx.fillText(d,cx,y);
+    });
+    ctx.fillText('E',cx+r-4,cy+3);ctx.fillText('W',cx-r+4,cy+3);
+    // Wind arrow
+    if (wspd > 0) {
+      const rad = (wdir - 90) * Math.PI / 180;
+      const arrowLen = Math.min(r-6, 10 + (wspd/50)*(r-16));
+      const ex = cx + Math.cos(rad)*arrowLen;
+      const ey = cy + Math.sin(rad)*arrowLen;
+      const sx = cx - Math.cos(rad)*arrowLen*0.4;
+      const sy = cy - Math.sin(rad)*arrowLen*0.4;
+      const windColor = wspd > 35 ? '#DA3633' : wspd > 25 ? '#BD561D' : '#2EA043';
+      ctx.strokeStyle=windColor;ctx.lineWidth=2.5;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(ex,ey);ctx.stroke();
+      // Arrowhead
+      const hAngle = 0.4;
+      ctx.beginPath();
+      ctx.moveTo(ex,ey);
+      ctx.lineTo(ex-8*Math.cos(rad-hAngle),ey-8*Math.sin(rad-hAngle));
+      ctx.moveTo(ex,ey);
+      ctx.lineTo(ex-8*Math.cos(rad+hAngle),ey-8*Math.sin(rad+hAngle));
+      ctx.stroke();
+      // Speed in centre
+      ctx.fillStyle='#fff';ctx.font='bold 11px Arial';ctx.textAlign='center';
+      ctx.fillText(wspd,cx,cy+3);
+    } else {
+      ctx.fillStyle=var2color('mid');ctx.font='10px Arial';ctx.textAlign='center';
+      ctx.fillText('VRB',cx,cy+4);
+    }
+  }
+}
+
+function var2color(v){return getComputedStyle(document.documentElement).getPropertyValue('--'+v).trim();}
+
+// ══ LIGHTNING ═══════════════════════════════════════════════
+function renderLightning() {
+  if (!wxOpenMeteo?.hourly?.lightning_potential) {
+    document.getElementById('lt_bar').innerHTML = '<div style="color:var(--mid);font-size:12px;padding:12px 0">Lightning data unavailable</div>';
+    return;
+  }
+  const now = new Date();
+  const h = wxOpenMeteo.hourly;
+  const slots = [];
+  for (let i = 0; i < h.time.length && slots.length < 13; i++) {
+    const t = new Date(h.time[i]);
+    if (t < new Date(now - 1800000)) continue;
+    slots.push({
+      time: t,
+      lt: Math.round(h.lightning_potential[i] || 0),
+      wc: h.weather_code[i] || 0,
+      isNow: slots.length === 0,
+    });
+  }
+
+  const maxLt = Math.max(...slots.map(s=>s.lt), 1);
+  let html = '';
+  slots.forEach(s => {
+    const pct = s.lt;
+    const fillH = Math.max(4, (pct/100)*44);
+    const fill = pct >= 80 ? '#DA3633' : pct >= 60 ? '#BD561D' : pct >= 30 ? '#D29922' : '#2EA043';
+    const label = s.isNow ? 'Now' : `${String(s.time.getHours()).padStart(2,'0')}:00`;
+    html += `<div class="lb-slot${s.isNow?' active':''}">
+      <div class="lb-fill" style="height:${fillH}px;background:${fill};opacity:.85"></div>
+      <span class="lb-slot-time">${label}</span>
+      ${pct >= 20 ? `<span class="lb-slot-pct" style="color:${fill}">${pct}%</span>` : ''}
+    </div>`;
+  });
+  document.getElementById('lt_bar').innerHTML = html;
+
+  const curLt = slots[0]?.lt || 0;
+  const ltLevel = document.getElementById('lt_level');
+  const ltDesc  = document.getElementById('lt_desc');
+  if (curLt >= 80) {
+    ltLevel.textContent = '⚡ HIGH — SUSPEND RAMP OPERATIONS';
+    ltLevel.style.color = '#DA3633';
+    ltDesc.textContent = 'Lightning potential exceeds operational threshold. Consider ground stop.';
+  } else if (curLt >= 60) {
+    ltLevel.textContent = '⚡ WARNING — Prepare for Ground Stop';
+    ltLevel.style.color = '#BD561D';
+    ltDesc.textContent = `${curLt}% probability next hour. Alert supervisors.`;
+  } else if (curLt >= 30) {
+    ltLevel.textContent = '⚡ WATCH — Monitor Closely';
+    ltLevel.style.color = '#D29922';
+    ltDesc.textContent = `${curLt}% probability next hour. Conditions developing.`;
+  } else {
+    ltLevel.textContent = `⚡ Clear — ${curLt}% potential`;
+    ltLevel.style.color = '#2EA043';
+    ltDesc.textContent = 'No significant lightning threat in the next 12 hours.';
+  }
+}
+
+// ══ FORECAST ════════════════════════════════════════════════
+function renderForecast() {
+  if (!wxOpenMeteo) return;
+  const now = new Date();
+  const h = wxOpenMeteo.hourly;
+  const WX_ICONS = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌧',55:'🌧',
+    61:'🌦',63:'🌧',65:'🌧',71:'🌨',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',95:'⛈',96:'⛈',99:'⛈'};
+  let html = '';
+  let count = 0;
+  for (let i = 0; i < h.time.length && count < 24; i++) {
+    const t = new Date(h.time[i]);
+    if (t < new Date(now - 1800000)) continue;
+    const isNow = count === 0;
+    const label = isNow ? 'Now' : String(t.getHours()).padStart(2,'0')+':00';
+    const lt = Math.round(h.lightning_potential?.[i] || 0);
+    const icon = WX_ICONS[h.weather_code[i]] || '🌡';
+    const gust = h.wind_gusts_10m?.[i] ? `G${Math.round(h.wind_gusts_10m[i])}` : '';
+    html += `<div class="fc-slot${isNow?' now':''}">
+      <div class="fc-time">${label}</div>
+      <div class="fc-icon">${icon}</div>
+      <div class="fc-temp">${Math.round(h.temperature_2m[i])}°</div>
+      <div class="fc-wind">${Math.round(h.wind_speed_10m[i])}${gust}kt</div>
+      ${lt >= 20 ? `<div class="fc-lt">⚡${lt}%</div>` : ''}
+    </div>`;
+    count++;
+  }
+  document.getElementById('lt_forecast').innerHTML = html || '<div class="no-reports">No forecast data</div>';
+}
+
+// ══ WORKER SAFETY ═══════════════════════════════════════════
+function renderSafety() {
+  const m = wxMetar;
+  const temp = m ? (m.temp||0) : (wxOpenMeteo?.current?.temperature_2m||0);
+  const wspd = m ? (m.wspd||0) : (wxOpenMeteo?.current?.wind_speed_10m||0);
+  const dewp = m ? (m.dewp||null) : null;
+  const wx   = (m?.wxString || '').toUpperCase();
+  const items = [];
+
+  // Wind chill
+  if (temp <= 10 && wspd >= 10) {
+    const wc = Math.round(13.12 + 0.6215*temp - 11.37*Math.pow(wspd,0.16) + 0.3965*temp*Math.pow(wspd,0.16));
+    let badge, badge_cls, desc;
+    if (wc <= -35) { badge='EXTREME DANGER'; badge_cls='cf-red'; desc='Exposed flesh freezes in minutes. Emergency response plan required.'; }
+    else if (wc <= -25) { badge='HIGH RISK'; badge_cls='cf-orange'; desc='Limit continuous outdoor exposure to 20 minutes. Rotate staff indoors.'; }
+    else if (wc <= -15) { badge='MODERATE RISK'; badge_cls='cf-amber'; desc='Cold weather PPE required. Monitor for signs of cold stress.'; }
+    else { badge='LOW RISK'; badge_cls='cf-green'; desc='Cold weather PPE recommended. Monitor conditions.'; }
+    items.push({ icon:'🥶', title:`Wind Chill ${wc}°C`, desc, badge, badge_cls });
+  }
+
+  // Heat index
+  if (temp >= 25 && dewp !== null) {
+    const hi = Math.round(-8.78 + 1.611*temp + 2.339*dewp - 0.146*temp*dewp - 0.0123*temp*temp - 0.0164*dewp*dewp);
+    let badge, badge_cls, desc;
+    if (hi >= 40) { badge='EXTREME'; badge_cls='cf-red'; desc='Extreme heat danger. Limit outdoor work, mandatory hydration protocol.'; }
+    else if (hi >= 33) { badge='HIGH RISK'; badge_cls='cf-orange'; desc='Heat exhaustion risk. Rest periods mandatory. Monitor staff closely.'; }
+    else if (hi >= 27) { badge='MODERATE'; badge_cls='cf-amber'; desc='Heat stress possible. Increase hydration. Use shaded areas.'; }
+    else { badge='LOW RISK'; badge_cls='cf-green'; desc='Normal precautions apply.'; }
+    items.push({ icon:'🌡', title:`Heat Index ${hi}°C`, desc, badge, badge_cls });
+  }
+
+  // Precipitation / traction
+  if (wx.includes('FZRA') || wx.includes('FZDZ')) {
+    items.push({ icon:'🧊', title:'Freezing Precipitation', desc:'Ramp surfaces icy. Reduce speeds. Anti-slip footwear mandatory. Extra caution near aircraft.', badge:'TRACTION HAZARD', badge_cls:'cf-red' });
+  } else if (wx.includes('SN') || wx.includes('IC')) {
+    items.push({ icon:'❄️', title:'Snow / Ice', desc:'Snow accumulation on ramp surfaces. Footwear check. Caution with stairs and elevated positions.', badge:'SLIPPERY SURFACES', badge_cls:'cf-orange' });
+  } else if (wx.includes('RA') || wx.includes('DZ') || wx.includes('SH')) {
+    items.push({ icon:'🌧', title:'Wet Surfaces', desc:'Rain on ramp. Slippery when wet. Use caution near aircraft skin panels and stairs.', badge:'WET SURFACES', badge_cls:'cf-amber' });
+  }
+
+  // FOD
+  if ((m?.wspd||0) > 20) {
+    items.push({ icon:'💨', title:'FOD Risk Elevated', desc:`Wind ${Math.round(m?.wspd||0)}kt. Secure all loose items before ramp operations. Conduct FOD walk if required.`, badge:(m?.wspd||0)>30?'HIGH':'MODERATE', badge_cls:(m?.wspd||0)>30?'cf-orange':'cf-amber' });
+  }
+
+  // Normal
+  if (!items.length) {
+    items.push({ icon:'✅', title:'No Significant Weather Hazards', desc:'Current conditions within normal operational parameters. Standard precautions apply.', badge:'NORMAL', badge_cls:'cf-green' });
+  }
+
+  document.getElementById('safety_body').innerHTML = items.map(it => `
+    <div class="safety-row">
+      <div class="sr-icon">${it.icon}</div>
+      <div class="sr-body">
+        <div class="sr-title">${it.title}</div>
+        <div class="sr-desc">${it.desc}</div>
+      </div>
+      <div class="sr-badge ${it.badge_cls}">${it.badge}</div>
+    </div>`).join('');
+}
+
+// ══ METAR RAW ═══════════════════════════════════════════════
+function renderMetarRaw() {
+  const el = document.getElementById('metar_raw');
+  if (!wxMetar?.rawOb) { el.textContent = 'METAR not available'; return; }
+  el.innerHTML = `<span>${wxMetar.rawOb}</span>`;
+}
+
+// ══ SIGMETS ═════════════════════════════════════════════════
+function renderSigmets() {
+  const el = document.getElementById('sigmet_body');
+  const sigs = window._sigmets || [];
+  if (!sigs.length) { el.innerHTML = '<div class="no-reports">✅ No active SIGMETs</div>'; return; }
+  el.innerHTML = sigs.slice(0,10).map(s => {
+    const haz = s.hazard || s.phenomenon || 'SIGMET';
+    const raw = s.rawAirSigmet || s.rawSigmet || '';
+    return `<div class="sigmet-item"><div class="sigmet-hdr">🚨 ${haz} — ${s.icaoId||''}</div><div class="sigmet-text">${raw.slice(0,300)}</div></div>`;
+  }).join('');
+}
+
+// ══ PIREPS ══════════════════════════════════════════════════
+function renderPireps() {
+  const el = document.getElementById('pirep_body');
+  const ps = window._pireps || [];
+  if (!ps.length) { el.innerHTML = '<div class="no-reports">No recent PIREPs within 100nm</div>'; return; }
+  el.innerHTML = ps.slice(0,8).map(p => {
+    const raw = p.rawOb || '';
+    const age = p.obsTime ? formatAge(new Date(p.obsTime+'Z')) : '';
+    return `<div class="pirep-item"><div class="pirep-hdr">✈️ PIREP ${age?'— '+age:''}</div><div class="sigmet-text" style="color:rgba(255,255,255,.6)">${raw.slice(0,250)}</div></div>`;
+  }).join('');
+}
+
+function formatAge(d) {
+  const mins = Math.round((Date.now()-d.getTime())/60000);
+  if (mins < 60) return `${mins}min ago`;
+  return `${Math.round(mins/60)}h ago`;
+}
+
+// ══ TAF ═════════════════════════════════════════════════════
+function renderTaf() {
+  const el = document.getElementById('taf_body');
+  if (!wxTaf) { el.innerHTML = '<div class="no-reports">TAF not available</div>'; return; }
+  if (!wxTaf.fcsts?.length) { el.innerHTML = `<div class="no-reports">${wxTaf.rawTAF||'No TAF data'}</div>`; return; }
+  const WX_ICONS = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',51:'🌦',61:'🌦',63:'🌧',65:'🌧',71:'🌨',73:'❄️',75:'❄️',95:'⛈'};
+  const now = new Date();
+  let html = `<div style="font-family:monospace;font-size:11px;color:var(--mid);padding:8px;background:rgba(0,0,0,.3);border-radius:6px;margin-bottom:10px;word-break:break-all">${wxTaf.rawTAF||''}</div>`;
+  const future = wxTaf.fcsts.filter(f => {
+    const to = f.timeTo ? new Date(f.timeTo+'Z') : null;
+    return !to || to > now;
+  });
+  html += future.map((p,i) => {
+    const from = p.timeFrom ? new Date(p.timeFrom+'Z') : null;
+    const to   = p.timeTo   ? new Date(p.timeTo+'Z')   : null;
+    const fromS = from ? `${String(from.getUTCDate()).padStart(2,'0')}${String(from.getUTCHours()).padStart(2,'0')}00Z` : '';
+    const toS   = to   ? `${String(to.getUTCDate()).padStart(2,'0')}${String(to.getUTCHours()).padStart(2,'0')}00Z`   : '';
+    const change = p.changeIndicator || (i===0?'FROM':'');
+    const wx = p.wxString ? decodeWx(p.wxString) : '';
+    const ceil = getCeiling(p.clouds);
+    const vis = p.visib;
+    const wspd = p.wspd ? `${Math.round(p.wspd)}${p.wgst?'G'+Math.round(p.wgst):''}KT` : '';
+    return `<div style="background:rgba(255,255,255,.04);border-radius:8px;padding:10px;margin-bottom:8px;border-left:3px solid ${change?'var(--amber)':'var(--border)}'}">
+      <div style="font-size:10px;font-weight:700;color:var(--mid);margin-bottom:5px;text-transform:uppercase">${change} ${fromS}${toS?'–'+toS:''}</div>
+      <div style="font-size:13px;color:#fff">${[wx,wspd,vis?'Vis '+vis+'SM':'',ceil?formatCeiling(p.clouds):'CAVOK'].filter(Boolean).join(' · ')||'No significant change'}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = html;
+}
+
+// ══ ALARM ════════════════════════════════════════════════════
+function checkAlarmTrigger(newStatus) {
+  const settings = {
+    enabled:  document.getElementById('alarm_enabled')?.checked,
+    watch:    document.getElementById('alarm_watch')?.checked,
+    warning:  document.getElementById('alarm_warning')?.checked,
+    repeat:   document.getElementById('alarm_repeat')?.checked,
+  };
+  if (!settings.enabled) return;
+  let shouldAlarm = false;
+  if (newStatus === 'red')    shouldAlarm = true;
+  if (newStatus === 'orange' && settings.warning) shouldAlarm = true;
+  if (newStatus === 'amber'  && settings.watch)   shouldAlarm = true;
+  if (shouldAlarm) {
+    playAlarm(newStatus);
+    if (navigator.vibrate) navigator.vibrate(newStatus==='red'?[300,100,300,100,600]:[200,100,200]);
+    showToast(newStatus==='red'?'🚨 GROUND STOP ALERT':newStatus==='orange'?'⚠ WEATHER WARNING':'👁 WEATHER WATCH');
+    if (settings.repeat) {
+      clearInterval(repeatTimer);
+      repeatTimer = setInterval(()=>playAlarm(newStatus), 5*60*1000);
+    }
+  } else {
+    clearInterval(repeatTimer);
+  }
+}
+
+function playAlarm(level) {
+  try {
+    const ctx = new(window.AudioContext||window.webkitAudioContext)();
+    const t = ctx.currentTime;
+    const patterns = {
+      red:    [[880,0,.3],[440,.35,.3],[880,.7,.3],[440,1.05,.3],[1100,1.4,.5]],
+      orange: [[660,0,.25],[880,.3,.25],[660,.6,.25]],
+      amber:  [[440,0,.2],[660,.25,.2]],
+    };
+    const p = patterns[level] || patterns.amber;
+    p.forEach(([freq,start,dur])=>{
+      const osc=ctx.createOscillator(); const gain=ctx.createGain();
+      osc.type='square'; osc.frequency.value=freq;
+      gain.gain.setValueAtTime(0,t+start);
+      gain.gain.linearRampToValueAtTime(.3,t+start+.02);
+      gain.gain.linearRampToValueAtTime(0,t+start+dur);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t+start); osc.stop(t+start+dur+.05);
+    });
+  } catch(e){}
+}
+
+function toggleAlarm(e) {
+  e.stopPropagation();
+  const en = document.getElementById('alarm_enabled');
+  en.checked = !en.checked;
+  const btn = document.getElementById('alarm_toggle_btn');
+  btn.textContent = en.checked ? '🔔' : '🔕';
+  btn.classList.toggle('active', en.checked);
+  saveAlarmSettings();
+  showToast(en.checked ? '🔔 Alarm enabled' : '🔕 Alarm muted');
+}
+
+function saveAlarmSettings() {
+  const s = {
+    enabled: document.getElementById('alarm_enabled')?.checked,
+    watch:   document.getElementById('alarm_watch')?.checked,
+    warning: document.getElementById('alarm_warning')?.checked,
+    repeat:  document.getElementById('alarm_repeat')?.checked,
+  };
+  localStorage.setItem('wxwatch_alarm', JSON.stringify(s));
+  const btn = document.getElementById('alarm_toggle_btn');
+  if (btn) btn.textContent = s.enabled ? '🔔' : '🔕';
+  if (btn) btn.classList.toggle('active', !!s.enabled);
+}
+
+function loadAlarmSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('wxwatch_alarm')||'{}');
+    if (s.enabled !== undefined) document.getElementById('alarm_enabled').checked = s.enabled;
+    if (s.watch   !== undefined) document.getElementById('alarm_watch').checked   = s.watch;
+    if (s.warning !== undefined) document.getElementById('alarm_warning').checked = s.warning;
+    if (s.repeat  !== undefined) document.getElementById('alarm_repeat').checked  = s.repeat;
+    const btn = document.getElementById('alarm_toggle_btn');
+    if (btn) btn.textContent = s.enabled !== false ? '🔔' : '🔕';
+    if (btn) btn.classList.toggle('active', s.enabled !== false);
+  } catch(e){}
+}
+
+// ══ REFRESH ═════════════════════════════════════════════════
+function scheduleRefresh() {
+  clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => {
+    loadAllData();
+    document.getElementById('refresh_status').textContent = `Last refreshed ${new Date().toLocaleTimeString()}`;
+  }, 10 * 60 * 1000);
+}
+
+function toggleAutoRefresh() {
+  if (document.getElementById('auto_refresh').checked) {
+    scheduleRefresh();
+    showToast('Auto-refresh enabled');
+  } else {
+    clearTimeout(refreshTimer);
+    showToast('Auto-refresh disabled');
+  }
+}
+
+// ══ TABS ════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.wx-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.wb-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab_'+tab).classList.add('active');
+  document.getElementById('nav_'+tab).classList.add('active');
+  document.getElementById('wx_scroll').scrollTo(0,0);
+}
+
+// ══ HELPERS ════════════════════════════════════════════════
+function formatCeiling(clouds) {
+  if (!clouds || !clouds.length) return 'Clear';
+  const sig = clouds.find(c=>c.cover==='OVC'||c.cover==='BKN'||c.cover==='VV');
+  if (!sig) {
+    const few = clouds.find(c=>c.cover==='FEW'||c.cover==='SCT');
+    return few ? `${coverLabel(few.cover)} at ${few.base.toLocaleString()} feet` : 'Clear';
+  }
+  return `${coverLabel(sig.cover)} at ${sig.base.toLocaleString()} feet`;
+}
+function coverLabel(c) {
+  return {SKC:'Sky Clear',CLR:'Clear',FEW:'Few clouds',SCT:'Scattered',BKN:'Broken',OVC:'Overcast',VV:'Vertical visibility'}[c] || c;
+}
+function getCeiling(clouds) {
+  if (!clouds || !clouds.length) return null;
+  const sig = clouds.find(c=>c.cover==='OVC'||c.cover==='BKN'||c.cover==='VV');
+  return sig ? sig.base : null;
+}
+const WX_DECODE_MAP = {
+  TSRA:'T-Storm/Rain',FZRA:'Freezing Rain',FZDZ:'Freezing Drizzle',BLSN:'Blowing Snow',
+  RASN:'Rain/Snow',TS:'Thunderstorm',RA:'Rain',SN:'Snow',DZ:'Drizzle',
+  FG:'Fog',BR:'Mist',HZ:'Haze',SH:'Shower',GR:'Hail',PL:'Ice Pellets',
+  IC:'Ice Crystals',FU:'Smoke',SA:'Sand',
+};
+function decodeWx(wx) {
+  if (!wx) return '';
+  let s = wx.replace(/\+/g,'Heavy ').replace(/-/g,'Light ');
+  for (const [code,label] of Object.entries(WX_DECODE_MAP)) s=s.replace(new RegExp(code,'g'),label+' ');
+  return s.trim();
+}
+function getWxIcon(wx, clouds) {
+  const w=(wx||'').toUpperCase();
+  if(w.includes('TS'))return'⛈';if(w.includes('FZRA')||w.includes('FZDZ'))return'🌨';
+  if(w.includes('SN'))return'❄️';if(w.includes('RA')||w.includes('DZ'))return'🌧';
+  if(w.includes('SH'))return'🌦';if(w.includes('FG'))return'🌫';if(w.includes('BR'))return'🌫';
+  if(w.includes('HZ'))return'🌫';
+  if(clouds&&clouds.length){const t=clouds[0];if(t.cover==='OVC'||t.cover==='BKN')return t.base<3000?'☁️':'🌥';if(t.cover==='SCT')return'⛅';if(t.cover==='FEW')return'🌤';}
+  return'☀️';
+}
+
+// ══ TOAST ═══════════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ══ INIT ════════════════════════════════════════════════════
+document.getElementById('airport_input').value = currentIcao;
+loadAlarmSettings();
+startClock();
+loadAllData();
+</script>
+</body>
+</html>

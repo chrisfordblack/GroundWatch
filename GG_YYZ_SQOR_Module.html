@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>SQOR Module · Gate Gourmet YYZ</title>
+<!--
+  GroundWatch Safety Suite — SQOR Module v1.0
+  Global Highloader SQOR — Gate Gourmet YYZ
+  Developed by Chris Black | CF Black Aviation
+  Copyright Chris Black. All rights reserved.
+-->
+<style>
+:root{
+  --gg:#48AF44;--gg-dk:#2E7D32;--navy:#1A3A6B;--dark:#1C2331;
+  --safe:#2EA043;--nr:#D29922;--atrisk:#DA3633;
+  --white:#fff;--lgray:#F4F5F7;--border:#E0E4EA;--mid:#777;--black:#111;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:15px;background:var(--dark)}
+
+/* ── APPBAR ─────────────────────────────────────────── */
+.appbar{background:var(--dark);padding:0 14px;height:52px;display:flex;align-items:center;gap:10px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.1)}
+.appbar-logo{width:34px;height:34px;border-radius:8px;overflow:hidden;flex-shrink:0}
+.appbar-logo img{width:100%;height:100%;object-fit:cover}
+.appbar-title{flex:1}
+.appbar-title .t{font-size:14px;font-weight:700;color:#fff}
+.appbar-title .s{font-size:10px;color:rgba(255,255,255,.4)}
+.approach-toggle{display:flex;gap:4px;background:rgba(255,255,255,.08);border-radius:8px;padding:3px}
+.at-btn{background:transparent;border:none;color:rgba(255,255,255,.5);font-size:11px;font-weight:700;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.at-btn.active{background:var(--gg);color:#fff}
+
+/* ── PROGRESS BAR ───────────────────────────────────── */
+.pbar{height:3px;background:rgba(255,255,255,.08);flex-shrink:0}
+.pbar-fill{height:100%;background:var(--gg);transition:width .3s}
+
+/* ── HEADER FORM ────────────────────────────────────── */
+.hdr-form{background:var(--dark);padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.hdr-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.hf{display:flex;flex-direction:column;gap:3px}
+.hf label{font-size:9px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.05em}
+.hf input,.hf select{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 10px;font-size:13px;font-family:inherit;color:#fff;outline:none;-webkit-appearance:none}
+.hf input:focus,.hf select:focus{border-color:var(--gg)}
+.hf input::placeholder{color:rgba(255,255,255,.2)}
+.hf select option{background:var(--dark)}
+
+/* ── STATS STRIP ────────────────────────────────────── */
+.stats-strip{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.08);padding:8px 14px;display:flex;gap:12px;flex-shrink:0}
+.stat-item{text-align:center;flex:1}
+.stat-val{font-size:20px;font-weight:900;line-height:1}
+.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.stat-safe{color:var(--safe)}
+.stat-nr{color:var(--nr)}
+.stat-ar{color:var(--atrisk)}
+.stat-pct{color:#fff}
+.stat-pct .stat-val{font-size:22px}
+
+/* ── SCROLL ─────────────────────────────────────────── */
+.checklist-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#EAEEF3;padding-bottom:80px}
+
+/* ── CATEGORY HEADER ────────────────────────────────── */
+.cat-hdr{position:sticky;top:0;z-index:10;background:var(--navy);padding:7px 14px;display:flex;align-items:center;justify-content:space-between}
+.cat-hdr .ch-title{font-size:11px;font-weight:900;color:#fff;text-transform:uppercase;letter-spacing:.07em}
+.cat-hdr .ch-prog{font-size:11px;color:rgba(255,255,255,.4)}
+.cat-hdr .ch-prog.done{color:var(--gg)}
+
+/* ── CHECKLIST ITEM ─────────────────────────────────── */
+.ci{background:#fff;border-bottom:1px solid #eee;padding:10px 12px}
+.ci-desc{font-size:13px;font-weight:600;color:var(--black);line-height:1.35;margin-bottom:8px;flex:1}
+.ci-btns{display:flex;gap:6px;margin-bottom:0}
+.ci-btn{flex:1;border:none;border-radius:7px;padding:9px 4px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:all .15s;opacity:.45}
+.ci-btn.selected{opacity:1}
+.ci-btn.btn-safe{background:rgba(46,160,67,.15);color:var(--safe)}
+.ci-btn.btn-safe.selected{background:var(--safe);color:#fff}
+.ci-btn.btn-nr{background:rgba(210,153,34,.15);color:var(--nr)}
+.ci-btn.btn-nr.selected{background:var(--nr);color:#fff}
+.ci-btn.btn-ar{background:rgba(218,54,51,.15);color:var(--atrisk)}
+.ci-btn.btn-ar.selected{background:var(--atrisk);color:#fff}
+.ci-comment{display:none;margin-top:8px}
+.ci-comment textarea{width:100%;background:var(--lgray);border:1.5px solid var(--atrisk);border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit;color:var(--black);outline:none;resize:none;min-height:60px}
+.ci-comment textarea:focus{background:#fff}
+.ci.ar .ci-comment{display:block}
+.ci.safe{background:#FAFFFE}
+.ci.nr{background:#FFFDF0}
+.ci.ar{background:#FFF5F5;border-left:3px solid var(--atrisk)}
+
+/* ── FOOTER FORM ────────────────────────────────────── */
+.footer-form{background:#fff;padding:12px;border-top:1px solid var(--border)}
+.ff-row{display:flex;gap:8px;margin-bottom:8px}
+.ff-row .field{flex:1}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select,.field textarea{background:var(--lgray);border:1.5px solid transparent;border-radius:7px;padding:9px 11px;font-size:13px;font-family:inherit;color:var(--black);outline:none;-webkit-appearance:none}
+.field input:focus,.field select:focus{border-color:var(--gg)}
+.pill-group{display:flex;gap:6px}
+.pill-group input[type=radio]{display:none}
+.pill-group label{flex:1;text-align:center;padding:9px;border-radius:7px;border:1.5px solid #ccc;font-size:13px;font-weight:600;color:var(--mid);cursor:pointer;background:var(--lgray)}
+.pill-group input[type=radio]:checked+label{background:var(--gg);border-color:var(--gg);color:#fff}
+
+/* ── BOTTOM BAR ─────────────────────────────────────── */
+.bottom-bar{flex-shrink:0;background:#fff;border-top:1px solid var(--border);padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:8px}
+.btn-reset{flex:1;background:var(--lgray);color:var(--black);border:1.5px solid #ccc;border-radius:8px;padding:12px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+.btn-archive{flex:2;background:var(--gg);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+.btn-pdf{flex:1.5;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer}
+
+/* ── ARCHIVE MODAL ──────────────────────────────────── */
+#archiveModal{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:700;display:none;align-items:flex-end;backdrop-filter:blur(4px)}
+#archiveModal.show{display:flex}
+.arc-sheet{background:#EAEEF3;border-radius:20px 20px 0 0;width:100%;max-height:80vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.4,0,.2,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.arc-hdr{padding:14px 16px;background:var(--navy);border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:space-between}
+.arc-hdr span{font-size:15px;font-weight:700;color:#fff}
+.arc-close{background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.arc-row{display:flex;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px}
+.arc-row .ar-lbl{font-weight:700;color:var(--navy)}
+.arc-row .ar-val{color:#444}
+.arc-atrisk-list{padding:12px 14px}
+.arc-ar-item{background:#FFEBEE;border-left:3px solid var(--atrisk);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:12px}
+.arc-ar-item .aai-lbl{font-weight:700;color:var(--atrisk);margin-bottom:2px}
+.arc-ar-item .aai-comment{color:#555;font-style:italic}
+.arc-btns{padding:12px 14px 28px;display:flex;gap:8px}
+
+/* toast */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--dark);color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:all .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* VIEW structure */
+#app{display:flex;flex-direction:column;height:100%;overflow:hidden}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- APPBAR -->
+  <div class="appbar">
+    <div class="appbar-logo"><img src="data:image/png;base64,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" alt="GG"></div>
+    <div class="appbar-title">
+      <div class="t">Global Highloader SQOR</div>
+      <div class="s" id="app_sub">Gate Gourmet YYZ · GroundWatch</div>
+    </div>
+    <div class="approach-toggle">
+      <button class="at-btn active" id="btn_one" onclick="setApproach('one')">1 Person</button>
+      <button class="at-btn" id="btn_two" onclick="setApproach('two')">2 Person</button>
+    </div>
+  </div>
+  <div class="pbar"><div class="pbar-fill" id="pbar_fill" style="width:0%"></div></div>
+
+  <!-- HEADER FORM -->
+  <div class="hdr-form">
+    <div class="hdr-grid">
+      <div class="hf"><label>Truck #</label><input id="h_truck" type="text" placeholder="e.g. 78"></div>
+      <div class="hf"><label>Driver Name</label><input id="h_driver" type="text" placeholder="Full name"></div>
+      <div class="hf" id="guide_row"><label>Guide Name</label><input id="h_guide" type="text" placeholder="Full name"></div>
+      <div class="hf"><label>Airline</label>
+        <select id="h_airline">
+          <option value="">-- Select --</option>
+          <option>Air Canada</option><option>WestJet</option><option>Porter Airlines</option>
+          <option>Air Transat</option><option>Sunwing</option><option>Flair Airlines</option>
+          <option>Swoop</option><option>United Airlines</option><option>American Airlines</option>
+          <option>Delta Air Lines</option><option>Other</option>
+        </select>
+      </div>
+      <div class="hf"><label>Aircraft #</label><input id="h_aircraft_num" type="text" placeholder="e.g. 263"></div>
+      <div class="hf"><label>Aircraft Type</label>
+        <select id="h_aircraft_type">
+          <option value="">-- Select --</option>
+          <option>A319</option><option>A320</option><option>A321</option><option>A220</option>
+          <option>B737-600</option><option>B737-700</option><option>B737-800</option><option>B737-900</option>
+          <option>B737 MAX 8</option><option>E175</option><option>E190</option><option>DH8</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip">
+    <div class="stat-item stat-safe"><div class="stat-val" id="stat_safe">0</div><div class="stat-lbl">Safe</div></div>
+    <div class="stat-item stat-nr"><div class="stat-val" id="stat_nr">0</div><div class="stat-lbl">Not Obs.</div></div>
+    <div class="stat-item stat-ar"><div class="stat-val" id="stat_ar">0</div><div class="stat-lbl">At Risk</div></div>
+    <div class="stat-item stat-pct"><div class="stat-val" id="stat_pct">—</div><div class="stat-lbl">Compliance</div></div>
+    <div class="stat-item" style="color:var(--mid)"><div class="stat-val" id="stat_rem" style="font-size:18px">0</div><div class="stat-lbl">Remaining</div></div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="checklist-scroll" id="checklist_scroll"></div>
+
+  <!-- FOOTER FORM -->
+  <div class="footer-form" style="display:none" id="footer_form">
+    <div class="ff-row">
+      <div class="field"><label>Observer Name</label><input id="f_observer" type="text" placeholder="Your full name" value="Chris Black"></div>
+      <div class="field"><label>Observer Title</label><input id="f_title" type="text" placeholder="Title" value="Ramp Safety Specialist"></div>
+    </div>
+    <div class="ff-row">
+      <div class="field"><label>SQOR Observed?</label>
+        <div class="pill-group">
+          <input type="radio" name="sqor_obs" id="obs_yes" value="yes"><label for="obs_yes">Yes</label>
+          <input type="radio" name="sqor_obs" id="obs_no" value="no"><label for="obs_no">No</label>
+        </div>
+      </div>
+      <div class="field"><label>Immediate Feedback</label>
+        <select id="f_feedback">
+          <option value="no_interaction">No interaction</option>
+          <option value="verbal_coaching">Verbal coaching given</option>
+          <option value="safety_stop">Safety stop issued</option>
+          <option value="removed_from_service">Removed from service</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-top:4px"><label>Comments</label>
+      <textarea id="f_comments" style="min-height:50px" placeholder="Additional observations..."></textarea>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <button class="btn-reset" onclick="resetForm()">↺ Reset</button>
+    <button class="btn-pdf" onclick="exportPDF()">📄 PDF</button>
+    <button class="btn-archive" onclick="openArchiveModal()">📦 Archive SQOR</button>
+  </div>
+</div>
+
+<!-- ARCHIVE MODAL -->
+<div id="archiveModal" onclick="closeModal(event)">
+  <div class="arc-sheet">
+    <div class="arc-hdr">
+      <span>📦 Archive This SQOR</span>
+      <button class="arc-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="arc_preview"></div>
+    <div class="arc-btns">
+      <button onclick="closeModal()" style="flex:1;background:var(--lgray);color:var(--black);border:1.5px solid var(--border);border-radius:8px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+      <button onclick="confirmArchive()" style="flex:2;background:var(--gg);color:#fff;border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">✓ Confirm Archive</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ DATA ═════════════════════════════════════════════
+const ONE_ITEMS = [{"id": "defensive_driving", "label": "Defensive Driving & Seatbelt", "desc": "Observed defensive driving rules and traffic controls enroute to and inside Circle of Safety. Seatbelt worn at all times when vehicle is in motion.", "cat": "pre_approach", "reda1": "Individual Factors", "reda2": "Skills & Knowledge"}, {"id": "nothing_on_platform", "label": "Nothing on Truck Platform", "desc": "Nothing transported on truck platform \u2014 equipment, trash, bridging ramp.", "cat": "pre_approach", "reda1": "Job/Tasks", "reda2": ""}, {"id": "waiting_position", "label": "Waiting Position", "desc": "Met flight on arrival at gate. Proper waiting position outside of envelope with view of approaching aircraft.", "cat": "pre_approach", "reda1": "Job/Tasks", "reda2": "Information"}, {"id": "cos_stop", "label": "Circle of Safety Stop", "desc": "Driver stops at Circle of Safety, turns truck off, chocks truck, places stationary guide on hinge side of door.", "cat": "circle_of_safety", "reda1": "Skills & Knowledge", "reda2": "Job/Tasks"}, {"id": "foa_before_approach", "label": "FOA Inspection Before Approach", "desc": "Driver inspects aircraft for Found on Arrival damage before approaching.", "cat": "circle_of_safety", "reda1": "Information", "reda2": "Job/Tasks"}, {"id": "five_stops", "label": "5 Safety Stops on Approach", "desc": "All 5 safety stops made on approach. Additional stop(s) made prior to guiding between wingtips.", "cat": "circle_of_safety", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "two_meter_stop", "label": "2-Metre Stop \u2014 Idle Speed Approach", "desc": "Driver advances from 2m/6ft stop at idle until truck contacts Stationary Guide. Truck properly positioned \u2014 platform bumper parallel to fuselage.", "cat": "circle_of_safety", "reda1": "Technical Knowledge", "reda2": "Equipment/Tools"}, {"id": "chock_placement", "label": "Chock Placement", "desc": "Driver places chocks front and rear of one front tire, firm against and parallel to surface of tire.", "cat": "chocking", "reda1": "Skills & Knowledge", "reda2": ""}, {"id": "brake_transmission", "label": "Brake Set / Transmission Neutral or Park", "desc": "Driver sets brake, places transmission in Neutral or Park before exiting cab.", "cat": "chocking", "reda1": "Technical Knowledge", "reda2": ""}, {"id": "post_position_check", "label": "Post-Position Walk-Around", "desc": "Driver walks around front of truck, checks platform clearance, checks for FOA damage, verifies chock placement.", "cat": "chocking", "reda1": "Job/Tasks", "reda2": "Information"}, {"id": "garbage_procedures", "label": "International/Regulated Garbage Procedures", "desc": "International/Regulated Garbage Procedures followed (for international turn flights or terminators).", "cat": "platform_ops", "reda1": "Information", "reda2": "Organizational"}, {"id": "front_door_open", "label": "Front Door Open / Rear Door Closed", "desc": "Front door open and rear door closed and latched before raising truck.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "lift_test", "label": "Lift Test (1/2 Stop Check)", "desc": "Driver tests lift button while raising truck.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "ignition_off", "label": "Ignition Off After Elevation", "desc": "Ignition turned off after elevation to catering level, before opening aircraft door.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Individual Factors"}, {"id": "safety_harness", "label": "Safety Harness", "desc": "Driver wears safety harness fitted correctly and secured to the high-loader truck.", "cat": "platform_ops", "reda1": "Individual Factors", "reda2": "Organizational"}, {"id": "door_opening", "label": "Door Opening Procedure", "desc": "Driver follows proper door opening procedure: 3 knocks, checks through portal window, pauses 10 sec., visually checks girt bar (Boeing). Customer specific procedures followed.", "cat": "platform_ops", "reda1": "Skills & Knowledge", "reda2": "Technical Knowledge"}, {"id": "guard_rails", "label": "Guard Rails Extended", "desc": "Both guard rails properly extended, retaining cables/chain intact. Not in contact and no closer than 7.8cm/3\" to aircraft.", "cat": "platform_ops", "reda1": "Equipment/Tools", "reda2": "Job/Tasks"}, {"id": "platform_no_adjust", "label": "Platform Not Adjusted Under Open Door", "desc": "Truck platform not adjusted under open aircraft door. No movement up, left or right.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "platform_extension", "label": "Platform Extension", "desc": "Platform properly extended to within 6\"/20cm of fuselage. Bridging ramp positioned correctly.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Equipment/Tools"}, {"id": "trash_relined", "label": "Trash Containers Relined", "desc": "Trash containers relined in truck. Nothing stored on platform.", "cat": "catering", "reda1": "Job/Tasks", "reda2": ""}, {"id": "single_cart", "label": "Single-Cart Movement", "desc": "Single-cart movement \u2014 no push-pull. Carrier/oven racks moved by two people.", "cat": "catering", "reda1": "Job/Tasks", "reda2": "Skills & Knowledge"}, {"id": "customer_compliance", "label": "Customer Requirements", "desc": "Compliance with customer requirements (no transport on top of carts, etc.).", "cat": "catering", "reda1": "Information", "reda2": "Organizational"}, {"id": "door_closing", "label": "Door Closing Procedure", "desc": "Driver checks/clears door sill, checks area for damage, follows proper door closing procedure. Tactile check of handle, visual scan to verify door properly closed and no FOA damage.", "cat": "departure", "reda1": "Skills & Knowledge", "reda2": "Job/Tasks"}, {"id": "guard_rails_retract", "label": "Guard Rails Retracted", "desc": "Driver retracts guard rails, checks over both sides, clears area below before lowering truck.", "cat": "departure", "reda1": "Equipment/Tools", "reda2": "Job/Tasks"}, {"id": "door_closed_before_lower", "label": "Aircraft Door Closed Before Lowering", "desc": "Aircraft door is closed before truck is lowered. Truck is not lowered under an open aircraft door.", "cat": "departure", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "three_point", "label": "Three-Point Entry/Exit", "desc": "Driver uses three-point method when entering and exiting truck.", "cat": "departure", "reda1": "Skills & Knowledge", "reda2": "Individual Factors"}, {"id": "departure_path", "label": "Departure Path Review", "desc": "Driver reviews departure path to identify potential obstacles. Follows Block-In Procedure if necessary.", "cat": "departure", "reda1": "Job/Tasks", "reda2": "Technical Knowledge"}, {"id": "guide_cone", "label": "Stationary Guide Cone Placement", "desc": "Driver places stationary guide cone. Forward galley: 60cm/2ft from nearest obstruction. Aft galley: in line with and 2m/6ft from wingtip.", "cat": "departure", "reda1": "Skills & Knowledge", "reda2": "Job/Tasks"}, {"id": "chock_removal", "label": "Chock Removal Procedure", "desc": "Driver removes rear chock and either places in front of front chock or stows to drag forward chock.", "cat": "departure", "reda1": "Skills & Knowledge", "reda2": ""}, {"id": "backing_away", "label": "Backing Away from Aircraft", "desc": "Driver backs vehicle away at walking speed and turns vehicle so it does not face the aircraft.", "cat": "departure", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "vehicle_secured", "label": "Vehicle Secured", "desc": "Driver secures vehicle \u2014 sets brake, places in neutral or park, turns engine off.", "cat": "departure", "reda1": "Technical Knowledge", "reda2": "Individual Factors"}, {"id": "chocks_stowed", "label": "Chocks & Guide Stowed", "desc": "Driver retrieves and stows chocks and stationary guide.", "cat": "departure", "reda1": "Job/Tasks", "reda2": ""}, {"id": "bed_doors", "label": "Truck Bed Doors Closed", "desc": "Both rear and front truck bed doors closed when truck is being driven.", "cat": "departure", "reda1": "Job/Tasks", "reda2": ""}, {"id": "ppe", "label": "Protective Equipment", "desc": "PPE worn: hearing protection, reflective clothing (vest/t-shirt/jacket), proper shoes. Fall protection harness correctly used as required.", "cat": "ppe", "reda1": "Individual Factors", "reda2": "Organizational"}, {"id": "no_phone", "label": "No Phone/Radio While Moving", "desc": "Company-issued radios/cell phones not used when vehicle is in motion.", "cat": "ppe", "reda1": "Individual Factors", "reda2": ""}];
+const TWO_ITEMS = [{"id": "defensive_driving", "label": "Defensive Driving & Seatbelt", "desc": "Observed defensive driving rules and traffic controls enroute to and inside Circle of Safety. Seatbelt worn at all times when vehicle is in motion.", "cat": "pre_approach", "reda1": "Individual Factors", "reda2": "Skills & Knowledge"}, {"id": "waiting_position", "label": "Waiting Position", "desc": "Met flight on arrival at gate. Proper waiting position outside of envelope with view of approaching aircraft.", "cat": "pre_approach", "reda1": "Job/Tasks", "reda2": "Information"}, {"id": "marshal_signals", "label": "Marshal Signals Followed", "desc": "Driver follows Marshal's signals. No movement without Marshal facing truck and signaling. No rolling stops.", "cat": "marshal_approach", "reda1": "Skills & Knowledge", "reda2": "Communication"}, {"id": "marshal_position", "label": "Marshal Starting Position", "desc": "Marshal takes a proper position to begin guiding truck to aircraft.", "cat": "marshal_approach", "reda1": "Job/Tasks", "reda2": ""}, {"id": "marshal_no_backwards", "label": "Marshal Not Walking Backwards", "desc": "Marshal does NOT walk backwards except during turns (approach or departure).", "cat": "marshal_approach", "reda1": "Job/Tasks", "reda2": "Skills & Knowledge"}, {"id": "five_stops_two", "label": "5 Safety Stops on Approach", "desc": "All 5 safety stops made on approach. Additional stop(s) made prior to guiding between wingtips.", "cat": "marshal_approach", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "marshal_hand_signals", "label": "Marshal Hand Signals", "desc": "Marshal uses proper hand signals: arms at or above shoulder-height, full arm motion, palms open.", "cat": "marshal_approach", "reda1": "Skills & Knowledge", "reda2": "Communication"}, {"id": "marshal_foa_position", "label": "Marshal FOA & Final Position", "desc": "Marshal inspects aircraft for FOA damage on approach. Guide does not allow truck bumper closer than 60cm/2ft to body. Marshals from beside truck, NOT in front.", "cat": "marshal_approach", "reda1": "Information", "reda2": "Job/Tasks"}, {"id": "two_meter_stop_two", "label": "2-Metre Stop \u2014 Idle Speed Approach", "desc": "Driver advances from 2m/6ft stop at idle until truck contacts Stationary Guide. Properly positioned.", "cat": "marshal_approach", "reda1": "Technical Knowledge", "reda2": "Equipment/Tools"}, {"id": "marshal_chocking", "label": "Marshal Chocking Procedure", "desc": "Marshal properly chocks truck (front and back of wheel) and signals driver that chocks are in.", "cat": "chocking", "reda1": "Skills & Knowledge", "reda2": "Communication"}, {"id": "brake_chock_signal", "label": "Brake Set \u2014 Wait for Chock Signal", "desc": "Driver sets brake, transmission Neutral/Park, waits for Marshal's chock signal before exiting cab.", "cat": "chocking", "reda1": "Technical Knowledge", "reda2": "Communication"}, {"id": "stabilizers", "label": "Stabilizers Lowered/Raised", "desc": "Stabilizers observed as lowered/raised as required.", "cat": "chocking", "reda1": "Technical Knowledge", "reda2": "Equipment/Tools"}, {"id": "post_position_check_two", "label": "Post-Position Walk-Around", "desc": "Driver walks around front of truck, checks platform clearance, FOA damage, verifies chock placement.", "cat": "chocking", "reda1": "Job/Tasks", "reda2": "Information"}, {"id": "garbage_procedures_two", "label": "International/Regulated Garbage Procedures", "desc": "International/Regulated Garbage Procedures followed for international turn flights or terminators.", "cat": "platform_ops", "reda1": "Information", "reda2": "Organizational"}, {"id": "front_door_open_two", "label": "Front Door Open / Rear Door Closed", "desc": "Front door open and rear door closed and latched before raising truck.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "lift_test_two", "label": "Lift Test (1/2 Stop Check)", "desc": "Driver tests lift button while raising truck.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "ignition_off_two", "label": "Ignition Off After Elevation", "desc": "Ignition turned off after elevation to catering level, before opening aircraft door.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Individual Factors"}, {"id": "safety_harness_two", "label": "Safety Harness", "desc": "Driver wears safety harness fitted correctly and secured to the high-loader truck.", "cat": "platform_ops", "reda1": "Individual Factors", "reda2": "Organizational"}, {"id": "door_opening_two", "label": "Door Opening Procedure", "desc": "3 knocks, portal window check, 10 sec pause, girt bar check. Customer specific procedures followed.", "cat": "platform_ops", "reda1": "Skills & Knowledge", "reda2": "Technical Knowledge"}, {"id": "guard_rails_two", "label": "Guard Rails Extended", "desc": "Both guard rails properly extended. Not in contact and no closer than 7.8cm/3\" to aircraft.", "cat": "platform_ops", "reda1": "Equipment/Tools", "reda2": "Job/Tasks"}, {"id": "platform_no_adjust_two", "label": "Platform Not Adjusted Under Open Door", "desc": "Truck platform not adjusted under open aircraft door. No movement up, left or right.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "platform_extension_two", "label": "Platform Extension", "desc": "Platform extended to within 6\"/20cm of fuselage. Bridging ramp positioned correctly.", "cat": "platform_ops", "reda1": "Technical Knowledge", "reda2": "Equipment/Tools"}, {"id": "trash_relined_two", "label": "Trash Containers Relined", "desc": "Trash containers relined. Nothing stored on platform.", "cat": "catering", "reda1": "Job/Tasks", "reda2": ""}, {"id": "single_cart_two", "label": "Single-Cart Movement", "desc": "Single-cart movement. Carrier/oven racks moved by two people.", "cat": "catering", "reda1": "Job/Tasks", "reda2": "Skills & Knowledge"}, {"id": "customer_compliance_two", "label": "Customer Requirements", "desc": "Compliance with customer requirements.", "cat": "catering", "reda1": "Information", "reda2": "Organizational"}, {"id": "door_closing_two", "label": "Door Closing Procedure", "desc": "Door sill cleared, proper door closing procedure. Tactile check, visual scan.", "cat": "departure", "reda1": "Skills & Knowledge", "reda2": "Job/Tasks"}, {"id": "guard_rails_retract_two", "label": "Guard Rails Retracted", "desc": "Guard rails retracted, both sides checked, area below cleared before lowering.", "cat": "departure", "reda1": "Equipment/Tools", "reda2": "Job/Tasks"}, {"id": "door_closed_before_lower_two", "label": "Aircraft Door Closed Before Lowering", "desc": "Aircraft door closed before truck lowered.", "cat": "departure", "reda1": "Technical Knowledge", "reda2": "Job/Tasks"}, {"id": "three_point_two", "label": "Three-Point Entry/Exit", "desc": "Driver AND Marshal use three-point method entering and exiting truck.", "cat": "departure", "reda1": "Skills & Knowledge", "reda2": "Individual Factors"}, {"id": "departure_fod", "label": "Departure FOD Walk", "desc": "Marshal walks driver's side, driver walks passenger side. Inspect area for obstacles and FOD prior to departure.", "cat": "departure", "reda1": "Job/Tasks", "reda2": "Information"}, {"id": "front_chock_timing", "label": "Front Chock \u2014 6-Foot Rule", "desc": "Marshal does not remove front chock until truck backed 6 feet/1.8m. Signals stop at 2m/6ft from aircraft.", "cat": "departure", "reda1": "Skills & Knowledge", "reda2": "Communication"}, {"id": "marshal_rear_position", "label": "Marshal Rear Departure Position", "desc": "Marshal takes proper position at rear to guide truck off aircraft (10-15 feet behind, wing side, clear view).", "cat": "departure", "reda1": "Job/Tasks", "reda2": "Skills & Knowledge"}, {"id": "chocks_stowed_two", "label": "Chocks Picked Up and Stowed", "desc": "Chocks picked up and properly stowed.", "cat": "departure", "reda1": "Job/Tasks", "reda2": ""}, {"id": "marshal_visible", "label": "Marshal Visible Throughout", "desc": "Marshal visible to driver at all times while guiding. Guides driver fully out of Circle of Safety.", "cat": "departure", "reda1": "Communication", "reda2": "Job/Tasks"}, {"id": "bed_doors_two", "label": "Truck Bed Doors Closed", "desc": "Both rear and front truck bed doors closed when truck is being driven.", "cat": "departure", "reda1": "Job/Tasks", "reda2": ""}, {"id": "ppe_two", "label": "Protective Equipment", "desc": "PPE worn: hearing protection, reflective clothing, proper shoes. Fall protection harness correctly used.", "cat": "ppe", "reda1": "Individual Factors", "reda2": "Organizational"}, {"id": "no_phone_two", "label": "No Phone/Radio While Moving", "desc": "Company-issued radios/cell phones not used when vehicle is in motion.", "cat": "ppe", "reda1": "Individual Factors", "reda2": ""}];
+const CAT_LABELS = {
+  pre_approach:     ['🚗','Pre-Approach'],
+  circle_of_safety: ['⭕','Circle of Safety'],
+  marshal_approach: ['🤝','Marshal Approach'],
+  chocking:         ['🔒','Chocking & Positioning'],
+  platform_ops:     ['✈️','Platform Operations'],
+  catering:         ['🛒','Catering Procedures'],
+  departure:        ['🚀','Closure & Departure'],
+  ppe:              ['🦺','PPE & Communications'],
+};
+
+let currentApproach = 'one';
+let results = {}; // item_id → {result:'safe'|'nr'|'ar', comment:''}
+let pendingRecord = null;
+
+// ══ APPROACH ══════════════════════════════════════════
+function setApproach(type) {
+  currentApproach = type;
+  results = {};
+  document.getElementById('btn_one').classList.toggle('active', type==='one');
+  document.getElementById('btn_two').classList.toggle('active', type==='two');
+  document.getElementById('guide_row').style.display = type==='two' ? '' : 'none';
+  renderChecklist();
+  updateStats();
+}
+
+// ══ RENDER CHECKLIST ══════════════════════════════════
+function renderChecklist() {
+  const items = currentApproach === 'one' ? ONE_ITEMS : TWO_ITEMS;
+  const scroll = document.getElementById('checklist_scroll');
+  
+  // Group by category
+  const grouped = {};
+  items.forEach(it => {
+    if (!grouped[it.cat]) grouped[it.cat] = [];
+    grouped[it.cat].push(it);
+  });
+
+  let html = '';
+  Object.entries(grouped).forEach(([cat, catItems]) => {
+    const [icon, label] = CAT_LABELS[cat] || ['•', cat];
+    html += `<div class="cat-hdr" id="cath_${cat}">
+      <div class="ch-title">${icon} ${label}</div>
+      <div class="ch-prog" id="catp_${cat}">0/${catItems.length}</div>
+    </div>`;
+    catItems.forEach(it => {
+      const r = results[it.id];
+      const cls = r ? r.result : '';
+      html += `<div class="ci ${cls}" id="ci_${it.id}">
+        <div class="ci-desc">${it.label}</div>
+        <div class="ci-btns">
+          <button class="ci-btn btn-safe ${r?.result==='safe'?'selected':''}" onclick="setResult('${it.id}','safe')">✓ Safe</button>
+          <button class="ci-btn btn-nr ${r?.result==='nr'?'selected':''}" onclick="setResult('${it.id}','nr')">— N/O</button>
+          <button class="ci-btn btn-ar ${r?.result==='ar'?'selected':''}" onclick="setResult('${it.id}','ar')">⚠ At Risk</button>
+        </div>
+        <div class="ci-comment" id="cmt_${it.id}">
+          <textarea placeholder="Describe the at-risk behavior and immediate action taken..."
+            onchange="setComment('${it.id}',this.value)">${r?.comment||''}</textarea>
+        </div>
+      </div>`;
+    });
+  });
+  scroll.innerHTML = html;
+  updateCatProgress();
+  
+  // Show footer form
+  document.getElementById('footer_form').style.display = 'block';
+}
+
+function setResult(id, result) {
+  results[id] = {result, comment: results[id]?.comment || ''};
+  const ci = document.getElementById('ci_'+id);
+  if (ci) {
+    ci.className = 'ci ' + result;
+    ci.querySelectorAll('.ci-btn').forEach(b => b.classList.remove('selected'));
+    ci.querySelector('.btn-'+result)?.classList.add('selected');
+  }
+  updateStats();
+  updateCatProgress();
+}
+
+function setComment(id, val) {
+  if (results[id]) results[id].comment = val;
+}
+
+// ══ STATS ═════════════════════════════════════════════
+function updateStats() {
+  const items = currentApproach === 'one' ? ONE_ITEMS : TWO_ITEMS;
+  let safe=0, nr=0, ar=0, rem=0;
+  items.forEach(it => {
+    const r = results[it.id];
+    if (!r) rem++;
+    else if (r.result==='safe') safe++;
+    else if (r.result==='nr') nr++;
+    else if (r.result==='ar') ar++;
+  });
+  document.getElementById('stat_safe').textContent = safe;
+  document.getElementById('stat_nr').textContent   = nr;
+  document.getElementById('stat_ar').textContent   = ar;
+  document.getElementById('stat_rem').textContent  = rem;
+  const scored = safe + nr + ar;
+  const total  = items.length;
+  const compRate = scored > 0 ? Math.round(safe / scored * 100) : null;
+  document.getElementById('stat_pct').textContent = compRate !== null ? compRate+'%' : '—';
+  document.getElementById('pbar_fill').style.width = Math.round(scored/total*100)+'%';
+}
+
+function updateCatProgress() {
+  const items = currentApproach === 'one' ? ONE_ITEMS : TWO_ITEMS;
+  const catMap = {};
+  items.forEach(it => {
+    if (!catMap[it.cat]) catMap[it.cat] = {total:0,scored:0};
+    catMap[it.cat].total++;
+    if (results[it.id]) catMap[it.cat].scored++;
+  });
+  Object.entries(catMap).forEach(([cat,{total,scored}]) => {
+    const el = document.getElementById('catp_'+cat);
+    if (el) {
+      el.textContent = `${scored}/${total}`;
+      el.className = 'ch-prog' + (scored===total?' done':'');
+    }
+  });
+}
+
+// ══ ARCHIVE MODAL ══════════════════════════════════════
+function openArchiveModal() {
+  const g = id => (document.getElementById(id)?.value||'').trim();
+  const items = currentApproach === 'one' ? ONE_ITEMS : TWO_ITEMS;
+  let safe=0,nr=0,ar=0;
+  const atRiskItems = [];
+  items.forEach(it => {
+    const r = results[it.id];
+    if (!r) return;
+    if (r.result==='safe') safe++;
+    else if (r.result==='nr') nr++;
+    else if (r.result==='ar') { ar++; atRiskItems.push({...it, comment:r.comment}); }
+  });
+  const scored = safe+nr+ar;
+  const compliance = scored > 0 ? Math.round(safe/scored*100) : 0;
+  
+  const now = new Date();
+  pendingRecord = {
+    id: Date.now()+'_'+Math.random().toString(36).slice(2,5),
+    type: 'sqor',
+    device_id: getDeviceId(),
+    archived_at: now.toISOString(),
+    app_version: '1.0',
+    date: now.toISOString().slice(0,10),
+    time: String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'),
+    unit: '1401 GG Toronto',
+    truck_num: g('h_truck'),
+    driver_name: g('h_driver'),
+    guide_name: g('h_guide'),
+    airline: g('h_airline'),
+    aircraft_num: g('h_aircraft_num'),
+    aircraft_type: g('h_aircraft_type'),
+    approach_type: currentApproach,
+    observer_name: g('f_observer'),
+    observer_title: g('f_title'),
+    sqor_observed: document.querySelector('input[name="sqor_obs"]:checked')?.value || '',
+    immediate_feedback: g('f_feedback'),
+    comments: g('f_comments'),
+    safe_count: safe,
+    not_observed_count: nr,
+    at_risk_count: ar,
+    scored_count: scored,
+    total_items: items.length,
+    compliance_rate: compliance,
+    items: items.map(it => {
+      const r = results[it.id] || {result:'',comment:''};
+      return {
+        item_id: it.id, label: it.label, category: it.cat,
+        result: r.result, comment: r.comment,
+        reda_primary: it.reda1, reda_secondary: it.reda2
+      };
+    }),
+    at_risk_items: atRiskItems.map(it => ({
+      item_id: it.id, label: it.label, category: it.cat,
+      comment: it.comment, reda_primary: it.reda1, reda_secondary: it.reda2
+    })),
+  };
+
+  // Build preview
+  const rows = [
+    ['Date / Time', pendingRecord.date + ' ' + pendingRecord.time],
+    ['Truck #', pendingRecord.truck_num || '—'],
+    ['Driver', pendingRecord.driver_name || '—'],
+    ['Airline', pendingRecord.airline || '—'],
+    ['Aircraft', pendingRecord.aircraft_num + ' (' + pendingRecord.aircraft_type + ')'],
+    ['Approach', currentApproach === 'one' ? 'One Person' : 'Two Person'],
+    ['Safe', safe + ' items'],
+    ['Not Observed', nr + ' items'],
+    ['At Risk', ar + ' items'],
+    ['Compliance Rate', compliance + '%'],
+    ['Observer', pendingRecord.observer_name],
+  ];
+
+  let html = rows.map(([l,v]) => `<div class="arc-row"><span class="ar-lbl">${l}</span><span class="ar-val">${v}</span></div>`).join('');
+  
+  if (atRiskItems.length) {
+    html += `<div class="arc-atrisk-list"><div style="font-size:11px;font-weight:700;color:var(--atrisk);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">⚠ At-Risk Behaviors</div>`;
+    html += atRiskItems.map(it => `<div class="arc-ar-item"><div class="aai-lbl">${it.label}</div><div class="aai-comment">${it.comment || 'No comment recorded'}</div><div style="font-size:10px;color:#888;margin-top:3px">REDA: ${it.reda1}${it.reda2?' · '+it.reda2:''}</div></div>`).join('');
+    html += '</div>';
+  }
+
+  document.getElementById('arc_preview').innerHTML = html;
+  document.getElementById('archiveModal').classList.add('show');
+}
+
+function closeModal(e) {
+  if (!e || e.target===document.getElementById('archiveModal'))
+    document.getElementById('archiveModal').classList.remove('show');
+}
+
+function confirmArchive() {
+  if (!pendingRecord) return;
+  const arr = getSqorArchive();
+  arr.push(pendingRecord);
+  localStorage.setItem('gw_sqor_archive', JSON.stringify(arr));
+  document.getElementById('archiveModal').classList.remove('show');
+  showToast('✅ SQOR archived — ' + arr.length + ' total');
+  pendingRecord = null;
+  updateHomeCount();
+}
+
+function getSqorArchive() {
+  try { return JSON.parse(localStorage.getItem('gw_sqor_archive')||'[]'); } catch(e) { return []; }
+}
+function getDeviceId() {
+  let id = localStorage.getItem('gw_device_id');
+  if (!id) { id='dev_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); localStorage.setItem('gw_device_id',id); }
+  return id;
+}
+function updateHomeCount() {
+  const n = getSqorArchive().length;
+  document.getElementById('app_sub').textContent = `Gate Gourmet YYZ · ${n} SQOR${n!==1?'s':''} archived`;
+}
+
+// ══ RESET ════════════════════════════════════════════
+function resetForm() {
+  if (!confirm('Reset this SQOR? All entries will be cleared.')) return;
+  results = {};
+  renderChecklist();
+  updateStats();
+  ['h_truck','h_driver','h_guide','f_comments'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  ['h_airline','h_aircraft_num','h_aircraft_type'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+}
+
+// ══ PDF EXPORT ════════════════════════════════════════
+function exportPDF() {
+  const g = id => (document.getElementById(id)?.value||'').trim();
+  const items = currentApproach === 'one' ? ONE_ITEMS : TWO_ITEMS;
+  const now = new Date();
+  
+  const css = `*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:10pt;color:#111;padding:16px}
+    h1{font-size:18pt;font-weight:900;color:#1A3A6B;border-bottom:3px solid #48AF44;padding-bottom:6px;margin-bottom:8px}
+    .meta{font-size:9pt;color:#666;margin-bottom:12px}
+    table{width:100%;border-collapse:collapse;margin-bottom:10px;font-size:9pt}
+    td{border:1px solid #ddd;padding:4px 7px;vertical-align:top}
+    td.lbl{background:#F4F5F7;font-weight:700;width:38%}
+    .cat-hdr{background:#1A3A6B;color:#fff;font-size:10pt;font-weight:700;padding:5px 8px;margin:10px 0 4px}
+    .item-row{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #eee}
+    .item-label{flex:1;font-size:9pt}
+    .result-safe{color:#2E7D32;font-weight:700;min-width:70px;text-align:center}
+    .result-nr{color:#D29922;font-weight:700;min-width:70px;text-align:center}
+    .result-ar{color:#DA3633;font-weight:700;min-width:70px;text-align:center;background:#FFF5F5;padding:2px 4px;border-radius:3px}
+    .comment{font-size:8.5pt;color:#555;font-style:italic;margin-left:8px;margin-top:2px}
+    .sig-row{display:flex;gap:20px;margin-top:16px}
+    .sig-box{flex:1;border-top:1px solid #999;padding-top:6px;font-size:9pt;color:#666}
+    .footer{margin-top:16px;padding-top:8px;border-top:1px solid #ccc;font-size:8pt;color:#999;text-align:center}
+    @page{margin:12mm}`;
+
+  let body = `<h1>Global Highloader SQOR Report</h1>`;
+  body += `<div class="meta">Gate Gourmet YYZ &nbsp;·&nbsp; ${now.toLocaleDateString('en-CA')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} &nbsp;·&nbsp; GroundWatch Safety Suite</div>`;
+  body += `<table><tr><td class="lbl">Truck #</td><td>${g('h_truck')||'—'}</td><td class="lbl">Driver</td><td>${g('h_driver')||'—'}</td></tr>
+    <tr><td class="lbl">Guide</td><td>${g('h_guide')||'—'}</td><td class="lbl">Airline</td><td>${g('h_airline')||'—'}</td></tr>
+    <tr><td class="lbl">Aircraft #</td><td>${g('h_aircraft_num')||'—'}</td><td class="lbl">Aircraft Type</td><td>${g('h_aircraft_type')||'—'}</td></tr>
+    <tr><td class="lbl">Approach</td><td>${currentApproach==='one'?'One Person':'Two Person'}</td><td class="lbl">Observer</td><td>${g('f_observer')||'—'}</td></tr></table>`;
+
+  // Group items by category
+  const grouped = {};
+  items.forEach(it => { if(!grouped[it.cat]) grouped[it.cat]=[]; grouped[it.cat].push(it); });
+  
+  Object.entries(grouped).forEach(([cat,catItems]) => {
+    const [icon,label] = CAT_LABELS[cat]||['•',cat];
+    body += `<div class="cat-hdr">${icon} ${label}</div>`;
+    catItems.forEach(it => {
+      const r = results[it.id];
+      const resultStr = !r?'—':r.result==='safe'?'Safe':r.result==='nr'?'Not Observed':'At Risk';
+      const cls = !r?'':r.result==='safe'?'result-safe':r.result==='nr'?'result-nr':'result-ar';
+      body += `<div class="item-row"><div class="item-label">${it.label}</div><div class="${cls}">${resultStr}</div></div>`;
+      if (r?.result==='ar' && r.comment) body += `<div class="comment">↳ ${r.comment}</div>`;
+    });
+  });
+
+  // Summary
+  let safe=0,nr=0,ar=0;
+  items.forEach(it=>{const r=results[it.id];if(!r)return;if(r.result==='safe')safe++;else if(r.result==='nr')nr++;else ar++;});
+  const scored=safe+nr+ar;
+  body += `<div style="margin-top:12px"><table><tr><td class="lbl">Safe</td><td>${safe}</td><td class="lbl">Not Observed</td><td>${nr}</td><td class="lbl">At Risk</td><td style="color:#DA3633;font-weight:700">${ar}</td><td class="lbl">Compliance</td><td style="font-weight:700">${scored>0?Math.round(safe/scored*100)+'%':'—'}</td></tr></table></div>`;
+  
+  const feedback = document.getElementById('f_feedback')?.options[document.getElementById('f_feedback').selectedIndex]?.text||'';
+  const sqorObs = document.querySelector('input[name="sqor_obs"]:checked')?.value||'';
+  body += `<table style="margin-top:8px"><tr><td class="lbl">SQOR Observed</td><td>${sqorObs||'—'}</td><td class="lbl">Immediate Feedback</td><td>${feedback||'—'}</td></tr>`;
+  if(g('f_comments')) body += `<tr><td class="lbl">Comments</td><td colspan="3">${g('f_comments')}</td></tr>`;
+  body += `</table>`;
+
+  body += `<div class="sig-row"><div class="sig-box">Driver Signature<br><br></div><div class="sig-box">Guide Signature<br><br></div><div class="sig-box">Observer: ${g('f_observer')||'_____________'}<br><br></div></div>`;
+  body += `<div class="footer">GroundWatch Safety Suite · SQOR Module · Gate Gourmet YYZ · CF Black Aviation · ${now.toLocaleDateString('en-CA')}</div>`;
+
+  const pw = window.open('','_blank');
+  if (!pw) { showToast('Allow popups to export PDF'); return; }
+  pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${body}</body></html>`);
+  pw.document.close(); pw.focus(); setTimeout(()=>pw.print(),600);
+}
+
+// ══ TOAST ════════════════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ══ INIT ═════════════════════════════════════════════
+setApproach('one');
+updateHomeCount();
+</script>
+</body>
+</html>

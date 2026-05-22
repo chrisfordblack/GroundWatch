@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GroundWatch · Sample Data Seeder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  background:#0D1117;color:#E6EDF3;padding:24px;min-height:100vh}
+.card{background:#161B22;border:1px solid #30363D;border-radius:12px;padding:20px;margin-bottom:16px}
+h1{font-size:24px;font-weight:900;color:#48AF44;margin-bottom:4px}
+.sub{font-size:13px;color:#8B949E;margin-bottom:20px}
+.stat{display:inline-block;background:rgba(255,255,255,.06);border-radius:8px;
+  padding:10px 16px;margin:4px;text-align:center}
+.stat-val{font-size:28px;font-weight:900;color:#fff;line-height:1}
+.stat-lbl{font-size:10px;color:#8B949E;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.btn{width:100%;background:#48AF44;color:#fff;border:none;border-radius:10px;
+  padding:16px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;
+  margin-bottom:10px;transition:opacity .15s}
+.btn:hover{opacity:.9}
+.btn:active{opacity:.75}
+.btn-clear{background:rgba(218,54,51,.2);color:#DA3633;border:1.5px solid rgba(218,54,51,.3)}
+.log{font-size:12px;font-family:'Courier New',monospace;color:#8B949E;
+  max-height:200px;overflow-y:auto;line-height:1.6}
+.log .ok{color:#2EA043}.log .warn{color:#D29922}.log .err{color:#DA3633}
+.progress{height:6px;background:rgba(255,255,255,.08);border-radius:3px;margin:12px 0;overflow:hidden}
+.progress-fill{height:100%;background:#48AF44;border-radius:3px;transition:width .3s;width:0%}
+.pattern-box{background:rgba(255,255,255,.04);border-radius:8px;padding:12px;margin-bottom:8px;font-size:12px;border-left:3px solid #48AF44}
+.pattern-box h4{font-size:12px;font-weight:700;color:#48AF44;margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<h1>GroundWatch · Sample Data Seeder</h1>
+<p class="sub">Generates realistic Gate Gourmet YYZ SQOR observations and incident investigations for dashboard demonstration.</p>
+
+<div class="card">
+  <div style="margin-bottom:12px;font-size:13px;color:#8B949E">Data patterns built into the sample dataset:</div>
+  <div class="pattern-box">
+    <h4>⚠ Larry Guidolin (Truck 78) — Seatbelt + Defensive Driving pattern → Vehicle Incident</h4>
+    Multiple SQOR at-risk observations for seatbelt non-compliance and defensive driving before a vehicle incident in March 2026. REDA: Individual Factors, Skills &amp; Knowledge.
+  </div>
+  <div class="pattern-box">
+    <h4>⚠ Chamkaur Bhatti (Truck 68) — Ignition Off procedure pattern → Aircraft Contact</h4>
+    Recurring "Ignition Off After Elevation" at-risk observations across 4 SQORs before an aircraft contact in April 2026. REDA: Technical Knowledge, Individual Factors.
+  </div>
+  <div class="pattern-box">
+    <h4>⚠ James Okafor (Truck 52) — Circle of Safety stops pattern → Near Miss</h4>
+    5-stop approach and 2-metre stop at-risk observations before a near miss in February 2026. REDA: Technical Knowledge, Job/Tasks.
+  </div>
+  <div class="pattern-box" style="border-left-color:#2EA043">
+    <h4 style="color:#2EA043">✅ Marcus Chen, Priya Sharma — High compliance throughout</h4>
+    Consistently high SQOR scores, no investigations. Contrast group.
+  </div>
+</div>
+
+<div class="card">
+  <div id="stats_wrap" style="margin-bottom:16px">
+    <div class="stat"><div class="stat-val" id="cnt_sqor">0</div><div class="stat-lbl">SQORs</div></div>
+    <div class="stat"><div class="stat-val" id="cnt_inv">0</div><div class="stat-lbl">Investigations</div></div>
+    <div class="stat"><div class="stat-val" id="cnt_ar">0</div><div class="stat-lbl">At-Risk Obs.</div></div>
+    <div class="stat"><div class="stat-val" id="cnt_comp">—</div><div class="stat-lbl">Avg Compliance</div></div>
+  </div>
+  <div class="progress"><div class="progress-fill" id="progress_fill"></div></div>
+  <button class="btn" onclick="seedData()">🌱 Seed Sample Data</button>
+  <button class="btn btn-clear" onclick="clearData()">🗑 Clear All Data</button>
+</div>
+
+<div class="card">
+  <div style="font-size:11px;font-weight:700;color:#8B949E;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Log</div>
+  <div class="log" id="log">Ready to seed...</div>
+</div>
+
+<script>
+function log(msg, type='') {
+  const el = document.getElementById('log');
+  el.innerHTML += `<div class="${type}">${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function rand(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+function randInt(min, max) { return Math.floor(Math.random()*(max-min+1))+min; }
+function randFloat(min, max, dp=0) { return parseFloat((Math.random()*(max-min)+min).toFixed(dp)); }
+function uid() { return Date.now()+'_'+Math.random().toString(36).slice(2,7); }
+
+function dateStr(daysAgo) {
+  const d = new Date();
+  d.setDate(d.getDate()-daysAgo);
+  return d.toISOString().slice(0,10);
+}
+function isoStr(daysAgo, hour=8, min=0) {
+  const d = new Date();
+  d.setDate(d.getDate()-daysAgo);
+  d.setHours(hour, min, 0, 0);
+  return d.toISOString();
+}
+function timeStr(hour, min) {
+  return String(hour).padStart(2,'0')+':'+String(min).padStart(2,'0');
+}
+
+// ── ITEM POOLS ────────────────────────────────────────────────
+const ALL_ITEMS_ONE = [
+  {id:'defensive_driving',label:'Defensive Driving & Seatbelt',cat:'pre_approach',reda1:'Individual Factors',reda2:'Skills & Knowledge'},
+  {id:'nothing_on_platform',label:'Nothing on Truck Platform',cat:'pre_approach',reda1:'Job/Tasks',reda2:''},
+  {id:'waiting_position',label:'Waiting Position',cat:'pre_approach',reda1:'Job/Tasks',reda2:'Information'},
+  {id:'cos_stop',label:'Circle of Safety Stop',cat:'circle_of_safety',reda1:'Skills & Knowledge',reda2:'Job/Tasks'},
+  {id:'foa_before_approach',label:'FOA Inspection Before Approach',cat:'circle_of_safety',reda1:'Information',reda2:'Job/Tasks'},
+  {id:'five_stops',label:'5 Safety Stops on Approach',cat:'circle_of_safety',reda1:'Technical Knowledge',reda2:'Job/Tasks'},
+  {id:'two_meter_stop',label:'2-Metre Stop — Idle Speed Approach',cat:'circle_of_safety',reda1:'Technical Knowledge',reda2:'Equipment/Tools'},
+  {id:'chock_placement',label:'Chock Placement',cat:'chocking',reda1:'Skills & Knowledge',reda2:''},
+  {id:'brake_transmission',label:'Brake Set / Transmission Neutral or Park',cat:'chocking',reda1:'Technical Knowledge',reda2:''},
+  {id:'post_position_check',label:'Post-Position Walk-Around',cat:'chocking',reda1:'Job/Tasks',reda2:'Information'},
+  {id:'garbage_procedures',label:'Garbage Procedures',cat:'platform_ops',reda1:'Information',reda2:'Organizational'},
+  {id:'front_door_open',label:'Front Door Open / Rear Door Closed',cat:'platform_ops',reda1:'Technical Knowledge',reda2:'Job/Tasks'},
+  {id:'lift_test',label:'Lift Test (1/2 Stop Check)',cat:'platform_ops',reda1:'Technical Knowledge',reda2:'Job/Tasks'},
+  {id:'ignition_off',label:'Ignition Off After Elevation',cat:'platform_ops',reda1:'Technical Knowledge',reda2:'Individual Factors'},
+  {id:'safety_harness',label:'Safety Harness',cat:'platform_ops',reda1:'Individual Factors',reda2:'Organizational'},
+  {id:'door_opening',label:'Door Opening Procedure',cat:'platform_ops',reda1:'Skills & Knowledge',reda2:'Technical Knowledge'},
+  {id:'guard_rails',label:'Guard Rails Extended',cat:'platform_ops',reda1:'Equipment/Tools',reda2:'Job/Tasks'},
+  {id:'platform_no_adjust',label:'Platform Not Adjusted Under Open Door',cat:'platform_ops',reda1:'Technical Knowledge',reda2:'Job/Tasks'},
+  {id:'platform_extension',label:'Platform Extension',cat:'platform_ops',reda1:'Technical Knowledge',reda2:'Equipment/Tools'},
+  {id:'trash_relined',label:'Trash Containers Relined',cat:'catering',reda1:'Job/Tasks',reda2:''},
+  {id:'single_cart',label:'Single-Cart Movement',cat:'catering',reda1:'Job/Tasks',reda2:'Skills & Knowledge'},
+  {id:'customer_compliance',label:'Customer Requirements',cat:'catering',reda1:'Information',reda2:'Organizational'},
+  {id:'door_closing',label:'Door Closing Procedure',cat:'departure',reda1:'Skills & Knowledge',reda2:'Job/Tasks'},
+  {id:'guard_rails_retract',label:'Guard Rails Retracted',cat:'departure',reda1:'Equipment/Tools',reda2:'Job/Tasks'},
+  {id:'door_closed_before_lower',label:'Aircraft Door Closed Before Lowering',cat:'departure',reda1:'Technical Knowledge',reda2:'Job/Tasks'},
+  {id:'three_point',label:'Three-Point Entry/Exit',cat:'departure',reda1:'Skills & Knowledge',reda2:'Individual Factors'},
+  {id:'departure_path',label:'Departure Path Review',cat:'departure',reda1:'Job/Tasks',reda2:'Technical Knowledge'},
+  {id:'guide_cone',label:'Stationary Guide Cone Placement',cat:'departure',reda1:'Skills & Knowledge',reda2:'Job/Tasks'},
+  {id:'chock_removal',label:'Chock Removal Procedure',cat:'departure',reda1:'Skills & Knowledge',reda2:''},
+  {id:'backing_away',label:'Backing Away from Aircraft',cat:'departure',reda1:'Technical Knowledge',reda2:'Job/Tasks'},
+  {id:'vehicle_secured',label:'Vehicle Secured',cat:'departure',reda1:'Technical Knowledge',reda2:'Individual Factors'},
+  {id:'chocks_stowed',label:'Chocks & Guide Stowed',cat:'departure',reda1:'Job/Tasks',reda2:''},
+  {id:'bed_doors',label:'Truck Bed Doors Closed',cat:'departure',reda1:'Job/Tasks',reda2:''},
+  {id:'ppe',label:'Protective Equipment',cat:'ppe',reda1:'Individual Factors',reda2:'Organizational'},
+  {id:'no_phone',label:'No Phone/Radio While Moving',cat:'ppe',reda1:'Individual Factors',reda2:''},
+];
+
+// ── DRIVER PROFILES ───────────────────────────────────────────
+const DRIVERS = [
+  {
+    name:'LARRY GUIDOLIN', truck:'78', approach:'one',
+    // High at-risk for seatbelt/defensive driving and departure
+    atRiskBias: ['defensive_driving','vehicle_secured','backing_away','guide_cone'],
+    noBias: ['nothing_on_platform','chock_placement','platform_extension'],
+    baseCompliance: 0.72
+  },
+  {
+    name:'CHAMKAUR BHATTI', truck:'68', approach:'two',
+    // High at-risk for ignition, harness
+    atRiskBias: ['ignition_off','safety_harness','lift_test'],
+    noBias: ['door_opening','guard_rails','platform_extension'],
+    baseCompliance: 0.78
+  },
+  {
+    name:'JAMES OKAFOR', truck:'52', approach:'one',
+    // Circle of safety and approach issues
+    atRiskBias: ['five_stops','two_meter_stop','cos_stop'],
+    noBias: ['chock_placement','brake_transmission'],
+    baseCompliance: 0.80
+  },
+  {
+    name:'MARCUS CHEN', truck:'45', approach:'one',
+    atRiskBias: [],
+    noBias: ['garbage_procedures'],
+    baseCompliance: 0.95
+  },
+  {
+    name:'PRIYA SHARMA', truck:'91', approach:'two',
+    atRiskBias: [],
+    noBias: ['nothing_on_platform'],
+    baseCompliance: 0.93
+  },
+  {
+    name:'DANIEL KOWALSKI', truck:'63', approach:'one',
+    atRiskBias: ['ppe','no_phone','door_closing'],
+    noBias: [],
+    baseCompliance: 0.82
+  },
+  {
+    name:'AMARA DIALLO', truck:'35', approach:'one',
+    atRiskBias: ['post_position_check','foa_before_approach'],
+    noBias: [],
+    baseCompliance: 0.85
+  },
+];
+
+const AIRLINES = ['Air Canada','Air Canada','WestJet','WestJet','Porter Airlines','Air Transat'];
+const AC_TYPES = ['A319','A320','A321','B737-800','B737 MAX 8','A320','A319','A320'];
+
+// ── BUILD SQOR ────────────────────────────────────────────────
+function buildSQOR(driver, daysAgo, sqorNum) {
+  const items = ALL_ITEMS_ONE;
+  const itemResults = [];
+  const atRiskItems = [];
+  let safe=0, nr=0, ar=0;
+
+  items.forEach(it => {
+    let result;
+    const isAtRiskBias = driver.atRiskBias.includes(it.id);
+    const isNoBias     = driver.noBias.includes(it.id);
+    const roll = Math.random();
+
+    if (isAtRiskBias) {
+      // 25% at risk, 15% not observed, 60% safe (but worse over time if incident approaching)
+      const proximity = sqorNum <= 3 ? 0.15 : 0.08; // higher ar% in more recent SQORs
+      if (roll < (0.25 + proximity)) result = 'ar';
+      else if (roll < (0.40 + proximity)) result = 'nr';
+      else result = 'safe';
+    } else if (isNoBias) {
+      result = roll < 0.3 ? 'nr' : 'safe';
+    } else {
+      const comp = driver.baseCompliance;
+      if (roll < (1-comp)*0.6) result = 'ar';
+      else if (roll < (1-comp)) result = 'nr';
+      else result = 'safe';
+    }
+
+    if (result==='safe') safe++;
+    else if (result==='nr') nr++;
+    else {
+      ar++;
+      atRiskItems.push({
+        item_id:it.id, label:it.label, category:it.cat,
+        comment: getARComment(it.id),
+        reda_primary:it.reda1, reda_secondary:it.reda2
+      });
+    }
+    itemResults.push({item_id:it.id,label:it.label,category:it.cat,result,comment:result==='ar'?getARComment(it.id):'',reda_primary:it.reda1,reda_secondary:it.reda2});
+  });
+
+  const scored = safe+nr+ar;
+  const hour = randInt(6,14), min = rand([0,15,30,45]);
+  const now = new Date(); now.setDate(now.getDate()-daysAgo);
+  
+  return {
+    id: uid(),
+    type: 'sqor',
+    device_id: 'dev_gg_yyz_demo',
+    archived_at: isoStr(daysAgo, hour, min),
+    app_version: '1.0',
+    date: dateStr(daysAgo),
+    time: timeStr(hour, min),
+    unit: '1401 GG Toronto',
+    truck_num: driver.truck,
+    driver_name: driver.name,
+    guide_name: driver.approach==='two' ? 'CHRIS HEINBACH' : '',
+    airline: rand(AIRLINES),
+    aircraft_num: String(randInt(200,899)),
+    aircraft_type: rand(AC_TYPES),
+    approach_type: driver.approach,
+    observer_name: 'Chris Black',
+    observer_title: 'Ramp Safety Specialist',
+    sqor_observed: Math.random() > 0.5 ? 'no' : 'yes',
+    immediate_feedback: ar > 0 ? 'verbal_coaching' : 'no_interaction',
+    comments: ar > 1 ? `${ar} at-risk behaviour${ar>1?'s':''} observed and addressed.` : '',
+    safe_count: safe,
+    not_observed_count: nr,
+    at_risk_count: ar,
+    scored_count: scored,
+    total_items: items.length,
+    compliance_rate: scored > 0 ? Math.round(safe/scored*100) : 0,
+    items: itemResults,
+    at_risk_items: atRiskItems,
+  };
+}
+
+function getARComment(id) {
+  const comments = {
+    defensive_driving: 'Driver observed not wearing seatbelt during approach to gate.',
+    vehicle_secured: 'Driver did not turn engine off after securing vehicle post-service.',
+    backing_away: 'Vehicle backed at higher than walking speed away from aircraft.',
+    guide_cone: 'Stationary guide cone not placed prior to departure.',
+    ignition_off: 'Truck engine left running during catering service at aircraft.',
+    safety_harness: 'Safety harness not worn during elevated platform operations.',
+    lift_test: '1/2 stop check not performed while raising truck.',
+    five_stops: 'Fewer than 5 safety stops observed on approach.',
+    two_meter_stop: 'Driver did not make full stop at 2m/6ft before final approach.',
+    cos_stop: 'Driver did not fully stop at Circle of Safety prior to approach.',
+    ppe: 'Driver not wearing hearing protection on ramp.',
+    no_phone: 'Cell phone observed in use while vehicle in motion.',
+    door_closing: 'Driver did not conduct tactile check of door handle after closing.',
+    post_position_check: 'Driver did not walk around front of truck after positioning.',
+    foa_before_approach: 'FOA inspection not conducted before approaching aircraft.',
+    chock_placement: 'Chocks not placed both front and rear of tire as required.',
+    nothing_on_platform: 'Bridging ramp observed being transported on truck platform.',
+  };
+  return comments[id] || 'Procedure not followed as observed.';
+}
+
+// ── INVESTIGATIONS ────────────────────────────────────────────
+const INVESTIGATIONS = [
+  {
+    employees: 'LARRY GUIDOLIN', truck: '78', gate: 'B22',
+    incident_type: 'Vehicle Incident', risk_code: 'H', risk_rating: 'High',
+    sms_ref: 'ILX-79234', flight: 'AC551', airline: 'Air Canada',
+    daysAgo: 75, hour: 9, min: 22,
+    da_confirmed: true, alcohol_result: 'pass', drug_result: 'pending',
+    cctv_requested: true, union_rep_status: 'present', notif_compliant: true,
+    reda_factors: ['Individual Factors','Skills & Knowledge'],
+    root_cause: 'Driver failed to follow defensive driving protocols during approach. Seatbelt not worn. Vehicle contact with barrier occurred while reversing from gate.',
+    whys: [
+      'Vehicle contacted gate barrier during departure',
+      'Driver reversed at speed above idle without checking path',
+      'Departure path review procedure was not completed',
+      'Driver had not been formally coached despite prior SQOR observations',
+      'No escalation process in place for repeat SQOR at-risk behaviours'
+    ],
+    actions: 3
+  },
+  {
+    employees: 'CHAMKAUR BHATTI', truck: '68', gate: 'C15',
+    incident_type: 'Aircraft Contact – CAT 2C', risk_code: 'E', risk_rating: 'Extreme',
+    sms_ref: 'ILX-79851', flight: 'WS212', airline: 'WestJet',
+    daysAgo: 42, hour: 11, min: 55,
+    da_confirmed: true, alcohol_result: 'pass', drug_result: 'pass',
+    cctv_requested: true, union_rep_status: 'present', notif_compliant: true,
+    reda_factors: ['Technical Knowledge','Individual Factors','Leadership'],
+    root_cause: 'Truck platform contacted aircraft fuselage during catering service. Engine was not turned off after elevation as required by procedure. Vibration caused platform movement.',
+    whys: [
+      'Truck platform contacted aircraft fuselage',
+      'Engine was running during catering — caused platform vibration',
+      'Driver did not follow ignition-off procedure after elevation',
+      'Ignition-off procedure had been observed at-risk in 4 prior SQORs without corrective action',
+      'No structured feedback loop from SQOR observations to supervisor coaching'
+    ],
+    actions: 5
+  },
+  {
+    employees: 'JAMES OKAFOR', truck: '52', gate: 'D08',
+    incident_type: 'Near Miss', risk_code: 'H', risk_rating: 'High',
+    sms_ref: 'ILX-78445', flight: 'AC203', airline: 'Air Canada',
+    daysAgo: 108, hour: 7, min: 44,
+    da_confirmed: false, alcohol_result: '', drug_result: '',
+    cctv_requested: true, union_rep_status: 'notified', notif_compliant: true,
+    reda_factors: ['Technical Knowledge','Job/Tasks','Information'],
+    root_cause: 'Driver failed to make all 5 safety stops on approach. Truck came within 30cm of aircraft nose gear before stopping. Near miss averted by ground crew intervention.',
+    whys: [
+      'Truck approached within 30cm of nose gear without stopping',
+      'Driver made 3 of 5 required approach stops',
+      'Driver believed stops were discretionary rather than mandatory',
+      'Training did not emphasise the mandatory nature of all 5 stops',
+      'Standard operating procedure was not reinforced at pre-shift briefings'
+    ],
+    actions: 4
+  },
+  {
+    employees: 'DANIEL KOWALSKI', truck: '63', gate: 'A17',
+    incident_type: 'Personal Injury', risk_code: 'M', risk_rating: 'Medium',
+    sms_ref: 'ILX-80122', flight: 'TS471', airline: 'Air Transat',
+    daysAgo: 18, hour: 14, min: 10,
+    da_confirmed: true, alcohol_result: 'pass', drug_result: 'pending',
+    cctv_requested: true, union_rep_status: 'present', notif_compliant: true,
+    reda_factors: ['Individual Factors','Environment','Job/Tasks'],
+    root_cause: 'Driver slipped on wet ramp surface while exiting truck without using three-point contact method. Wrist sprain sustained. PPE non-compliance (no hearing protection) noted in prior SQORs.',
+    whys: [
+      'Driver slipped exiting truck and sustained wrist injury',
+      'Three-point contact method not used on exit',
+      'Footwear was worn and had reduced grip on wet surface',
+      'No awareness of footwear inspection requirement before shift',
+      'PPE and safety compliance issues previously documented but not addressed'
+    ],
+    actions: 3
+  },
+  {
+    employees: 'AMARA DIALLO', truck: '35', gate: 'B31',
+    incident_type: 'FOD', risk_code: 'L', risk_rating: 'Low',
+    sms_ref: 'ILX-80055', flight: 'PD112', airline: 'Porter Airlines',
+    daysAgo: 25, hour: 8, min: 30,
+    da_confirmed: false, alcohol_result: '', drug_result: '',
+    cctv_requested: false, union_rep_status: '', notif_compliant: true,
+    reda_factors: ['Job/Tasks','Information'],
+    root_cause: 'Catering cart wheel chock found on ramp within 10m of aircraft. Source traced to Truck 35. Driver did not conduct post-service ramp inspection.',
+    whys: [
+      'FOD (wheel chock) found on active ramp surface',
+      'Chock was not retrieved and stowed after departure',
+      'Driver did not complete post-departure ramp scan',
+      'Ramp scan procedure not emphasised in pre-shift briefing',
+      'No formal closure checklist used before leaving gate'
+    ],
+    actions: 2
+  },
+  {
+    employees: 'LARRY GUIDOLIN', truck: '78', gate: 'C09',
+    incident_type: 'Equipment Damage', risk_code: 'M', risk_rating: 'Medium',
+    sms_ref: 'ILX-77890', flight: 'AC889', airline: 'Air Canada',
+    daysAgo: 140, hour: 6, min: 50,
+    da_confirmed: false, alcohol_result: '', drug_result: '',
+    cctv_requested: true, union_rep_status: '', notif_compliant: false,
+    reda_factors: ['Individual Factors','Skills & Knowledge','Organizational'],
+    root_cause: 'Catering truck guardrail contacted aircraft service panel during platform operations. Driver did not verify clearance before extending guardrails.',
+    whys: [
+      'Guardrail contacted aircraft service panel',
+      'Clearance not verified before guardrail extension',
+      'Driver unfamiliar with narrow fuselage clearance on A321',
+      'No aircraft-type-specific briefing provided before service',
+      'Type-specific procedures not documented in accessible format'
+    ],
+    actions: 2
+  },
+  {
+    employees: 'PRIYA SHARMA', truck: '91', gate: 'D22',
+    incident_type: 'Near Miss', risk_code: 'M', risk_rating: 'Medium',
+    sms_ref: 'ILX-78991', flight: 'WS330', airline: 'WestJet',
+    daysAgo: 60, hour: 16, min: 5,
+    da_confirmed: false, alcohol_result: '', drug_result: '',
+    cctv_requested: true, union_rep_status: '', notif_compliant: true,
+    reda_factors: ['Communication','Job/Tasks'],
+    root_cause: 'Truck was positioned at aircraft when second catering truck approached the same gate without communication. Near collision averted. Gate assignment miscommunication between dispatch and crew.',
+    whys: [
+      'Two trucks approached the same aircraft simultaneously',
+      'Second crew was not informed first truck was already in service',
+      'Dispatch did not confirm gate status before releasing second truck',
+      'No real-time gate occupancy visibility for dispatch',
+      'Communication protocol between dispatch and ramp crews not enforced'
+    ],
+    actions: 3
+  },
+  {
+    employees: 'JAMES OKAFOR', truck: '52', gate: 'B14',
+    incident_type: 'Vehicle Incident', risk_code: 'H', risk_rating: 'High',
+    sms_ref: 'ILX-79100', flight: 'AC104', airline: 'Air Canada',
+    daysAgo: 90, hour: 10, min: 18,
+    da_confirmed: true, alcohol_result: 'pass', drug_result: 'pass',
+    cctv_requested: true, union_rep_status: 'present', notif_compliant: true,
+    reda_factors: ['Technical Knowledge','Job/Tasks','Skills & Knowledge'],
+    root_cause: 'Truck contacted airbridge while positioning for catering service. Driver made approach without completing all safety stops, misjudging available clearance.',
+    whys: [
+      'Truck contacted airbridge structure',
+      'Approach completed without all mandatory stops',
+      'Driver misjudged clearance from airbridge',
+      'Circle of Safety compliance had been at-risk in multiple prior SQORs',
+      'SQOR findings not translated into targeted retraining for this driver'
+    ],
+    actions: 4
+  },
+];
+
+// ── SEED FUNCTION ─────────────────────────────────────────────
+function seedData() {
+  log('Starting data generation...', 'ok');
+  document.getElementById('progress_fill').style.width = '5%';
+
+  const sqors = [];
+  let totalAR = 0;
+
+  // Generate SQORs — spread over 6 months
+  // Larry Guidolin — 8 SQORs, escalating at-risk leading to incident at day 75
+  const larryDays = [155,140,130,118,105,92,83,77];
+  larryDays.forEach((d,i) => {
+    const s = buildSQOR(DRIVERS[0], d, i);
+    sqors.push(s); totalAR += s.at_risk_count;
+  });
+  log(`✓ Larry Guidolin: ${larryDays.length} SQORs generated`, 'ok');
+
+  // Chamkaur Bhatti — 7 SQORs
+  const chamDays = [148,133,120,105,88,65,50];
+  chamDays.forEach((d,i) => {
+    const s = buildSQOR(DRIVERS[1], d, i);
+    sqors.push(s); totalAR += s.at_risk_count;
+  });
+  log(`✓ Chamkaur Bhatti: ${chamDays.length} SQORs generated`, 'ok');
+
+  // James Okafor — 6 SQORs
+  const jamesDays = [165,145,130,115,100,95];
+  jamesDays.forEach((d,i) => {
+    const s = buildSQOR(DRIVERS[2], d, i);
+    sqors.push(s); totalAR += s.at_risk_count;
+  });
+  log(`✓ James Okafor: ${jamesDays.length} SQORs generated`, 'ok');
+
+  // Marcus Chen — 5 SQORs (good compliance)
+  [160,130,100,70,35].forEach((d,i) => {
+    const s = buildSQOR(DRIVERS[3], d, i);
+    sqors.push(s); totalAR += s.at_risk_count;
+  });
+  log(`✓ Marcus Chen: 5 SQORs generated`, 'ok');
+
+  // Priya Sharma — 5 SQORs
+  [155,120,90,65,30].forEach((d,i) => {
+    const s = buildSQOR(DRIVERS[4], d, i);
+    sqors.push(s); totalAR += s.at_risk_count;
+  });
+  log(`✓ Priya Sharma: 5 SQORs generated`, 'ok');
+
+  // Daniel Kowalski — 6 SQORs
+  [150,130,110,80,40,20].forEach((d,i) => {
+    const s = buildSQOR(DRIVERS[5], d, i);
+    sqors.push(s); totalAR += s.at_risk_count;
+  });
+  log(`✓ Daniel Kowalski: 6 SQORs generated`, 'ok');
+
+  // Amara Diallo — 4 SQORs
+  [140,100,60,28].forEach((d,i) => {
+    const s = buildSQOR(DRIVERS[6], d, i);
+    sqors.push(s); totalAR += s.at_risk_count;
+  });
+  log(`✓ Amara Diallo: 4 SQORs generated`, 'ok');
+
+  document.getElementById('progress_fill').style.width = '50%';
+
+  // ── BUILD INVESTIGATIONS ────────────────────────────────────
+  const invs = INVESTIGATIONS.map(inv => {
+    const archived = isoStr(inv.daysAgo, inv.hour, inv.min);
+    return {
+      id: uid(),
+      type: 'investigation',
+      device_id: 'dev_gg_yyz_demo',
+      archived_at: archived,
+      app_version: '3.0',
+      date: dateStr(inv.daysAgo),
+      time: timeStr(inv.hour, inv.min),
+      station: 'YYZ',
+      company: 'Gate Gourmet',
+      gate: inv.gate,
+      flight: inv.flight,
+      vehicles: 'Truck ' + inv.truck,
+      incident_type: inv.incident_type,
+      risk_rating: inv.risk_rating,
+      risk_code: inv.risk_code,
+      sms_ref: inv.sms_ref,
+      investigator: 'Chris Black',
+      employees: inv.employees,
+      da_confirmed: inv.da_confirmed,
+      alcohol_result: inv.alcohol_result,
+      drug_result: inv.drug_result,
+      cctv_requested: inv.cctv_requested,
+      union_rep_status: inv.union_rep_status,
+      notif_compliant: inv.notif_compliant,
+      reda_factors: inv.reda_factors,
+      root_cause_summary: inv.root_cause.slice(0,200),
+      whys_count: inv.whys.length,
+      actions_count: inv.actions,
+      investigation_complete: true,
+      inc_type: inv.incident_type,
+    };
+  });
+
+  document.getElementById('progress_fill').style.width = '80%';
+  log(`✓ ${invs.length} investigations generated`, 'ok');
+
+  // ── WRITE TO LOCALSTORAGE ───────────────────────────────────
+  try {
+    localStorage.setItem('gw_sqor_archive', JSON.stringify(sqors));
+    localStorage.setItem('gw_archive', JSON.stringify(invs));
+    localStorage.setItem('gw_device_id', 'dev_gg_yyz_demo');
+    document.getElementById('progress_fill').style.width = '100%';
+    log(`✓ ${sqors.length} SQORs written to localStorage`, 'ok');
+    log(`✓ ${invs.length} investigations written to localStorage`, 'ok');
+    log('', '');
+    log('✅ SEED COMPLETE — open SafetyFusion Dashboard to see the data', 'ok');
+
+    // Update stats
+    const totalSafe = sqors.reduce((s,r)=>s+r.safe_count,0);
+    const totalScored = sqors.reduce((s,r)=>s+r.scored_count,0);
+    document.getElementById('cnt_sqor').textContent = sqors.length;
+    document.getElementById('cnt_inv').textContent = invs.length;
+    document.getElementById('cnt_ar').textContent = totalAR;
+    document.getElementById('cnt_comp').textContent = totalScored>0?Math.round(totalSafe/totalScored*100)+'%':'—';
+
+  } catch(e) {
+    log('❌ localStorage write failed: '+e.message, 'err');
+  }
+}
+
+function clearData() {
+  if (!confirm('Clear all sample data from localStorage?')) return;
+  localStorage.removeItem('gw_sqor_archive');
+  localStorage.removeItem('gw_archive');
+  document.getElementById('progress_fill').style.width = '0%';
+  document.getElementById('cnt_sqor').textContent = '0';
+  document.getElementById('cnt_inv').textContent = '0';
+  document.getElementById('cnt_ar').textContent = '0';
+  document.getElementById('cnt_comp').textContent = '—';
+  log('🗑 Data cleared from localStorage', 'warn');
+}
+
+// Show existing counts on load
+(function() {
+  const sq = JSON.parse(localStorage.getItem('gw_sqor_archive')||'[]');
+  const iv = JSON.parse(localStorage.getItem('gw_archive')||'[]');
+  if (sq.length || iv.length) {
+    document.getElementById('cnt_sqor').textContent = sq.length;
+    document.getElementById('cnt_inv').textContent = iv.length;
+    const ar = sq.reduce((s,r)=>s+(r.at_risk_count||0),0);
+    const safe = sq.reduce((s,r)=>s+(r.safe_count||0),0);
+    const scored = sq.reduce((s,r)=>s+(r.scored_count||0),0);
+    document.getElementById('cnt_ar').textContent = ar;
+    document.getElementById('cnt_comp').textContent = scored>0?Math.round(safe/scored*100)+'%':'—';
+    log(`Existing data found: ${sq.length} SQORs, ${iv.length} investigations`, 'ok');
+  }
+})();
+</script>
+</body>
+</html>
