@@ -174,69 +174,12 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .ci-header .ci-desc{flex:1}
 
 
-/* ── QR SCANNER ──────────────────────────────────────── */
-#qrOverlay{position:fixed;inset:0;background:#000;z-index:8000;
-  display:none;flex-direction:column;align-items:center;justify-content:center}
-#qrOverlay.show{display:flex}
-#qrVideo{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-#qrCanvas{display:none}
-.qr-ui{position:relative;z-index:1;display:flex;flex-direction:column;
-  align-items:center;width:100%;height:100%;pointer-events:none}
-.qr-top-bar{width:100%;padding:14px 16px;display:flex;align-items:center;
-  justify-content:space-between;pointer-events:all;
-  background:linear-gradient(rgba(0,0,0,.7),transparent)}
-.qr-top-bar .qr-title{font-size:14px;font-weight:700;color:#fff}
-.qr-close{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);
-  color:#fff;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;
-  font-family:inherit;cursor:pointer;pointer-events:all}
-.qr-frame{flex:1;display:flex;align-items:center;justify-content:center;width:100%}
-.qr-reticle{width:220px;height:220px;position:relative}
-.qr-reticle::before,.qr-reticle::after{content:'';position:absolute;
-  width:40px;height:40px;border-color:#fff;border-style:solid;border-width:0}
-.qr-reticle::before{top:0;left:0;border-top-width:3px;border-left-width:3px;border-radius:4px 0 0 0}
-.qr-reticle::after{bottom:0;right:0;border-bottom-width:3px;border-right-width:3px;border-radius:0 0 4px 0}
-.qr-corner{position:absolute;width:40px;height:40px;border-color:#fff;border-style:solid;border-width:0}
-.qr-corner.tr{top:0;right:0;border-top-width:3px;border-right-width:3px;border-radius:0 4px 0 0}
-.qr-corner.bl{bottom:0;left:0;border-bottom-width:3px;border-left-width:3px;border-radius:0 0 0 4px}
-.qr-scan-line{position:absolute;left:4px;right:4px;height:2px;
-  background:linear-gradient(90deg,transparent,var(--gg),transparent);
-  animation:qr-scan 2s ease-in-out infinite}
-@keyframes qr-scan{0%{top:4px;opacity:1}50%{opacity:.6}100%{top:calc(100% - 6px);opacity:1}}
-.qr-hint{color:rgba(255,255,255,.6);font-size:12px;margin-top:16px;text-align:center;padding:0 30px}
-.qr-bottom{width:100%;padding:16px;background:linear-gradient(transparent,rgba(0,0,0,.7))}
-.qr-status{text-align:center;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);
-  min-height:20px;transition:color .2s}
-.qr-status.scanning{color:var(--gg)}
-.qr-status.found{color:#fff}
-
-/* QR Result Modal */
-#qrResultModal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:8100;
-  display:none;align-items:flex-end;backdrop-filter:blur(4px)}
-#qrResultModal.show{display:flex}
-.qr-result-sheet{background:#EAEEF3;border-radius:20px 20px 0 0;width:100%;
-  max-height:75vh;overflow-y:auto;animation:slideUp .3s cubic-bezier(.4,0,.2,1)}
-.qr-result-hdr{padding:14px 16px;background:var(--gg);border-radius:20px 20px 0 0;
-  display:flex;align-items:center;gap:10px}
-.qr-result-hdr .qr-r-icon{font-size:20px}
-.qr-result-hdr .qr-r-title{font-size:15px;font-weight:700;color:#fff;flex:1}
-.qr-result-row{display:flex;justify-content:space-between;align-items:center;
-  padding:10px 16px;border-bottom:1px solid var(--border)}
-.qr-result-row .qr-rl{font-size:12px;font-weight:700;color:var(--navy);min-width:100px}
-.qr-result-row .qr-rv{font-size:13px;color:var(--black);flex:1;text-align:right;
-  font-weight:600;word-break:break-all}
-.qr-raw{padding:10px 16px;font-family:monospace;font-size:11px;color:#888;
-  word-break:break-all;background:rgba(0,0,0,.04);margin:8px 16px;border-radius:6px}
-.qr-result-btns{padding:12px 16px 28px;display:flex;gap:8px}
-
-/* QR scan buttons */
 .qr-scan-row{display:flex;gap:6px;margin-top:6px}
 .qr-scan-btn{flex:1;background:rgba(72,175,68,.1);border:1px solid rgba(72,175,68,.25);
-  color:var(--gg);border-radius:7px;padding:8px 10px;font-size:12px;font-weight:700;
+  color:var(--gg);border-radius:7px;padding:9px 10px;font-size:12px;font-weight:700;
   cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;
-  gap:6px;-webkit-tap-highlight-color:transparent}
-.qr-scan-btn:active{background:rgba(72,175,68,.25)}
-.qr-scan-btn .qbs-icon{font-size:15px}
-/* Driver name spans full width */
+  gap:6px;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.qr-scan-btn:active{background:rgba(72,175,68,.3)}
 .hf.full-width{grid-column:1/-1}
 
 </style>
@@ -436,299 +379,137 @@ function toggleDesc(id, e) {
 }
 
 
+
 // ══ QR SCANNER ═══════════════════════════════════════════════
-let qrStream      = null;
-let qrAnimFrame   = null;
 let qrTargetField = 'driver';
 let qrParsed      = null;
-let qrDetected    = false;
 
-function openQR(targetField) {
-  qrTargetField = targetField || 'driver';
-  qrParsed      = null;
-  qrDetected    = false;
-
-  // Show overlay immediately so user sees feedback
-  const overlay = document.getElementById('qrOverlay');
-  const status  = document.getElementById('qr_status');
-  overlay.classList.add('show');
-  status.textContent = 'Starting camera...';
-  status.className = 'qr-status';
-
-  // Check jsQR loaded
-  if (typeof jsQR === 'undefined') {
-    status.textContent = '⚠ QR library failed to load. Check your connection and reload.';
-    status.className = 'qr-status';
+function openQR(field) {
+  qrTargetField = field || 'driver';
+  qrParsed = null;
+  // Check BarcodeDetector support
+  if (!('BarcodeDetector' in window)) {
+    showToast('⚠ QR scanning requires Android Chrome 83+');
     return;
   }
-
-  // Check camera API available
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    status.textContent = '⚠ Camera not supported in this browser. Try Chrome on Android.';
-    status.className = 'qr-status';
-    return;
-  }
-
-  // Try rear camera first, fall back to any camera
-  const tryCamera = (constraints) => {
-    return navigator.mediaDevices.getUserMedia(constraints)
-      .then(stream => {
-        qrStream = stream;
-        const video = document.getElementById('qrVideo');
-        video.srcObject = stream;
-        video.play().then(() => {
-          // Try native BarcodeDetector first, fall back to jsQR loop
-          if (!tryNativeDetector(video, status)) {
-            status.textContent = '⚠ QR scanning not supported in this browser. Please enter name manually.';
-            status.className = 'qr-status';
-          }
-        }).catch(e => {
-          status.textContent = '⚠ Video play failed: ' + e.message;
-        });
-      });
-  };
-
-  tryCamera({ video: { facingMode: { ideal: 'environment' } } })
-    .catch(() => tryCamera({ video: true }))
-    .catch(err => {
-      const msg = err.name === 'NotAllowedError'
-        ? '⚠ Camera permission denied — allow camera access in your browser settings'
-        : err.name === 'NotFoundError'
-        ? '⚠ No camera found on this device'
-        : err.name === 'NotReadableError'
-        ? '⚠ Camera in use by another app — close it and try again'
-        : '⚠ Camera error: ' + err.name + ' — ' + err.message;
-      status.textContent = msg;
-      status.className = 'qr-status';
-    });
+  // Trigger hidden file input — opens camera on Android
+  const input = document.getElementById('qr_cam_input');
+  if (input) { input.value = ''; input.click(); }
 }
 
-function qrOnDetected(rawData) {
-  cancelAnimationFrame(qrAnimFrame);
-  if (qrDetected) return; // prevent double-fire
-  qrDetected = true;
-  document.getElementById('qr_status').textContent = '✅ Code detected';
-  document.getElementById('qr_status').className = 'qr-status found';
-  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+async function handleQRImage(input) {
+  if (!input.files || !input.files[0]) return;
   try {
-    const actx = new (window.AudioContext||window.webkitAudioContext)();
-    const osc = actx.createOscillator(); const g = actx.createGain();
-    osc.frequency.value = 880; osc.type = 'sine';
-    g.gain.setValueAtTime(.3, actx.currentTime);
-    g.gain.linearRampToValueAtTime(0, actx.currentTime + .15);
-    osc.connect(g); g.connect(actx.destination);
-    osc.start(); osc.stop(actx.currentTime + .15);
-  } catch(e) {}
-  setTimeout(() => { closeQRCamera(); processQRData(rawData); }, 350);
-}
-
-// ── NATIVE BarcodeDetector (Chrome 83+ Android) ───────────
-let barcodeDetector = null;
-function tryNativeDetector(video, status) {
-  if (!('BarcodeDetector' in window)) return false;
-  try {
-    barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
-  } catch(e) { return false; }
-
-  const detect = () => {
-    if (qrDetected) return;
-    barcodeDetector.detect(video)
-      .then(barcodes => {
-        if (barcodes.length > 0) {
-          qrOnDetected(barcodes[0].rawValue);
-        } else {
-          qrAnimFrame = requestAnimationFrame(detect);
-        }
-      })
-      .catch(() => { qrAnimFrame = requestAnimationFrame(detect); });
-  };
-  status.textContent = 'Scanning (native) — hold QR code steady';
-  status.className = 'qr-status scanning';
-  qrAnimFrame = requestAnimationFrame(detect);
-  return true;
-}
-
-// ── jsQR FALLBACK ─────────────────────────────────────────
-function qrScanFrame() {
-  const video  = document.getElementById('qrVideo');
-  const canvas = document.getElementById('qrCanvas');
-  if (qrDetected) return;
-  if (!video || video.readyState < video.HAVE_ENOUGH_DATA) {
-    qrAnimFrame = requestAnimationFrame(qrScanFrame);
-    return;
+    showToast('📷 Reading QR code...');
+    const img  = await createImageBitmap(input.files[0]);
+    const det  = new BarcodeDetector({ formats: ['qr_code'] });
+    const hits = await det.detect(img);
+    if (!hits.length) {
+      showToast('No QR code found — try again with better lighting');
+      return;
+    }
+    processQRData(hits[0].rawValue);
+  } catch(e) {
+    showToast('⚠ Could not read image: ' + e.message);
   }
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  // jsQR removed — using native BarcodeDetector only
-  qrAnimFrame = requestAnimationFrame(qrScanFrame);
 }
 
-function closeQRCamera() {
-  qrDetected = false;
-  cancelAnimationFrame(qrAnimFrame);
-  if (qrStream) {
-    qrStream.getTracks().forEach(t => t.stop());
-    qrStream = null;
-  }
-  const video = document.getElementById('qrVideo');
-  if (video) video.srcObject = null;
-  document.getElementById('qrOverlay').classList.remove('show');
-}
-
-function closeQR() {
-  closeQRCamera();
-}
-
-// ── PARSER ────────────────────────────────────────────────────
 function processQRData(raw) {
   const trimmed = raw.trim();
-  let parsed = { name: '', employee_id: '', role: '', raw: trimmed };
+  let parsed = { name:'', employee_id:'', role:'', raw:trimmed, _method:'' };
 
   // Attempt 1: JSON
   try {
     const j = JSON.parse(trimmed);
-    parsed.name        = j.name || j.Name || j.fullName || j.full_name || j.employee_name || '';
-    parsed.employee_id = j.id   || j.ID   || j.employee_id || j.employeeId || j.badge || j.badge_id || '';
-    parsed.role        = j.role || j.Role || j.title || j.Title || j.position || '';
+    parsed.name        = j.name||j.Name||j.fullName||j.full_name||j.employee_name||'';
+    parsed.employee_id = j.id||j.ID||j.employee_id||j.employeeId||j.badge||'';
+    parsed.role        = j.role||j.Role||j.title||j.position||'';
     parsed._method = 'JSON';
   } catch(e) {
-    // Attempt 2: pipe-delimited  NAME|ID|ROLE  or  ID|NAME|ROLE
-    const pipeMatch = trimmed.match(/^([^|]+)\|([^|]+)(?:\|([^|]*))?/);
-    if (pipeMatch) {
-      // Heuristic: if first segment looks numeric it's likely an ID
-      if (/^\d+$/.test(pipeMatch[1].trim())) {
-        parsed.employee_id = pipeMatch[1].trim();
-        parsed.name        = pipeMatch[2].trim();
-        parsed.role        = pipeMatch[3]?.trim() || '';
+    // Attempt 2: MDC format  000125560,ROBERT CHRIS,NA.,HEINBACH
+    const parts = trimmed.split(',').map(s=>s.trim());
+    if (parts.length >= 2 && /^\d{4,}$/.test(parts[0])) {
+      parsed.employee_id = parts[0];
+      const nameParts = parts.slice(1).filter(p=>p!=='NA.'&&p!=='N.A.'&&p.length>1);
+      parsed.name = nameParts.join(' ').trim();
+      parsed._method = 'MDC-format';
+    }
+    // Attempt 3: pipe-delimited
+    else if (trimmed.includes('|')) {
+      const p = trimmed.split('|').map(s=>s.trim());
+      if (/^\d+$/.test(p[0])) {
+        parsed.employee_id=p[0]; parsed.name=p[1]||''; parsed.role=p[2]||'';
       } else {
-        parsed.name        = pipeMatch[1].trim();
-        parsed.employee_id = pipeMatch[2].trim();
-        parsed.role        = pipeMatch[3]?.trim() || '';
+        parsed.name=p[0]; parsed.employee_id=p[1]||''; parsed.role=p[2]||'';
       }
       parsed._method = 'pipe-delimited';
     }
-
-    // Attempt 3: comma-delimited
-    if (!parsed.name) {
-      const parts = trimmed.split(',').map(s => s.trim()).filter(Boolean);
-      if (parts.length >= 2) {
-        if (/^\d+$/.test(parts[0])) {
-          parsed.employee_id = parts[0];
-          parsed.name        = parts[1];
-          parsed.role        = parts[2] || '';
-        } else {
-          parsed.name        = parts[0];
-          parsed.employee_id = parts[1];
-          parsed.role        = parts[2] || '';
-        }
-        parsed._method = 'comma-delimited';
+    // Attempt 4: comma name,id
+    else if (trimmed.includes(',')) {
+      const p = trimmed.split(',').map(s=>s.trim());
+      if (/^\d+$/.test(p[0])) {
+        parsed.employee_id=p[0]; parsed.name=p[1]||''; parsed.role=p[2]||'';
+      } else {
+        parsed.name=p[0]; parsed.employee_id=p[1]||''; parsed.role=p[2]||'';
       }
+      parsed._method = 'comma-delimited';
     }
-
-        // Attempt 4: KEY:VALUE pairs — simple indexOf approach
-    if (!parsed.name) {
-      const upper = trimmed.toUpperCase();
-      function extractVal(key) {
-        const ki = upper.indexOf(key);
-        if (ki === -1) return '';
-        const after = trimmed.slice(ki + key.length).replace(/^\s*[:=]\s*/, '');
-        return after.split(/[|,;\r\n]/)[0].trim();
-      }
-      const nm = extractVal('NAME') || extractVal('EMPLOYEE');
-      const id = extractVal('ID') || extractVal('BADGE') || extractVal('NUMBER');
-      const rl = extractVal('ROLE') || extractVal('TITLE') || extractVal('POSITION');
-      if (nm || id) {
-        parsed.name = nm; parsed.employee_id = id; parsed.role = rl;
-        parsed._method = 'key-value';
-      }
-    }
-
-    // Attempt 5: numeric prefix  (000125560,ROBERT CHRIS,NA.,HEINBACH style — as seen in MDC reports)
-    if (!parsed.name) {
-      // Format seen in MDC: "000125560,ROBERT CHRIS,NA.,HEINBACH"
-      const mdcParts = trimmed.split(',').map(s => s.trim());
-      if (mdcParts.length >= 2 && /^\d{6,}$/.test(mdcParts[0])) {
-        parsed.employee_id = mdcParts[0];
-        // Reconstruct name from remaining parts, skip "NA." middle
-        const nameParts = mdcParts.slice(1).filter(p => p !== 'NA.' && p !== 'N.A.' && p.length > 1);
-        parsed.name = nameParts.join(' ').replace(/\s+/g, ' ').trim();
-        parsed._method = 'MDC-format';
-      }
-    }
-
-    // Fallback: use raw as name if nothing parsed
-    if (!parsed.name && !parsed.employee_id) {
-      parsed.name = trimmed.slice(0, 60);
-      parsed._method = 'raw-fallback';
+    // Fallback
+    else {
+      parsed.name = trimmed.slice(0,60);
+      parsed._method = 'raw';
     }
   }
-
   qrParsed = parsed;
   showQRResult(parsed);
 }
 
 function showQRResult(parsed) {
   const rows = [
-    ['Name', parsed.name || '—'],
-    ['Employee ID', parsed.employee_id || '—'],
-    ['Role / Title', parsed.role || '—'],
-    ['Target Field', qrTargetField === 'driver' ? 'Driver Name' : 'Guide Name'],
-    ['Parse Method', parsed._method || 'unknown'],
+    ['Name',          parsed.name        || '—'],
+    ['Employee ID',   parsed.employee_id || '—'],
+    ['Role / Title',  parsed.role        || '—'],
+    ['Target Field',  qrTargetField === 'driver' ? 'Driver Name' : 'Guide Name'],
+    ['Parse Method',  parsed._method],
   ];
-
-  let html = rows.map(([l,v]) =>
-    `<div class="qr-result-row"><span class="qr-rl">${l}</span><span class="qr-rv">${v}</span></div>`
+  document.getElementById('qr_result_rows').innerHTML = rows.map(([l,v])=>
+    `<div style="display:flex;justify-content:space-between;padding:10px 16px;
+      border-bottom:1px solid #E0E4EA;font-size:13px">
+      <span style="font-weight:700;color:#1A3A6B;min-width:110px">${l}</span>
+      <span style="color:#111;font-weight:600;text-align:right">${v}</span>
+    </div>`
   ).join('');
-
-  document.getElementById('qr_result_rows').innerHTML = html;
-
-  // Show raw if parse method is fallback or raw
   const rawWrap = document.getElementById('qr_raw_wrap');
-  if (parsed._method === 'raw-fallback' || parsed._method === 'unknown') {
+  if (parsed._method === 'raw') {
     rawWrap.style.display = 'block';
     document.getElementById('qr_raw_text').textContent = parsed.raw;
   } else {
     rawWrap.style.display = 'none';
   }
-
-  document.getElementById('qrResultModal').classList.add('show');
+  document.getElementById('qrResultModal').style.display = 'flex';
 }
 
 function closeQRResult() {
-  document.getElementById('qrResultModal').classList.remove('show');
+  document.getElementById('qrResultModal').style.display = 'none';
   qrParsed = null;
 }
 
 function applyQRResult() {
   if (!qrParsed) return;
-  // Format name: "GUIDOLIN LARRY" → "Larry Guidolin" or keep as-is
   const formatted = formatName(qrParsed.name);
-  if (qrTargetField === 'driver') {
-    const el = document.getElementById('h_driver');
-    if (el) { el.value = formatted; el.dispatchEvent(new Event('input')); }
-    // Store employee ID for archive
-    window._driverEmployeeId = qrParsed.employee_id;
-    window._driverRole       = qrParsed.role;
-  } else {
-    const el = document.getElementById('h_guide');
-    if (el) { el.value = formatted; el.dispatchEvent(new Event('input')); }
-    window._guideEmployeeId  = qrParsed.employee_id;
-    window._guideRole        = qrParsed.role;
-  }
-  document.getElementById('qrResultModal').classList.remove('show');
-  showToast(`✅ ${qrTargetField === 'driver' ? 'Driver' : 'Guide'}: ${formatted}`);
-  qrParsed = null;
+  const field = qrTargetField === 'driver' ? 'h_driver' : 'h_guide';
+  const el = document.getElementById(field);
+  if (el) el.value = formatted;
+  window._driverEmployeeId = qrTargetField==='driver' ? qrParsed.employee_id : window._driverEmployeeId;
+  window._guideEmployeeId  = qrTargetField==='guide'  ? qrParsed.employee_id : window._guideEmployeeId;
+  closeQRResult();
+  showToast('✅ ' + (qrTargetField==='driver'?'Driver':'Guide') + ': ' + formatted);
 }
 
 function formatName(raw) {
   if (!raw) return '';
-  // If ALL CAPS with spaces, title-case it
-  if (raw === raw.toUpperCase() && raw.includes(' ')) {
+  if (raw === raw.toUpperCase() && raw.includes(' '))
     return raw.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-  }
   return raw;
 }
 
@@ -1050,36 +831,48 @@ function exportPDF() {
   const pw = window.open('','_blank');
   if (!pw) { showToast('Allow popups to export PDF'); return; }
   pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${body}
+
+<!-- QR: hidden camera input -->
+<input type="file" id="qr_cam_input" accept="image/*" capture="environment"
+  style="display:none" onchange="handleQRImage(this)">
+
+<!-- QR Result Sheet -->
+<div id="qrResultModal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:8000;display:none;align-items:flex-end;backdrop-filter:blur(4px)">
+  <div style="background:#EAEEF3;border-radius:20px 20px 0 0;width:100%;max-height:75vh;
+    overflow-y:auto;animation:slideUp .3s cubic-bezier(.4,0,.2,1)">
+    <div style="padding:14px 16px;background:var(--gg);border-radius:20px 20px 0 0;
+      display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">✅</span>
+      <span style="font-size:15px;font-weight:700;color:#fff;flex:1">ID Card Scanned</span>
+      <button onclick="closeQRResult()" style="background:rgba(255,255,255,.2);color:#fff;
+        border:none;border-radius:8px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer">✕</button>
+    </div>
+    <div id="qr_result_rows"></div>
+    <div id="qr_raw_wrap" style="display:none;padding:8px 16px">
+      <div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;
+        letter-spacing:.05em;margin-bottom:4px">Raw QR Data</div>
+      <div id="qr_raw_text" style="font-family:monospace;font-size:11px;color:#888;
+        background:rgba(0,0,0,.06);border-radius:6px;padding:8px 10px;word-break:break-all"></div>
+    </div>
+    <div style="padding:12px 16px 28px;display:flex;gap:8px">
+      <button onclick="closeQRResult()" style="flex:1;background:var(--lgray);color:var(--black);
+        border:1.5px solid var(--border);border-radius:8px;padding:13px;font-size:14px;
+        font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+      <button onclick="applyQRResult()" style="flex:2;background:var(--gg);color:#fff;
+        border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;
+        cursor:pointer;font-family:inherit">Populate Fields</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- Suite Back Button -->
 <button class="suite-back" onclick="goHome()" title="Back to GroundWatch Suite">
   <span class="sb-arrow">⌂</span>
   <span class="sb-label">Suite</span>
 </button>
 
-<!-- ── QR SCANNER OVERLAY ─────────────────────────────── -->
-<div id="qrOverlay">
-  <video id="qrVideo" autoplay playsinline muted></video>
-  <canvas id="qrCanvas"></canvas>
-  <div class="qr-ui">
-    <div class="qr-top-bar">
-      <div class="qr-title">📷 Scan Employee ID</div>
-      <button class="qr-close" onclick="closeQR()">Cancel</button>
-    </div>
-    <div class="qr-frame">
-      <div>
-        <div class="qr-reticle">
-          <div class="qr-corner tr"></div>
-          <div class="qr-corner bl"></div>
-          <div class="qr-scan-line"></div>
-        </div>
-        <div class="qr-hint">Point the camera at the QR code on the employee ID card</div>
-      </div>
-    </div>
-    <div class="qr-bottom">
-      <div class="qr-status" id="qr_status">Initialising camera...</div>
-    </div>
-  </div>
-</div>
 
 <!-- QR Result Sheet -->
 <div id="qrResultModal">
