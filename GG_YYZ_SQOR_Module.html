@@ -10491,25 +10491,7 @@ let qrStream      = null;
 let qrAnimFrame   = null;
 let qrActive      = false;
 
-function qrLog(msg) {
-  // Write debug info visibly on screen
-  let dbg = document.getElementById('qr_debug_log');
-  if (!dbg) {
-    dbg = document.createElement('div');
-    dbg.id = 'qr_debug_log';
-    dbg.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;' +
-      'background:rgba(0,0,0,.92);color:#0f0;font-family:monospace;font-size:11px;' +
-      'padding:8px;max-height:40vh;overflow-y:auto;pointer-events:none';
-    document.body.appendChild(dbg);
-  }
-  const line = document.createElement('div');
-  line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
-  dbg.appendChild(line);
-  dbg.scrollTop = dbg.scrollHeight;
-}
-
 function openQRScanner(field) {
-  qrLog('openQRScanner called, field=' + field);
   qrTargetField = field || 'driver';
   qrParsed  = null;
   qrActive  = true;
@@ -10547,11 +10529,9 @@ function openQRScanner(field) {
     '</div>';
   overlay.appendChild(ui);
   document.body.appendChild(overlay);
-  qrLog('overlay appended to body');
 
   const setStatus = (msg) => {
-    qrLog('status: ' + msg);
-    const s = document.getElementById('qrScanStatus');
+      const s = document.getElementById('qrScanStatus');
     if (s) s.textContent = msg;
   };
 
@@ -10559,38 +10539,31 @@ function openQRScanner(field) {
 
   navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
     .catch(e1 => {
-      qrLog('exact env failed: ' + e1.name + ' — trying ideal');
-      return navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          return navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     })
     .catch(e2 => {
-      qrLog('ideal env failed: ' + e2.name + ' — trying any camera');
-      return navigator.mediaDevices.getUserMedia({ video: true });
+          return navigator.mediaDevices.getUserMedia({ video: true });
     })
     .then(stream => {
-      qrLog('stream acquired, tracks=' + stream.getVideoTracks().length);
       qrStream = stream;
       video.srcObject = stream;
       const playPromise = video.play();
       if (playPromise) {
         playPromise
           .then(() => {
-            qrLog('video.play() resolved, starting scan loop');
             setStatus('Hold QR code inside the box');
             requestAnimationFrame(qrScanLoop);
           })
           .catch(pe => {
-            qrLog('video.play() rejected: ' + pe.name + ' ' + pe.message);
             setStatus('⚠ Video play error: ' + pe.message);
           });
       } else {
-        qrLog('video.play() returned null (old API), starting loop anyway');
         setStatus('Hold QR code inside the box');
         requestAnimationFrame(qrScanLoop);
       }
     })
     .catch(err => {
-      qrLog('getUserMedia failed: ' + err.name + ' ' + err.message);
-      setStatus('⚠ Camera error: ' + err.name + ' — ' + err.message);
+          setStatus('⚠ Camera error: ' + err.name + ' — ' + err.message);
     });
 }
 
@@ -10604,8 +10577,7 @@ function qrScanLoop() {
   // Log once when we first get frames
   if (!window._qrLoopStarted) {
     window._qrLoopStarted = true;
-    qrLog('scan loop running, video ' + video.videoWidth + 'x' + video.videoHeight);
-  }
+    }
 
   // Draw to canvas and scan
   const canvas = document.createElement('canvas');
@@ -10671,7 +10643,6 @@ function onQRDetected(raw) {
 }
 
 function closeQRScanner() {
-  window._qrLoopStarted = false;
   qrActive = false;
   cancelAnimationFrame(qrAnimFrame);
   if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
