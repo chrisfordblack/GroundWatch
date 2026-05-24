@@ -10358,10 +10358,12 @@ let qrStream      = null;
 let qrAnimFrame   = null;
 let qrTargetField = 'driver';
 let qrParsed      = null;
+let qrDetected    = false;
 
 function openQR(targetField) {
   qrTargetField = targetField || 'driver';
-  qrParsed = null;
+  qrParsed      = null;
+  qrDetected    = false;
 
   // Show overlay immediately so user sees feedback
   const overlay = document.getElementById('qrOverlay');
@@ -10392,11 +10394,14 @@ function openQR(targetField) {
         const video = document.getElementById('qrVideo');
         video.srcObject = stream;
         video.play().then(() => {
-          status.textContent = 'Scanning — hold QR code steady';
-          status.className = 'qr-status scanning';
-          requestAnimationFrame(qrScanFrame);
+          // Try native BarcodeDetector first, fall back to jsQR loop
+          if (!tryNativeDetector(video, status)) {
+            status.textContent = 'Scanning — hold QR code steady';
+            status.className = 'qr-status scanning';
+            requestAnimationFrame(qrScanFrame);
+          }
         }).catch(e => {
-          status.textContent = 'Video play failed: ' + e.message;
+          status.textContent = '⚠ Video play failed: ' + e.message;
         });
       });
   };
@@ -10416,51 +10421,74 @@ function openQR(targetField) {
     });
 }
 
+function qrOnDetected(rawData) {
+  cancelAnimationFrame(qrAnimFrame);
+  if (qrDetected) return; // prevent double-fire
+  qrDetected = true;
+  document.getElementById('qr_status').textContent = '✅ Code detected';
+  document.getElementById('qr_status').className = 'qr-status found';
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  try {
+    const actx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = actx.createOscillator(); const g = actx.createGain();
+    osc.frequency.value = 880; osc.type = 'sine';
+    g.gain.setValueAtTime(.3, actx.currentTime);
+    g.gain.linearRampToValueAtTime(0, actx.currentTime + .15);
+    osc.connect(g); g.connect(actx.destination);
+    osc.start(); osc.stop(actx.currentTime + .15);
+  } catch(e) {}
+  setTimeout(() => { closeQRCamera(); processQRData(rawData); }, 350);
+}
+
+// ── NATIVE BarcodeDetector (Chrome 83+ Android) ───────────
+let barcodeDetector = null;
+function tryNativeDetector(video, status) {
+  if (!('BarcodeDetector' in window)) return false;
+  try {
+    barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+  } catch(e) { return false; }
+
+  const detect = () => {
+    if (qrDetected) return;
+    barcodeDetector.detect(video)
+      .then(barcodes => {
+        if (barcodes.length > 0) {
+          qrOnDetected(barcodes[0].rawValue);
+        } else {
+          qrAnimFrame = requestAnimationFrame(detect);
+        }
+      })
+      .catch(() => { qrAnimFrame = requestAnimationFrame(detect); });
+  };
+  status.textContent = 'Scanning (native) — hold QR code steady';
+  status.className = 'qr-status scanning';
+  qrAnimFrame = requestAnimationFrame(detect);
+  return true;
+}
+
+// ── jsQR FALLBACK ─────────────────────────────────────────
 function qrScanFrame() {
   const video  = document.getElementById('qrVideo');
   const canvas = document.getElementById('qrCanvas');
-  if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+  if (qrDetected) return;
+  if (!video || video.readyState < video.HAVE_ENOUGH_DATA) {
     qrAnimFrame = requestAnimationFrame(qrScanFrame);
     return;
   }
-
   canvas.width  = video.videoWidth;
   canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-  const code = jsQR(imageData.data, imageData.width, imageData.height, {
-    inversionAttempts: 'dontInvert',
-  });
-
-  if (code) {
-    // Found a QR code
-    cancelAnimationFrame(qrAnimFrame);
-    document.getElementById('qr_status').textContent = '✅ Code detected';
-    document.getElementById('qr_status').className = 'qr-status found';
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-    try {
-      const ctx2 = new (window.AudioContext||window.webkitAudioContext)();
-      const osc = ctx2.createOscillator(); const g = ctx2.createGain();
-      osc.frequency.value = 880; osc.type = 'sine';
-      g.gain.setValueAtTime(.3, ctx2.currentTime);
-      g.gain.linearRampToValueAtTime(0, ctx2.currentTime + .15);
-      osc.connect(g); g.connect(ctx2.destination);
-      osc.start(); osc.stop(ctx2.currentTime + .15);
-    } catch(e) {}
-
-    setTimeout(() => {
-      closeQRCamera();
-      processQRData(code.data);
-    }, 400);
-    return;
+  if (typeof jsQR !== 'undefined') {
+    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+    if (code) { qrOnDetected(code.data); return; }
   }
-
   qrAnimFrame = requestAnimationFrame(qrScanFrame);
 }
 
 function closeQRCamera() {
+  qrDetected = false;
   cancelAnimationFrame(qrAnimFrame);
   if (qrStream) {
     qrStream.getTracks().forEach(t => t.stop());
