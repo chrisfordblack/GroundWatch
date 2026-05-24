@@ -10491,74 +10491,106 @@ let qrStream      = null;
 let qrAnimFrame   = null;
 let qrActive      = false;
 
+function qrLog(msg) {
+  // Write debug info visibly on screen
+  let dbg = document.getElementById('qr_debug_log');
+  if (!dbg) {
+    dbg = document.createElement('div');
+    dbg.id = 'qr_debug_log';
+    dbg.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;' +
+      'background:rgba(0,0,0,.92);color:#0f0;font-family:monospace;font-size:11px;' +
+      'padding:8px;max-height:40vh;overflow-y:auto;pointer-events:none';
+    document.body.appendChild(dbg);
+  }
+  const line = document.createElement('div');
+  line.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+  dbg.appendChild(line);
+  dbg.scrollTop = dbg.scrollHeight;
+}
+
 function openQRScanner(field) {
+  qrLog('openQRScanner called, field=' + field);
   qrTargetField = field || 'driver';
   qrParsed  = null;
   qrActive  = true;
 
-  // Build overlay dynamically — no HTML dependency
-  let overlay = document.getElementById('qrScanOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'qrScanOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column';
+  // Remove old overlay if exists so we get a fresh one
+  const old = document.getElementById('qrScanOverlay');
+  if (old) old.remove();
 
-    overlay.innerHTML = `
-      <video id="qrScanVideo" autoplay playsinline muted
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
-      <div style="position:relative;z-index:1;display:flex;flex-direction:column;height:100%;pointer-events:none">
-        <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;
-          pointer-events:all;background:linear-gradient(rgba(0,0,0,.7),transparent)">
-          <div style="font-size:15px;font-weight:700;color:#fff">📷 Scan Employee ID</div>
-          <button onclick="closeQRScanner()"
-            style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);
-            color:#fff;border-radius:8px;padding:9px 20px;font-size:14px;font-weight:700;
-            font-family:inherit;cursor:pointer">✕ Cancel</button>
-        </div>
-        <div style="flex:1;display:flex;align-items:center;justify-content:center">
-          <div style="width:230px;height:230px;position:relative">
-            <div style="position:absolute;top:0;left:0;width:40px;height:40px;
-              border-top:3px solid #48AF44;border-left:3px solid #48AF44"></div>
-            <div style="position:absolute;top:0;right:0;width:40px;height:40px;
-              border-top:3px solid #48AF44;border-right:3px solid #48AF44"></div>
-            <div style="position:absolute;bottom:0;left:0;width:40px;height:40px;
-              border-bottom:3px solid #48AF44;border-left:3px solid #48AF44"></div>
-            <div style="position:absolute;bottom:0;right:0;width:40px;height:40px;
-              border-bottom:3px solid #48AF44;border-right:3px solid #48AF44"></div>
-          </div>
-        </div>
-        <div style="padding:20px 16px;text-align:center;
-          background:linear-gradient(transparent,rgba(0,0,0,.7))">
-          <div id="qrScanStatus" style="font-size:14px;font-weight:600;color:rgba(255,255,255,.8)">
-            Starting camera...
-          </div>
-        </div>
-      </div>`;
+  const overlay = document.createElement('div');
+  overlay.id = 'qrScanOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:#111;display:flex;flex-direction:column';
 
-    document.body.appendChild(overlay);
-  }
+  const video = document.createElement('video');
+  video.id = 'qrScanVideo';
+  video.autoplay = true;
+  video.playsInline = true;
+  video.muted = true;
+  video.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+  overlay.appendChild(video);
 
-  overlay.style.display = 'flex';
-  const status = document.getElementById('qrScanStatus');
-  const video  = document.getElementById('qrScanVideo');
-  if (status) status.textContent = 'Starting camera...';
+  const ui = document.createElement('div');
+  ui.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;height:100%';
+  ui.innerHTML =
+    '<div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.6)">' +
+      '<div style="font-size:15px;font-weight:700;color:#fff">📷 Scan Employee ID</div>' +
+      '<button onclick="closeQRScanner()" style="background:#fff;color:#000;border:none;' +
+        'border-radius:8px;padding:10px 22px;font-size:15px;font-weight:700;' +
+        'font-family:inherit;cursor:pointer">✕ Cancel</button>' +
+    '</div>' +
+    '<div style="flex:1;display:flex;align-items:center;justify-content:center">' +
+      '<div style="width:220px;height:220px;border:3px solid #48AF44;border-radius:8px"></div>' +
+    '</div>' +
+    '<div style="padding:20px 16px;text-align:center;background:rgba(0,0,0,.6)">' +
+      '<div id="qrScanStatus" style="font-size:14px;font-weight:600;color:#fff">Starting camera...</div>' +
+    '</div>';
+  overlay.appendChild(ui);
+  document.body.appendChild(overlay);
+  qrLog('overlay appended to body');
 
-  const tryStream = (c) => navigator.mediaDevices.getUserMedia({ video: c });
+  const setStatus = (msg) => {
+    qrLog('status: ' + msg);
+    const s = document.getElementById('qrScanStatus');
+    if (s) s.textContent = msg;
+  };
 
-  tryStream({ facingMode: { exact: 'environment' } })
-    .catch(() => tryStream({ facingMode: 'environment' }))
-    .catch(() => tryStream(true))
+  setStatus('Requesting camera...');
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
+    .catch(e1 => {
+      qrLog('exact env failed: ' + e1.name + ' — trying ideal');
+      return navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    })
+    .catch(e2 => {
+      qrLog('ideal env failed: ' + e2.name + ' — trying any camera');
+      return navigator.mediaDevices.getUserMedia({ video: true });
+    })
     .then(stream => {
+      qrLog('stream acquired, tracks=' + stream.getVideoTracks().length);
       qrStream = stream;
       video.srcObject = stream;
-      video.play();
-      if (status) status.textContent = 'Hold QR code inside the frame';
-      requestAnimationFrame(qrScanLoop);
+      const playPromise = video.play();
+      if (playPromise) {
+        playPromise
+          .then(() => {
+            qrLog('video.play() resolved, starting scan loop');
+            setStatus('Hold QR code inside the box');
+            requestAnimationFrame(qrScanLoop);
+          })
+          .catch(pe => {
+            qrLog('video.play() rejected: ' + pe.name + ' ' + pe.message);
+            setStatus('⚠ Video play error: ' + pe.message);
+          });
+      } else {
+        qrLog('video.play() returned null (old API), starting loop anyway');
+        setStatus('Hold QR code inside the box');
+        requestAnimationFrame(qrScanLoop);
+      }
     })
     .catch(err => {
-      if (status) status.textContent = '⚠ ' + (err.name === 'NotAllowedError'
-        ? 'Camera permission denied — tap Allow when asked'
-        : err.message || err.name);
+      qrLog('getUserMedia failed: ' + err.name + ' ' + err.message);
+      setStatus('⚠ Camera error: ' + err.name + ' — ' + err.message);
     });
 }
 
@@ -10568,6 +10600,11 @@ function qrScanLoop() {
   if (!video || video.readyState < 2) {
     qrAnimFrame = requestAnimationFrame(qrScanLoop);
     return;
+  }
+  // Log once when we first get frames
+  if (!window._qrLoopStarted) {
+    window._qrLoopStarted = true;
+    qrLog('scan loop running, video ' + video.videoWidth + 'x' + video.videoHeight);
   }
 
   // Draw to canvas and scan
@@ -10634,6 +10671,7 @@ function onQRDetected(raw) {
 }
 
 function closeQRScanner() {
+  window._qrLoopStarted = false;
   qrActive = false;
   cancelAnimationFrame(qrAnimFrame);
   if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
