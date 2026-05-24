@@ -10602,36 +10602,56 @@ function closeQRScanner() {
 }
 
 function processQRData(raw) {
-  const trimmed = raw.trim();
-  let parsed = { name:'', employee_id:'', role:'', raw:trimmed, _method:'' };
-  try {
-    const j = JSON.parse(trimmed);
-    parsed.name        = j.name||j.Name||j.fullName||j.employee_name||'';
-    parsed.employee_id = j.id||j.ID||j.employee_id||j.employeeId||j.badge||'';
-    parsed.role        = j.role||j.Role||j.title||j.position||'';
-    parsed._method = 'JSON';
-  } catch(e) {
-    const parts = trimmed.split(',').map(s => s.trim());
-    if (parts.length >= 2 && /^[0-9]{4,}$/.test(parts[0])) {
-      parsed.employee_id = parts[0];
-      const np = parts.slice(1).filter(p => p !== 'NA.' && p !== 'N.A.' && p.length > 1);
-      parsed.name = np.join(' ').trim();
-      parsed._method = 'MDC-format';
-    } else if (trimmed.includes('|')) {
-      const p = trimmed.split('|').map(s => s.trim());
-      parsed.name = /^[0-9]+$/.test(p[0]) ? p[1]||'' : p[0];
-      parsed.employee_id = /^[0-9]+$/.test(p[0]) ? p[0] : p[1]||'';
-      parsed.role = p[2]||''; parsed._method = 'pipe';
-    } else if (/^[0-9]{4,10}$/.test(trimmed)) {
-      parsed.employee_id = trimmed;
-      parsed._method = 'employee-id-only';
-    } else {
-      parsed.name = trimmed.slice(0, 60);
-      parsed._method = 'raw';
+  const trimmed = raw.trim().replace(/,$/, ''); // strip trailing comma
+  let parsed = { name:'', employee_id:'', role:'', raw:raw.trim(), _method:'' };
+
+  // GG card format: 000117246,CHRIS,NA.,BLACK,
+  // Parts: [employee_id, first_name, middle_or_NA, last_name, ...]
+  const parts = trimmed.split(',').map(s => s.trim()).filter(Boolean);
+
+  if (parts.length >= 2 && /^[0-9]{4,}$/.test(parts[0])) {
+    parsed.employee_id = parts[0];
+
+    // Collect name parts — skip NA. and N.A. style entries
+    const nameParts = parts.slice(1).filter(p =>
+      p !== 'NA.' && p !== 'N.A.' && p !== 'NA' && p.length > 1
+    );
+
+    if (nameParts.length >= 2) {
+      // Format: FIRST, LAST — produce "First Last"
+      const first = nameParts[0];
+      const last  = nameParts[nameParts.length - 1];
+      parsed.name = titleCase(first + ' ' + last);
+    } else if (nameParts.length === 1) {
+      parsed.name = titleCase(nameParts[0]);
     }
+    parsed._method = 'GG-card';
   }
+  // Pipe-delimited fallback
+  else if (trimmed.includes('|')) {
+    const p = trimmed.split('|').map(s => s.trim());
+    parsed.name = /^[0-9]+$/.test(p[0]) ? p[1]||'' : p[0];
+    parsed.employee_id = /^[0-9]+$/.test(p[0]) ? p[0] : p[1]||'';
+    parsed._method = 'pipe';
+  }
+  // Numeric only
+  else if (/^[0-9]{4,10}$/.test(trimmed)) {
+    parsed.employee_id = trimmed;
+    parsed._method = 'id-only';
+  }
+  // Raw fallback
+  else {
+    parsed.name = trimmed.slice(0, 60);
+    parsed._method = 'raw';
+  }
+
   qrParsed = parsed;
   showQRResult(parsed);
+}
+
+function titleCase(str) {
+  if (!str) return '';
+  return str.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function showQRResult(parsed) {
@@ -10659,10 +10679,7 @@ function closeQRResult() {}
 function applyQRResult() {}
 
 function formatName(raw) {
-  if (!raw) return '';
-  if (raw === raw.toUpperCase() && raw.includes(' '))
-    return raw.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
-  return raw;
+  return titleCase(raw || '');
 }
 
 // ══ APPROACH ══════════════════════════════════════════
