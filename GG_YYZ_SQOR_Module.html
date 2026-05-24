@@ -10328,6 +10328,19 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
             </button>
           </div>
         </div>
+      <div class="hf full-width"><label>Driver / TM Role</label>
+        <select id="h_driver_role">
+          <option value="">-- Select --</option>
+          <option value="Transportation Member">Transportation Member</option>
+          <option value="Lead Hand">Lead Hand</option>
+          <option value="Dispatcher">Dispatcher</option>
+          <option value="Supervisor">Supervisor</option>
+          <option value="Ramp Safety Specialist">Ramp Safety Specialist</option>
+          <option value="Manager">Manager</option>
+          <option value="Trainer">Trainer</option>
+        </select>
+      </div>
+
       <div class="hf"><label>Airline</label>
         <select id="h_airline">
           <option value="">-- Select --</option>
@@ -10380,8 +10393,24 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
     </div>
     <div class="footer-inner">
       <div class="ff-row">
-        <div class="field"><label>Observer Name</label><input id="f_observer" type="text" placeholder="Your full name" value="Chris Black" oninput="updateFooterSummary()"></div>
-        <div class="field"><label>Observer Title</label><input id="f_title" type="text" placeholder="Title" value="Ramp Safety Specialist" oninput="updateFooterSummary()"></div>
+        <div class="field"><label>Observer Name</label>
+          <input id="f_observer" type="text" placeholder="Your full name" value="Chris Black" oninput="updateFooterSummary()">
+          <div class="qr-scan-row" style="margin-top:6px">
+            <button class="qr-scan-btn" onclick="openQRScanner('observer')">
+              <span class="qbs-icon">⬛</span> Scan My ID Card
+            </button>
+          </div>
+        </div>
+        <div class="field"><label>Observer Title</label>
+          <select id="f_title" onchange="updateFooterSummary()">
+            <option value="Ramp Safety Specialist" selected>Ramp Safety Specialist</option>
+            <option value="Safety Supervisor">Safety Supervisor</option>
+            <option value="Supervisor">Supervisor</option>
+            <option value="Manager">Manager</option>
+            <option value="Lead Hand">Lead Hand</option>
+            <option value="Trainer">Trainer</option>
+          </select>
+        </div>
       </div>
       <div class="ff-row">
         <div class="field"><label>SQOR Observed?</label>
@@ -10465,7 +10494,8 @@ function toggleFooter() {
 }
 function updateFooterSummary() {
   const name  = document.getElementById('f_observer')?.value?.trim() || 'Observer';
-  const title = document.getElementById('f_title')?.value?.trim()    || '';
+  const titleEl = document.getElementById('f_title');
+  const title = titleEl?.value || titleEl?.options?.[titleEl.selectedIndex]?.value || '';
   const el    = document.getElementById('ft_summary');
   if (el) el.innerHTML = `<strong>${name}</strong>${title ? ' · ' + title : ''}`;
 }
@@ -10708,11 +10738,24 @@ function titleCase(str) {
 function showQRResult(parsed) {
   // Write directly to field — no modal dependency
   const formatted = formatName(parsed.name);
-  const fieldId = qrTargetField === 'driver' ? 'h_driver' : 'h_guide';
-  const fieldEl = document.getElementById(fieldId);
-  if (fieldEl && formatted) fieldEl.value = formatted;
-  if (qrTargetField === 'driver') window._driverEmployeeId = parsed.employee_id;
-  else window._guideEmployeeId = parsed.employee_id;
+
+  if (qrTargetField === 'observer') {
+    const el = document.getElementById('f_observer');
+    if (el && formatted) { el.value = formatted; el.dispatchEvent(new Event('input')); }
+    window._observerEmployeeId = parsed.employee_id;
+    updateFooterSummary();
+  } else {
+    const fieldId = qrTargetField === 'driver' ? 'h_driver' : 'h_guide';
+    const fieldEl = document.getElementById(fieldId);
+    if (fieldEl && formatted) fieldEl.value = formatted;
+    if (qrTargetField === 'driver') {
+      window._driverEmployeeId = parsed.employee_id;
+      window._driverRole = parsed.role;
+    } else {
+      window._guideEmployeeId  = parsed.employee_id;
+      window._guideRole        = parsed.role;
+    }
+  }
 
   // Build confirmation message
   const label = qrTargetField === 'driver' ? 'Driver' : 'Guide';
@@ -10879,7 +10922,8 @@ function openArchiveModal() {
     galley_position: currentGalley,
     unit: '1401 GG Toronto',
     driver_employee_id: window._driverEmployeeId || '',
-    driver_role: window._driverRole || '',
+    driver_role: (document.getElementById('h_driver_role')?.value || window._driverRole || ''),
+    observer_employee_id: window._observerEmployeeId || '',
     guide_employee_id: window._guideEmployeeId || '',
     truck_num: g('h_truck'),
     driver_name: g('h_driver'),
