@@ -10360,52 +10360,59 @@ let qrTargetField = 'driver';
 let qrParsed      = null;
 
 function openQR(targetField) {
-  // Check jsQR loaded
-  if (typeof jsQR === 'undefined') {
-    showToast('⚠ QR library not loaded — check connection');
-    return;
-  }
-  // Check camera API available
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    showToast('⚠ Camera not available on this device/browser');
-    return;
-  }
   qrTargetField = targetField || 'driver';
   qrParsed = null;
-  document.getElementById('qr_status').textContent = 'Initialising camera...';
-  document.getElementById('qr_status').className = 'qr-status';
-  document.getElementById('qrOverlay').classList.add('show');
 
-  const constraints = {
-    video: {
-      facingMode: { ideal: 'environment' },
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
-    }
+  // Show overlay immediately so user sees feedback
+  const overlay = document.getElementById('qrOverlay');
+  const status  = document.getElementById('qr_status');
+  overlay.classList.add('show');
+  status.textContent = 'Starting camera...';
+  status.className = 'qr-status';
+
+  // Check jsQR loaded
+  if (typeof jsQR === 'undefined') {
+    status.textContent = '⚠ QR library failed to load. Check your connection and reload.';
+    status.className = 'qr-status';
+    return;
+  }
+
+  // Check camera API available
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    status.textContent = '⚠ Camera not supported in this browser. Try Chrome on Android.';
+    status.className = 'qr-status';
+    return;
+  }
+
+  // Try rear camera first, fall back to any camera
+  const tryCamera = (constraints) => {
+    return navigator.mediaDevices.getUserMedia(constraints)
+      .then(stream => {
+        qrStream = stream;
+        const video = document.getElementById('qrVideo');
+        video.srcObject = stream;
+        video.play().then(() => {
+          status.textContent = 'Scanning — hold QR code steady';
+          status.className = 'qr-status scanning';
+          requestAnimationFrame(qrScanFrame);
+        }).catch(e => {
+          status.textContent = 'Video play failed: ' + e.message;
+        });
+      });
   };
 
-  navigator.mediaDevices.getUserMedia(constraints)
-    .then(stream => {
-      qrStream = stream;
-      const video = document.getElementById('qrVideo');
-      video.srcObject = stream;
-      video.addEventListener('loadedmetadata', () => {
-        video.play();
-        document.getElementById('qr_status').textContent = 'Scanning — hold QR code steady';
-        document.getElementById('qr_status').className = 'qr-status scanning';
-        requestAnimationFrame(qrScanFrame);
-      });
-    })
+  tryCamera({ video: { facingMode: { ideal: 'environment' } } })
+    .catch(() => tryCamera({ video: true }))
     .catch(err => {
       const msg = err.name === 'NotAllowedError'
-        ? 'Camera permission denied — tap Allow when prompted'
+        ? '⚠ Camera permission denied — allow camera access in your browser settings'
         : err.name === 'NotFoundError'
-        ? 'No camera found on this device'
-        : 'Camera error: ' + err.message;
-      document.getElementById('qr_status').textContent = msg;
-      document.getElementById('qr_status').className = 'qr-status';
-      showToast('⚠ ' + msg);
-      console.error('QR camera error:', err.name, err.message);
+        ? '⚠ No camera found on this device'
+        : err.name === 'NotReadableError'
+        ? '⚠ Camera in use by another app — close it and try again'
+        : '⚠ Camera error: ' + err.name + ' — ' + err.message;
+      status.textContent = msg;
+      status.className = 'qr-status';
     });
 }
 
