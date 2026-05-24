@@ -10314,24 +10314,18 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
           <label>Driver Name</label>
           <input id="h_driver" type="text" placeholder="Full name">
           <div class="qr-scan-row">
-            <label class="qr-scan-btn" for="qr_cam_driver">
+            <button class="qr-scan-btn" onclick="openQRScanner('driver')">
               <span class="qbs-icon">⬛</span> Scan Driver ID Card
-            </label>
-            <input type="file" id="qr_cam_driver" accept="image/*" capture="environment"
-              style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
-              onchange="handleQRCapture(this,'driver')">
+            </button>
           </div>
         </div>
       <div class="hf full-width" id="guide_row">
           <label>Guide Name</label>
           <input id="h_guide" type="text" placeholder="Full name">
           <div class="qr-scan-row">
-            <label class="qr-scan-btn" for="qr_cam_guide">
+            <button class="qr-scan-btn" onclick="openQRScanner('guide')">
               <span class="qbs-icon">⬛</span> Scan Guide ID Card
-            </label>
-            <input type="file" id="qr_cam_guide" accept="image/*" capture="environment"
-              style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
-              onchange="handleQRCapture(this,'guide')">
+            </button>
           </div>
         </div>
       <div class="hf"><label>Airline</label>
@@ -10493,72 +10487,118 @@ function toggleDesc(id, e) {
 // ══ QR SCANNER ═══════════════════════════════════════════════
 let qrTargetField = 'driver';
 let qrParsed      = null;
+let qrStream      = null;
+let qrAnimFrame   = null;
+let qrActive      = false;
 
-async function handleQRCapture(input, field) {
+function openQRScanner(field) {
   qrTargetField = field || 'driver';
-  qrParsed = null;
-  if (!input.files || !input.files[0]) return;
-  showToast('📷 Processing image...');
+  qrParsed  = null;
+  qrActive  = true;
 
-  try {
-    const file = input.files[0];
+  const overlay = document.getElementById('qrScanOverlay');
+  const status  = document.getElementById('qrScanStatus');
+  const video   = document.getElementById('qrScanVideo');
+  overlay.style.display = 'flex';
+  status.textContent = 'Starting camera...';
 
-    // Step 1: FileReader → data URL (works on all Android browsers)
-    const dataUrl = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload  = e => res(e.target.result);
-      r.onerror = () => rej(new Error('FileReader failed'));
-      r.readAsDataURL(file);
+  // Force rear camera — try exact first, fall back to ideal
+  const tryStream = (constraints) =>
+    navigator.mediaDevices.getUserMedia({ video: constraints });
+
+  tryStream({ facingMode: { exact: 'environment' } })
+    .catch(() => tryStream({ facingMode: 'environment' }))
+    .catch(() => tryStream(true))
+    .then(stream => {
+      qrStream = stream;
+      video.srcObject = stream;
+      video.play();
+      status.textContent = 'Hold QR code inside the frame';
+      requestAnimationFrame(qrScanLoop);
+    })
+    .catch(err => {
+      status.textContent = '⚠ Camera error: ' + (err.message || err.name);
     });
+}
 
-    // Step 2: data URL → Image element
-    const img = await new Promise((res, rej) => {
-      const i = new Image();
-      i.onload  = () => res(i);
-      i.onerror = () => rej(new Error('Image load failed'));
-      i.src = dataUrl;
-    });
-
-    // Step 3: scale down — camera images are 10MP+, jsQR/BarcodeDetector need max ~1024px
-    const MAX = 1200;
-    const scale = Math.min(1, MAX / Math.max(img.width, img.height));
-    const w = Math.round(img.width  * scale);
-    const h = Math.round(img.height * scale);
-    const canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, w, h);
-
-    let raw = null;
-
-    // Step 4a: try native BarcodeDetector
-    if ('BarcodeDetector' in window) {
-      try {
-        const det  = new BarcodeDetector({ formats: ['qr_code'] });
-        const hits = await det.detect(canvas);
-        if (hits.length) raw = hits[0].rawValue;
-      } catch(e) {}
-    }
-
-    // Step 4b: fall back to jsQR
-    if (!raw && typeof jsQR !== 'undefined') {
-      const px = ctx.getImageData(0, 0, w, h);
-      const code = jsQR(px.data, px.width, px.height, { inversionAttempts: 'attemptBoth' });
-      if (code) raw = code.data;
-    }
-
-    input.value = '';
-
-    if (!raw) {
-      showToast('No QR code found — hold card flat and steady, tap Retry');
-      return;
-    }
-    processQRData(raw);
-
-  } catch(e) {
-    input.value = '';
-    showToast('⚠ ' + (e.message || 'Unknown error — try again'));
+function qrScanLoop() {
+  if (!qrActive) return;
+  const video  = document.getElementById('qrScanVideo');
+  if (!video || video.readyState < 2) {
+    qrAnimFrame = requestAnimationFrame(qrScanLoop);
+    return;
   }
+
+  // Draw to canvas and scan
+  const canvas = document.createElement('canvas');
+  const w = video.videoWidth;
+  const h = video.videoHeight;
+  if (!w || !h) { qrAnimFrame = requestAnimationFrame(qrScanLoop); return; }
+  canvas.width = w; canvas.height = h;
+  canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+
+  let detected = false;
+
+  // Try BarcodeDetector
+  if ('BarcodeDetector' in window) {
+    new BarcodeDetector({ formats: ['qr_code'] }).detect(canvas)
+      .then(hits => {
+        if (hits.length && qrActive) {
+          qrActive = false;
+          onQRDetected(hits[0].rawValue);
+        } else if (qrActive) {
+          qrAnimFrame = requestAnimationFrame(qrScanLoop);
+        }
+      })
+      .catch(() => {
+        // BarcodeDetector failed — fall back to jsQR on this frame
+        if (qrActive) tryJsQR(canvas);
+      });
+    return;
+  }
+
+  // jsQR fallback
+  tryJsQR(canvas);
+}
+
+function tryJsQR(canvas) {
+  if (typeof jsQR === 'undefined') {
+    qrAnimFrame = requestAnimationFrame(qrScanLoop);
+    return;
+  }
+  const ctx = canvas.getContext('2d');
+  const px  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const code = jsQR(px.data, px.width, px.height, { inversionAttempts: 'dontInvert' });
+  if (code && qrActive) {
+    qrActive = false;
+    onQRDetected(code.data);
+  } else if (qrActive) {
+    qrAnimFrame = requestAnimationFrame(qrScanLoop);
+  }
+}
+
+function onQRDetected(raw) {
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  try {
+    const actx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = actx.createOscillator(); const g = actx.createGain();
+    osc.frequency.value = 880; osc.type = 'sine';
+    g.gain.setValueAtTime(.25, actx.currentTime);
+    g.gain.linearRampToValueAtTime(0, actx.currentTime + .12);
+    osc.connect(g); g.connect(actx.destination);
+    osc.start(); osc.stop(actx.currentTime + .15);
+  } catch(e) {}
+  document.getElementById('qrScanStatus').textContent = '✅ Code detected!';
+  setTimeout(() => { closeQRScanner(); processQRData(raw); }, 400);
+}
+
+function closeQRScanner() {
+  qrActive = false;
+  cancelAnimationFrame(qrAnimFrame);
+  if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
+  const v = document.getElementById('qrScanVideo');
+  if (v) v.srcObject = null;
+  document.getElementById('qrScanOverlay').style.display = 'none';
 }
 
 function processQRData(raw) {
@@ -10566,7 +10606,7 @@ function processQRData(raw) {
   let parsed = { name:'', employee_id:'', role:'', raw:trimmed, _method:'' };
   try {
     const j = JSON.parse(trimmed);
-    parsed.name        = j.name||j.Name||j.fullName||j.full_name||j.employee_name||'';
+    parsed.name        = j.name||j.Name||j.fullName||j.employee_name||'';
     parsed.employee_id = j.id||j.ID||j.employee_id||j.employeeId||j.badge||'';
     parsed.role        = j.role||j.Role||j.title||j.position||'';
     parsed._method = 'JSON';
@@ -10581,8 +10621,10 @@ function processQRData(raw) {
       const p = trimmed.split('|').map(s => s.trim());
       parsed.name = /^[0-9]+$/.test(p[0]) ? p[1]||'' : p[0];
       parsed.employee_id = /^[0-9]+$/.test(p[0]) ? p[0] : p[1]||'';
-      parsed.role = p[2]||'';
-      parsed._method = 'pipe';
+      parsed.role = p[2]||''; parsed._method = 'pipe';
+    } else if (/^[0-9]{4,10}$/.test(trimmed)) {
+      parsed.employee_id = trimmed;
+      parsed._method = 'employee-id-only';
     } else {
       parsed.name = trimmed.slice(0, 60);
       parsed._method = 'raw';
@@ -10593,23 +10635,25 @@ function processQRData(raw) {
 }
 
 function showQRResult(parsed) {
+  const el = document.getElementById('qr_result_rows');
+  if (!el) { showToast('QR read: ' + parsed.name + ' ' + parsed.employee_id); return; }
   const rows = [
-    ['Name',        parsed.name        || '—'],
+    ['Name',        parsed.name        || '— (see Raw)'],
     ['Employee ID', parsed.employee_id || '—'],
     ['Role',        parsed.role        || '—'],
     ['Field',       qrTargetField === 'driver' ? 'Driver Name' : 'Guide Name'],
     ['Format',      parsed._method],
   ];
-  document.getElementById('qr_result_rows').innerHTML = rows.map(([l,v]) =>
+  el.innerHTML = rows.map(([l,v]) =>
     `<div style="display:flex;justify-content:space-between;padding:10px 16px;
       border-bottom:1px solid #E0E4EA;font-size:13px">
       <span style="font-weight:700;color:#1A3A6B;min-width:110px">${l}</span>
-      <span style="color:#111;font-weight:600;text-align:right">${v}</span>
+      <span style="color:#111;font-weight:600;text-align:right;word-break:break-all">${v}</span>
     </div>`
   ).join('');
   const rawWrap = document.getElementById('qr_raw_wrap');
   if (rawWrap) {
-    rawWrap.style.display = parsed._method === 'raw' ? 'block' : 'none';
+    rawWrap.style.display = 'block'; // always show raw so we can see what the QR contains
     const rawEl = document.getElementById('qr_raw_text');
     if (rawEl) rawEl.textContent = parsed.raw;
   }
@@ -10630,7 +10674,7 @@ function applyQRResult() {
   if (qrTargetField === 'driver') window._driverEmployeeId = qrParsed.employee_id;
   else window._guideEmployeeId = qrParsed.employee_id;
   closeQRResult();
-  showToast('✅ ' + (qrTargetField === 'driver' ? 'Driver' : 'Guide') + ': ' + formatted);
+  showToast('✅ ' + (qrTargetField === 'driver' ? 'Driver' : 'Guide') + ': ' + (formatted || qrParsed.employee_id));
 }
 
 function formatName(raw) {
