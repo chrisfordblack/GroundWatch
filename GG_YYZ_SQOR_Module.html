@@ -10635,47 +10635,28 @@ function processQRData(raw) {
 }
 
 function showQRResult(parsed) {
-  const el = document.getElementById('qr_result_rows');
-  if (!el) { showToast('QR read: ' + parsed.name + ' ' + parsed.employee_id); return; }
-  const rows = [
-    ['Name',        parsed.name        || '— (see Raw)'],
-    ['Employee ID', parsed.employee_id || '—'],
-    ['Role',        parsed.role        || '—'],
-    ['Field',       qrTargetField === 'driver' ? 'Driver Name' : 'Guide Name'],
-    ['Format',      parsed._method],
-  ];
-  el.innerHTML = rows.map(([l,v]) =>
-    `<div style="display:flex;justify-content:space-between;padding:10px 16px;
-      border-bottom:1px solid #E0E4EA;font-size:13px">
-      <span style="font-weight:700;color:#1A3A6B;min-width:110px">${l}</span>
-      <span style="color:#111;font-weight:600;text-align:right;word-break:break-all">${v}</span>
-    </div>`
-  ).join('');
-  const rawWrap = document.getElementById('qr_raw_wrap');
-  if (rawWrap) {
-    rawWrap.style.display = 'block'; // always show raw so we can see what the QR contains
-    const rawEl = document.getElementById('qr_raw_text');
-    if (rawEl) rawEl.textContent = parsed.raw;
-  }
-  document.getElementById('qrResultModal').style.display = 'flex';
+  // Write directly to field — no modal dependency
+  const formatted = formatName(parsed.name);
+  const fieldId = qrTargetField === 'driver' ? 'h_driver' : 'h_guide';
+  const fieldEl = document.getElementById(fieldId);
+  if (fieldEl && formatted) fieldEl.value = formatted;
+  if (qrTargetField === 'driver') window._driverEmployeeId = parsed.employee_id;
+  else window._guideEmployeeId = parsed.employee_id;
+
+  // Build confirmation message
+  const label = qrTargetField === 'driver' ? 'Driver' : 'Guide';
+  const nameStr = formatted || '(name not parsed)';
+  const idStr   = parsed.employee_id ? ' · ID: ' + parsed.employee_id : '';
+  showToast('✅ ' + label + ': ' + nameStr + idStr);
+
+  // Also store raw for debugging — tap toast area to see it
+  window._lastQRRaw = parsed.raw;
+  window._lastQRMethod = parsed._method;
+  console.log('QR raw:', parsed.raw, '| method:', parsed._method);
 }
 
-function closeQRResult() {
-  document.getElementById('qrResultModal').style.display = 'none';
-  qrParsed = null;
-}
-
-function applyQRResult() {
-  if (!qrParsed) return;
-  const formatted = formatName(qrParsed.name);
-  const field = qrTargetField === 'driver' ? 'h_driver' : 'h_guide';
-  const el = document.getElementById(field);
-  if (el) el.value = formatted;
-  if (qrTargetField === 'driver') window._driverEmployeeId = qrParsed.employee_id;
-  else window._guideEmployeeId = qrParsed.employee_id;
-  closeQRResult();
-  showToast('✅ ' + (qrTargetField === 'driver' ? 'Driver' : 'Guide') + ': ' + (formatted || qrParsed.employee_id));
-}
+function closeQRResult() {}
+function applyQRResult() {}
 
 function formatName(raw) {
   if (!raw) return '';
@@ -11002,27 +10983,6 @@ function exportPDF() {
   const pw = window.open('','_blank');
   if (!pw) { showToast('Allow popups to export PDF'); return; }
   pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${css}</style></head><body>${body}
-
-
-
-<!-- QR Result Sheet -->
-<div id="qrResultModal">
-  <div class="qr-result-sheet">
-    <div class="qr-result-hdr">
-      <span class="qr-r-icon">✅</span>
-      <span class="qr-r-title">ID Card Scanned</span>
-    </div>
-    <div id="qr_result_rows"></div>
-    <div id="qr_raw_wrap" style="display:none">
-      <div style="padding:8px 16px 4px;font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em">Raw QR Data</div>
-      <div class="qr-raw" id="qr_raw_text"></div>
-    </div>
-    <div class="qr-result-btns">
-      <button onclick="closeQRResult()" style="flex:1;background:var(--lgray);color:var(--black);border:1.5px solid var(--border);border-radius:8px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
-      <button onclick="applyQRResult()" style="flex:2;background:var(--gg);color:#fff;border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit" id="qr_apply_btn">Populate Fields</button>
-    </div>
-  </div>
-</div>
 
 </body></html>`);
   pw.document.close(); pw.focus(); setTimeout(()=>pw.print(),600);
