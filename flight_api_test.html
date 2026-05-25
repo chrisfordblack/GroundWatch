@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GroundWatch Flight API Test</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  background:#0D1117;color:#E6EDF3;padding:16px;font-size:14px}
+h1{font-size:18px;font-weight:700;color:#48AF44;margin-bottom:4px}
+.sub{font-size:12px;color:#8B949E;margin-bottom:16px}
+.card{background:#161B22;border:1px solid #30363D;border-radius:10px;
+  padding:12px 14px;margin-bottom:10px}
+.card h3{font-size:13px;font-weight:700;margin-bottom:8px;color:#fff}
+.btn{width:100%;background:#1F6FEB;color:#fff;border:none;border-radius:8px;
+  padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;
+  margin-bottom:6px;text-align:left;display:flex;justify-content:space-between}
+.btn:active{opacity:.8}
+.result{font-size:11px;font-family:monospace;padding:8px;border-radius:6px;
+  margin-top:6px;word-break:break-all;line-height:1.6;display:none;max-height:200px;overflow-y:auto}
+.pass{background:rgba(46,160,67,.15);color:#2EA043;display:block}
+.fail{background:rgba(218,54,51,.15);color:#DA3633;display:block}
+.running{background:rgba(210,153,34,.15);color:#D29922;display:block}
+</style>
+</head>
+<body>
+<h1>Flight API Test</h1>
+<p class="sub">Tests which live flight data APIs work from your phone browser. Tap each one.</p>
+
+<div class="card">
+  <h3>ADS-B APIs (no key required)</h3>
+  <button class="btn" onclick="test(this,'adsblol','https://api.adsb.lol/v2/lat/43.68/lon/-79.63/dist/25')">
+    <span>api.adsb.lol — nearby aircraft</span><span>▶</span>
+  </button>
+  <div class="result" id="r_adsblol"></div>
+
+  <button class="btn" onclick="test(this,'adsbfi','https://api.adsb.fi/v1/aircraft?lat=43.68&lon=-79.63&radius=25')">
+    <span>api.adsb.fi — nearby aircraft</span><span>▶</span>
+  </button>
+  <div class="result" id="r_adsbfi"></div>
+
+  <button class="btn" onclick="test(this,'opensky','https://opensky-network.org/api/states/all?lamin=43.4&lomin=-80.0&lamax=44.0&lomax=-79.2')">
+    <span>OpenSky Network — CYYZ area</span><span>▶</span>
+  </button>
+  <div class="result" id="r_opensky"></div>
+
+  <button class="btn" onclick="test(this,'adsbx','https://globe.adsbexchange.com/re-api/?circle=43.68,-79.63,25')">
+    <span>ADS-B Exchange globe API</span><span>▶</span>
+  </button>
+  <div class="result" id="r_adsbx"></div>
+</div>
+
+<div class="card">
+  <h3>Airline-filtered queries</h3>
+  <button class="btn" onclick="test(this,'aca_lol','https://api.adsb.lol/v2/icao/ACA')">
+    <span>adsb.lol — Air Canada (ACA)</span><span>▶</span>
+  </button>
+  <div class="result" id="r_aca_lol"></div>
+
+  <button class="btn" onclick="test(this,'aca_fi','https://api.adsb.fi/v1/operator/ACA')">
+    <span>adsb.fi — Air Canada operator</span><span>▶</span>
+  </button>
+  <div class="result" id="r_aca_fi"></div>
+</div>
+
+<div class="card">
+  <h3>Schedule/flight APIs</h3>
+  <button class="btn" onclick="test(this,'helio','https://api.helo.app/flight/ACA553')">
+    <span>helo.app flight lookup</span><span>▶</span>
+  </button>
+  <div class="result" id="r_helio"></div>
+
+  <button class="btn" onclick="test(this,'flightlabs','https://app.goflightlabs.com/flights?access_key=test&dep_icao=CYYZ')">
+    <span>GoFlightLabs (free tier)</span><span>▶</span>
+  </button>
+  <div class="result" id="r_flightlabs"></div>
+</div>
+
+<div class="card">
+  <h3>Aircraft registration lookup</h3>
+  <button class="btn" onclick="test(this,'hexdb','https://hexdb.io/api/v1/aircraft/C-GJWO')">
+    <span>hexdb.io — C-GJWO lookup</span><span>▶</span>
+  </button>
+  <div class="result" id="r_hexdb"></div>
+
+  <button class="btn" onclick="test(this,'adsbdb','https://api.adsbdb.com/v0/aircraft/CGJWO')">
+    <span>adsbdb.com — aircraft by reg</span><span>▶</span>
+  </button>
+  <div class="result" id="r_adsbdb"></div>
+</div>
+
+<script>
+async function test(btn, id, url) {
+  const el = document.getElementById('r_' + id);
+  el.className = 'result running';
+  el.textContent = 'Fetching ' + url + '...';
+  btn.querySelector('span:last-child').textContent = '⏳';
+  try {
+    const r = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'GroundWatch/1.0'
+      }
+    });
+    const text = await r.text();
+    let parsed;
+    try { parsed = JSON.parse(text); } catch(e) { parsed = null; }
+    
+    if (r.ok) {
+      btn.querySelector('span:last-child').textContent = '✅';
+      el.className = 'result pass';
+      const summary = parsed ? summarise(parsed, id) : text.slice(0,300);
+      el.textContent = 'HTTP ' + r.status + ' ✅\n' + summary;
+    } else {
+      btn.querySelector('span:last-child').textContent = '❌';
+      el.className = 'result fail';
+      el.textContent = 'HTTP ' + r.status + ' ❌\n' + text.slice(0,200);
+    }
+  } catch(e) {
+    btn.querySelector('span:last-child').textContent = '❌';
+    el.className = 'result fail';
+    el.textContent = 'FETCH ERROR: ' + e.message;
+  }
+}
+
+function summarise(data, id) {
+  // Try to extract useful info
+  if (data.ac && Array.isArray(data.ac)) {
+    const sample = data.ac.slice(0,3).map(a =>
+      [a.r||a.reg, a.t||a.type, a.flight||a.callsign, a.lat, a.lon].filter(Boolean).join(' | ')
+    ).join('\n');
+    return data.ac.length + ' aircraft found:\n' + sample;
+  }
+  if (data.states && Array.isArray(data.states)) {
+    const sample = data.states.slice(0,3).map(s =>
+      [s[1], s[0], s[6], s[5]].filter(Boolean).join(' | ')
+    ).join('\n');
+    return data.states.length + ' states:\n' + sample;
+  }
+  if (data.aircraft && Array.isArray(data.aircraft)) {
+    return data.aircraft.length + ' aircraft:\n' + JSON.stringify(data.aircraft[0]).slice(0,200);
+  }
+  return JSON.stringify(data).slice(0,300);
+}
+</script>
+</body>
+</html>
