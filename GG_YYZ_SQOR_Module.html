@@ -10373,7 +10373,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
           <option>Delta Air Lines</option><option>Other</option>
         </select>
       </div>
-      <div class="hf"><label>Aircraft #</label><input id="h_aircraft_num" type="text" placeholder="Reg or fin# (e.g. C-GJWO)" autocomplete="off" oninput="showAircraftDropdown('h_aircraft_num','h_aircraft_type')" onfocus="showAircraftDropdown('h_aircraft_num','h_aircraft_type')"></div>
+      <div class="hf"><label>Fin #</label><input id="h_aircraft_num" type="text" placeholder="Fin # (e.g. C-GJWO)" autocomplete="off" oninput="showAircraftDropdown('h_aircraft_num','h_aircraft_type')" onfocus="showAircraftDropdown('h_aircraft_num','h_aircraft_type')"></div>
       <div class="hf"><label>Aircraft Type</label>
         <input id="h_aircraft_type" type="text" placeholder="Auto-fills on selection">
       </div>
@@ -11089,7 +11089,7 @@ function openArchiveModal() {
     ['Truck #', pendingRecord.truck_num || '—'],
     ['Driver', pendingRecord.driver_name || '—'],
     ['Airline', pendingRecord.airline || '—'],
-    ['Aircraft', pendingRecord.aircraft_num + ' (' + pendingRecord.aircraft_type + ')'],
+    ['Fin #', pendingRecord.aircraft_num + ' (' + pendingRecord.aircraft_type + ')'],
     ['Approach', currentApproach === 'one' ? 'One Person' : 'Two Person'],
     ['Safe', safe + ' items'],
     ['Not Observed', nr + ' items'],
@@ -11182,7 +11182,7 @@ function exportPDF() {
   body += `<div class="meta">Gate Gourmet YYZ &nbsp;·&nbsp; ${now.toLocaleDateString('en-CA')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} &nbsp;·&nbsp; GroundWatch Safety Suite</div>`;
   body += `<table><tr><td class="lbl">Truck #</td><td>${g('h_truck')||'—'}</td><td class="lbl">Driver</td><td>${g('h_driver')||'—'}</td></tr>
     <tr><td class="lbl">Guide</td><td>${g('h_guide')||'—'}</td><td class="lbl">Airline</td><td>${g('h_airline')||'—'}</td></tr>
-    <tr><td class="lbl">Aircraft #</td><td>${g('h_aircraft_num')||'—'}</td><td class="lbl">Aircraft Type</td><td>${g('h_aircraft_type')||'—'}</td></tr>
+    <tr><td class="lbl">Fin #</td><td>${g('h_aircraft_num')||'—'}</td><td class="lbl">Aircraft Type</td><td>${g('h_aircraft_type')||'—'}</td></tr>
     <tr><td class="lbl">Approach</td><td>${currentApproach==='one'?'One Person':'Two Person'}</td><td class="lbl">Observer</td><td>${g('f_observer')||'—'}</td></tr></table>`;
 
   // Group items by category
