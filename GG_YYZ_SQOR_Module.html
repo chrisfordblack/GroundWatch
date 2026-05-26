@@ -182,6 +182,29 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .qr-scan-btn:active{background:rgba(72,175,68,.3)}
 .hf.full-width{grid-column:1/-1}
 
+
+/* ── AIRCRAFT LOOKUP ─────────────────────────────────── */
+.ac-combo{position:relative}
+.ac-combo input{width:100%}
+.ac-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;
+  border:1.5px solid var(--gg);border-top:none;border-radius:0 0 7px 7px;
+  max-height:180px;overflow-y:auto;z-index:500;display:none;
+  box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.ac-dropdown.show{display:block}
+.ac-option{padding:9px 12px;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #f0f0f0}
+.ac-option:last-child{border-bottom:none}
+.ac-option:active,.ac-option:hover{background:rgba(72,175,68,.08)}
+.ac-option .ao-reg{font-weight:700;color:var(--black)}
+.ac-option .ao-type{font-size:11px;color:var(--mid);background:var(--lgray);
+  padding:2px 7px;border-radius:10px}
+.ac-no-results{padding:10px 12px;font-size:12px;color:var(--mid);
+  font-style:italic;text-align:center}
+.ac-manual-hint{padding:8px 12px;font-size:11px;color:var(--gg);
+  border-top:1px solid #f0f0f0;cursor:pointer;text-align:center;font-weight:600}
+.ac-manual-hint:active{background:rgba(72,175,68,.06)}
+
 </style>
 
 <script>
@@ -10342,7 +10365,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
       </div>
 
       <div class="hf"><label>Airline</label>
-        <select id="h_airline">
+        <select id="h_airline" onchange="onAirlineChange()">
           <option value="">-- Select --</option>
           <option>Air Canada</option><option>WestJet</option><option>Porter Airlines</option>
           <option>Air Transat</option><option>Sunwing</option><option>Flair Airlines</option>
@@ -10350,14 +10373,9 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
           <option>Delta Air Lines</option><option>Other</option>
         </select>
       </div>
-      <div class="hf"><label>Aircraft #</label><input id="h_aircraft_num" type="text" placeholder="e.g. 263"></div>
+      <div class="hf"><label>Aircraft #</label><input id="h_aircraft_num" type="text" placeholder="Reg or fin# (e.g. C-GJWO)" autocomplete="off" oninput="showAircraftDropdown('h_aircraft_num','h_aircraft_type')" onfocus="showAircraftDropdown('h_aircraft_num','h_aircraft_type')"></div>
       <div class="hf"><label>Aircraft Type</label>
-        <select id="h_aircraft_type">
-          <option value="">-- Select --</option>
-          <option>A319</option><option>A320</option><option>A321</option><option>A220</option>
-          <option>B737-600</option><option>B737-700</option><option>B737-800</option><option>B737-900</option>
-          <option>B737 MAX 8</option><option>E175</option><option>E190</option><option>DH8</option><option>Other</option>
-        </select>
+        <input id="h_aircraft_type" type="text" placeholder="Auto-fills on selection">
       </div>
     </div>
   </div>
@@ -10776,6 +10794,112 @@ function formatName(raw) {
   return titleCase(raw || '');
 }
 
+
+// ══ AIRCRAFT LOOKUP ═══════════════════════════════════════════
+const AIRCRAFT_DB = {"Air Canada":[{"reg":"C-GJXB","type":"A220-300"},{"reg":"C-GJXC","type":"A220-300"},{"reg":"C-GJXD","type":"A220-300"},{"reg":"C-GJXE","type":"A220-300"},{"reg":"C-GJXF","type":"A220-300"},{"reg":"C-GJXG","type":"A220-300"},{"reg":"C-GJXH","type":"A220-300"},{"reg":"C-GJXI","type":"A220-300"},{"reg":"C-GJXJ","type":"A220-300"},{"reg":"C-GJXK","type":"A220-300"},{"reg":"C-GJXL","type":"A220-300"},{"reg":"C-GJXM","type":"A220-300"},{"reg":"C-GBIM","type":"A319"},{"reg":"C-GBIP","type":"A319"},{"reg":"C-GBIT","type":"A319"},{"reg":"C-GBIX","type":"A319"},{"reg":"C-GBIA","type":"A319"},{"reg":"C-GBIB","type":"A319"},{"reg":"C-GBIC","type":"A319"},{"reg":"C-GBIE","type":"A319"},{"reg":"C-GBIG","type":"A319"},{"reg":"C-GBIK","type":"A319"},{"reg":"C-FDRH","type":"A320"},{"reg":"C-FDCA","type":"A320"},{"reg":"C-FDKM","type":"A320"},{"reg":"C-FDKE","type":"A320"},{"reg":"C-FMWP","type":"A320"},{"reg":"C-FMWQ","type":"A320"},{"reg":"C-FMWU","type":"A320"},{"reg":"C-FMWV","type":"A320"},{"reg":"C-GJWO","type":"A320"},{"reg":"C-GJWN","type":"A320"},{"reg":"C-GJWT","type":"A320"},{"reg":"C-GJWU","type":"A320"},{"reg":"C-GJWV","type":"A320"},{"reg":"C-GJWW","type":"A320"},{"reg":"C-GJWX","type":"A320"},{"reg":"C-GJWY","type":"A320"},{"reg":"C-GBHO","type":"A320"},{"reg":"C-GBHP","type":"A320"},{"reg":"C-GBHQ","type":"A320"},{"reg":"C-GBHR","type":"A320"},{"reg":"C-GBHS","type":"A320"},{"reg":"C-GBHT","type":"A320"},{"reg":"C-GBHU","type":"A320"},{"reg":"C-GKOE","type":"A320"},{"reg":"C-GKOF","type":"A320"},{"reg":"C-GKOG","type":"A320"},{"reg":"C-GNBE","type":"A320neo"},{"reg":"C-GNBF","type":"A320neo"},{"reg":"C-GNBG","type":"A320neo"},{"reg":"C-GNBH","type":"A320neo"},{"reg":"C-GNBI","type":"A320neo"},{"reg":"C-GNBJ","type":"A320neo"},{"reg":"C-GNBK","type":"A320neo"},{"reg":"C-GNBL","type":"A320neo"},{"reg":"C-GIUA","type":"A321"},{"reg":"C-GIUB","type":"A321"},{"reg":"C-GIUC","type":"A321"},{"reg":"C-GIUD","type":"A321"},{"reg":"C-GIUE","type":"A321"},{"reg":"C-GIUF","type":"A321"},{"reg":"C-GITU","type":"A321"},{"reg":"C-GITV","type":"A321"},{"reg":"C-GITW","type":"A321"},{"reg":"C-GITX","type":"A321"},{"reg":"C-GITY","type":"A321"},{"reg":"C-GITZ","type":"A321"},{"reg":"C-GGWX","type":"A321neo"},{"reg":"C-GGWY","type":"A321neo"},{"reg":"C-GGWZ","type":"A321neo"},{"reg":"C-GGXA","type":"A321neo"},{"reg":"C-GGXB","type":"A321neo"},{"reg":"C-GGXC","type":"A321neo"},{"reg":"C-GHPQ","type":"B787-8"},{"reg":"C-GHQQ","type":"B787-8"},{"reg":"C-GHPU","type":"B787-8"},{"reg":"C-GHPV","type":"B787-8"},{"reg":"C-GHPW","type":"B787-8"},{"reg":"C-GHPX","type":"B787-8"},{"reg":"C-FRSO","type":"B787-9"},{"reg":"C-FRST","type":"B787-9"},{"reg":"C-FRTG","type":"B787-9"},{"reg":"C-FRTW","type":"B787-9"},{"reg":"C-FRUM","type":"B787-9"},{"reg":"C-FRUV","type":"B787-9"},{"reg":"C-FRUX","type":"B787-9"},{"reg":"C-GUPU","type":"B787-9"},{"reg":"C-FIVQ","type":"B777-300ER"},{"reg":"C-FIVR","type":"B777-300ER"},{"reg":"C-FIVS","type":"B777-300ER"},{"reg":"C-FIVT","type":"B777-300ER"},{"reg":"C-FIVM","type":"B777-200LR"},{"reg":"C-FIVK","type":"B777-200LR"},{"reg":"C-GDUZ","type":"B777-300ER"},{"reg":"C-GDUV","type":"B777-300ER"}],"WestJet":[{"reg":"C-GWSB","type":"B737-600"},{"reg":"C-GWSC","type":"B737-600"},{"reg":"C-GWSE","type":"B737-700"},{"reg":"C-GWSF","type":"B737-700"},{"reg":"C-GWSG","type":"B737-700"},{"reg":"C-GWSH","type":"B737-700"},{"reg":"C-GWSV","type":"B737-700"},{"reg":"C-GWSW","type":"B737-700"},{"reg":"C-GWSX","type":"B737-700"},{"reg":"C-GWSY","type":"B737-700"},{"reg":"C-GWSZ","type":"B737-700"},{"reg":"C-GWBA","type":"B737-700"},{"reg":"C-GUWJ","type":"B737-800"},{"reg":"C-GUWK","type":"B737-800"},{"reg":"C-GUWL","type":"B737-800"},{"reg":"C-GUWM","type":"B737-800"},{"reg":"C-GUWN","type":"B737-800"},{"reg":"C-GUWO","type":"B737-800"},{"reg":"C-GUWP","type":"B737-800"},{"reg":"C-GUWQ","type":"B737-800"},{"reg":"C-GUWR","type":"B737-800"},{"reg":"C-GUWS","type":"B737-800"},{"reg":"C-FKIW","type":"B737-800"},{"reg":"C-FKIX","type":"B737-800"},{"reg":"C-FKIY","type":"B737-800"},{"reg":"C-FKIZ","type":"B737-800"},{"reg":"C-FLSF","type":"B737-800"},{"reg":"C-FLSG","type":"B737-800"},{"reg":"C-FLSH","type":"B737-800"},{"reg":"C-FLSI","type":"B737-800"},{"reg":"C-FLSJ","type":"B737-800"},{"reg":"C-FLSK","type":"B737-800"},{"reg":"C-GJXP","type":"B737 MAX 8"},{"reg":"C-GJXQ","type":"B737 MAX 8"},{"reg":"C-GJXR","type":"B737 MAX 8"},{"reg":"C-GJXS","type":"B737 MAX 8"},{"reg":"C-GJXT","type":"B737 MAX 8"},{"reg":"C-GJXU","type":"B737 MAX 8"},{"reg":"C-GJXV","type":"B737 MAX 8"},{"reg":"C-GJXW","type":"B737 MAX 8"},{"reg":"C-GNAR","type":"B737 MAX 8"},{"reg":"C-GNAS","type":"B737 MAX 8"},{"reg":"C-GNAT","type":"B737 MAX 8"},{"reg":"C-GNAU","type":"B737 MAX 8"},{"reg":"C-FOGJ","type":"B767-300ER"},{"reg":"C-FOGK","type":"B767-300ER"},{"reg":"C-FOGL","type":"B767-300ER"},{"reg":"C-FOGM","type":"B767-300ER"},{"reg":"C-GUDH","type":"B787-9"},{"reg":"C-GUDI","type":"B787-9"},{"reg":"C-GUDJ","type":"B787-9"},{"reg":"C-GUDK","type":"B787-9"},{"reg":"C-GUDL","type":"B787-9"},{"reg":"C-GUDM","type":"B787-9"}],"Porter Airlines":[{"reg":"C-GKQB","type":"E195-E2"},{"reg":"C-GKQC","type":"E195-E2"},{"reg":"C-GKQD","type":"E195-E2"},{"reg":"C-GKQE","type":"E195-E2"},{"reg":"C-GKQF","type":"E195-E2"},{"reg":"C-GKQG","type":"E195-E2"},{"reg":"C-GKQH","type":"E195-E2"},{"reg":"C-GKQI","type":"E195-E2"},{"reg":"C-GKQJ","type":"E195-E2"},{"reg":"C-GKQK","type":"E195-E2"},{"reg":"C-GKQL","type":"E195-E2"},{"reg":"C-GKQM","type":"E195-E2"},{"reg":"C-GKQN","type":"E195-E2"},{"reg":"C-GKQO","type":"E195-E2"},{"reg":"C-GKQP","type":"E195-E2"},{"reg":"C-GKQQ","type":"E195-E2"},{"reg":"C-GKQR","type":"E195-E2"},{"reg":"C-GKQS","type":"E195-E2"},{"reg":"C-FIQL","type":"DH8-D"},{"reg":"C-FIQM","type":"DH8-D"},{"reg":"C-FIQN","type":"DH8-D"},{"reg":"C-FIQO","type":"DH8-D"},{"reg":"C-FIQP","type":"DH8-D"},{"reg":"C-FIQQ","type":"DH8-D"}],"Air Transat":[{"reg":"C-GKTS","type":"A321neo"},{"reg":"C-GKTT","type":"A321neo"},{"reg":"C-GKTU","type":"A321neo"},{"reg":"C-GKTV","type":"A321neo"},{"reg":"C-GKTW","type":"A321neo"},{"reg":"C-GKTX","type":"A321neo"},{"reg":"C-GKTY","type":"A321neo"},{"reg":"C-GKTZ","type":"A321neo"},{"reg":"C-GTSD","type":"A330-200"},{"reg":"C-GTSF","type":"A330-200"},{"reg":"C-GTSG","type":"A330-200"},{"reg":"C-GTSJ","type":"A330-300"},{"reg":"C-GTSK","type":"A330-300"},{"reg":"C-GTSL","type":"A330-300"},{"reg":"C-GTSZ","type":"A330-300"}],"Sunwing":[{"reg":"C-FLSM","type":"B737-800"},{"reg":"C-FLSN","type":"B737-800"},{"reg":"C-FDBD","type":"B737-800"},{"reg":"C-FDBG","type":"B737-800"},{"reg":"C-FZWS","type":"B737-800"},{"reg":"C-FZWT","type":"B737-800"},{"reg":"C-FTOH","type":"B737 MAX 8"},{"reg":"C-FTOI","type":"B737 MAX 8"},{"reg":"C-FTOJ","type":"B737 MAX 8"},{"reg":"C-FTOK","type":"B737 MAX 8"}],"Flair Airlines":[{"reg":"C-FFNP","type":"B737 MAX 8"},{"reg":"C-FFNQ","type":"B737 MAX 8"},{"reg":"C-FFNR","type":"B737 MAX 8"},{"reg":"C-FFNS","type":"B737 MAX 8"},{"reg":"C-FLCK","type":"B737-800"},{"reg":"C-FLCL","type":"B737-800"},{"reg":"C-FLCM","type":"B737-800"},{"reg":"C-FLCN","type":"B737-800"}],"United Airlines":[{"reg":"N14001","type":"B737-800"},{"reg":"N14002","type":"B737-800"},{"reg":"N12003","type":"B737 MAX 9"},{"reg":"N12004","type":"B737 MAX 9"},{"reg":"N26906","type":"B767-300ER"},{"reg":"N26907","type":"B767-300ER"},{"reg":"N13013","type":"A319"},{"reg":"N13014","type":"A319"},{"reg":"N13968","type":"A320"},{"reg":"N13969","type":"A320"},{"reg":"N74007","type":"B777-200"},{"reg":"N74008","type":"B777-200"},{"reg":"N14001","type":"B737-900ER"},{"reg":"N69063","type":"B737-900ER"}],"American Airlines":[{"reg":"N101NN","type":"A321"},{"reg":"N102NN","type":"A321"},{"reg":"N103NN","type":"A321"},{"reg":"N104NN","type":"A321"},{"reg":"N921AY","type":"A330-300"},{"reg":"N922AY","type":"A330-300"},{"reg":"N171AN","type":"B757-200"},{"reg":"N172AN","type":"B757-200"},{"reg":"N301AX","type":"B737 MAX 8"},{"reg":"N302AX","type":"B737 MAX 8"},{"reg":"N320AX","type":"A319"},{"reg":"N321AX","type":"A319"}],"Delta Air Lines":[{"reg":"N301DN","type":"B757-200"},{"reg":"N302DN","type":"B757-200"},{"reg":"N501DA","type":"B757-200"},{"reg":"N502DA","type":"B757-200"},{"reg":"N900DE","type":"B757-200"},{"reg":"N901DA","type":"B757-200"},{"reg":"N139DL","type":"B767-300ER"},{"reg":"N140DL","type":"B767-300ER"},{"reg":"N825NW","type":"A330-300"},{"reg":"N826NW","type":"A330-300"},{"reg":"N346NW","type":"A320"},{"reg":"N347NW","type":"A320"},{"reg":"N368NW","type":"A319"},{"reg":"N369NW","type":"A319"},{"reg":"N401BZ","type":"A321neo"},{"reg":"N402BZ","type":"A321neo"}]};
+
+function initAircraftLookup(inputId, typeFieldId) {
+  const input = document.getElementById(inputId);
+  const typeField = document.getElementById(typeFieldId);
+  if (!input) return;
+
+  // Wrap in combo container
+  const parent = input.parentElement;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'ac-combo';
+  parent.insertBefore(wrapper, input);
+  wrapper.appendChild(input);
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'ac-dropdown';
+  dropdown.id = inputId + '_dropdown';
+  wrapper.appendChild(dropdown);
+
+  input.addEventListener('input', () => showAircraftDropdown(inputId, typeFieldId));
+  input.addEventListener('focus', () => showAircraftDropdown(inputId, typeFieldId));
+  document.addEventListener('click', e => {
+    if (!wrapper.contains(e.target)) {
+      dropdown.classList.remove('show');
+    }
+  });
+}
+
+function getAirlineAircraft() {
+  // Try both SQOR and RampWatch airline field IDs
+  const airline = document.getElementById('h_airline')?.value ||
+                  document.getElementById('v1_airline')?.value || '';
+  return AIRCRAFT_DB[airline] || [];
+}
+
+function showAircraftDropdown(inputId, typeFieldId) {
+  const input    = document.getElementById(inputId);
+  const dropdown = document.getElementById(inputId + '_dropdown');
+  if (!input || !dropdown) return;
+
+  const query    = input.value.toUpperCase().trim();
+  const aircraft = getAirlineAircraft();
+
+  let filtered = aircraft;
+  if (query) {
+    filtered = aircraft.filter(a =>
+      a.reg.toUpperCase().includes(query) ||
+      a.type.toUpperCase().includes(query)
+    );
+  }
+
+  // Limit to top 20 for performance
+  const shown = filtered.slice(0, 20);
+
+  if (!shown.length && !query) {
+    dropdown.classList.remove('show');
+    return;
+  }
+
+  let html = '';
+  if (!shown.length) {
+    html = '<div class="ac-no-results">No match — type reg to enter manually</div>';
+  } else {
+    html = shown.map(a =>
+      `<div class="ac-option" onclick="selectAircraft('${a.reg}','${a.type}','${inputId}','${typeFieldId}')">
+        <span class="ao-reg">${a.reg}</span>
+        <span class="ao-type">${a.type}</span>
+      </div>`
+    ).join('');
+  }
+
+  // Always show manual entry hint
+  html += `<div class="ac-manual-hint" onclick="acceptManual('${inputId}','${typeFieldId}')">
+    ✎ Use "${input.value || 'typed value'}" as entered
+  </div>`;
+
+  dropdown.innerHTML = html;
+  dropdown.classList.add('show');
+}
+
+function selectAircraft(reg, type, inputId, typeFieldId) {
+  const input     = document.getElementById(inputId);
+  const typeField = document.getElementById(typeFieldId);
+  const dropdown  = document.getElementById(inputId + '_dropdown');
+  if (input) input.value = reg;
+  if (typeField) typeField.value = type;
+  if (dropdown) dropdown.classList.remove('show');
+  updateStats && updateStats();
+}
+
+function acceptManual(inputId, typeFieldId) {
+  const dropdown = document.getElementById(inputId + '_dropdown');
+  if (dropdown) dropdown.classList.remove('show');
+}
+
+// Re-trigger dropdown when airline changes
+function onAirlineChange() {
+  // Clear aircraft fields and re-show if value present
+  ['h_aircraft_num','v1_aircraft_num'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value) showAircraftDropdown(id, id.replace('aircraft_num','aircraft_type'));
+  });
+}
+
 // ══ APPROACH ══════════════════════════════════════════
 function setApproach(type) {
   currentApproach = type;
@@ -11110,6 +11234,7 @@ function showToast(msg) {
 // ══ INIT ═════════════════════════════════════════════
 setApproach('one');
 updateHomeCount();
+initAircraftLookup('h_aircraft_num','h_aircraft_type');
 
 // ── SUITE NAVIGATION ─────────────────────────────
 function goHome() {
