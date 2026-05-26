@@ -672,6 +672,42 @@ input::placeholder,textarea::placeholder{color:#bbb}
 .archive-preview-row .apr-lbl{font-weight:700;color:var(--dark)}
 .archive-preview-row .apr-val{color:#444}
 .no-data{text-align:center;padding:32px 16px;color:var(--mid);font-size:14px}
+
+/* ── SUITE BACK BUTTON ───────────────────────────── */
+.suite-back{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  right:16px;z-index:9000;background:rgba(28,35,49,.92);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:50px;
+  padding:10px 18px 10px 14px;font-size:13px;font-weight:700;
+  font-family:inherit;cursor:pointer;display:flex;align-items:center;
+  gap:7px;box-shadow:0 4px 20px rgba(0,0,0,.4);
+  -webkit-tap-highlight-color:transparent;transition:opacity .15s}
+.suite-back:active{opacity:.7}
+.suite-back .sb-arrow{font-size:16px;line-height:1}
+.suite-back .sb-label{font-size:12px;color:rgba(255,255,255,.7);letter-spacing:.02em}
+
+/* ── AIRCRAFT LOOKUP ─────────────────────────────────── */
+.ac-combo{position:relative}
+.ac-combo input{width:100%}
+.ac-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;
+  border:1.5px solid var(--gg);border-top:none;border-radius:0 0 7px 7px;
+  max-height:180px;overflow-y:auto;z-index:500;display:none;
+  box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.ac-dropdown.show{display:block}
+.ac-option{padding:9px 12px;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #f0f0f0}
+.ac-option:last-child{border-bottom:none}
+.ac-option:active,.ac-option:hover{background:rgba(72,175,68,.08)}
+.ac-option .ao-reg{font-weight:700;color:var(--black)}
+.ac-option .ao-type{font-size:11px;color:var(--mid);background:var(--lgray);
+  padding:2px 7px;border-radius:10px}
+.ac-no-results{padding:10px 12px;font-size:12px;color:var(--mid);
+  font-style:italic;text-align:center}
+.ac-manual-hint{padding:8px 12px;font-size:11px;color:var(--gg);
+  border-top:1px solid #f0f0f0;cursor:pointer;text-align:center;font-weight:600}
+.ac-manual-hint:active{background:rgba(72,175,68,.06)}
+
 </style>
 </head>
 <body>
@@ -1026,7 +1062,40 @@ input::placeholder,textarea::placeholder{color:#bbb}
               <div class="field"><label>Date</label><input type="date" id="v1_inc_date" data-shared="inc_date" onchange="updateSumDate()"></div>
               <div class="field"><label>Time</label><div style="display:flex;gap:6px;align-items:center"><input type="text" id="v1_inc_time" data-shared="inc_time" placeholder="e.g. 14:28" style="flex:1" oninput="updateSumDate()"><button class="ts-btn" onclick="stampNow('v1_inc_time');updateSumDate()" style="margin:0;padding:9px 10px">🕐</button></div></div>
             </div>
-            <div class="field"><label>Flight / Aircraft</label><input type="text" id="v1_flight" data-shared="flight" placeholder="e.g. WS101 / C-FXYZ" oninput="updateSumDate()"></div>
+            <div class="field"><label>Airline</label>
+              <select id="v1_airline" onchange="onAirlineChange()" style="width:100%;background:var(--lgray);border:1.5px solid transparent;border-radius:7px;padding:9px 11px;font-size:14px;font-family:inherit;color:var(--black);outline:none;-webkit-appearance:none">
+                <option value="">-- Select airline --</option>
+                <option value="">-- Select --</option>
+                <optgroup label="Domestic">
+                  <option>Air Canada</option>
+                  <option>WestJet</option>
+                  <option>Porter Airlines</option>
+                  <option>Flair Airlines</option>
+                </optgroup>
+                <optgroup label="International">
+                  <option>Aeromexico</option>
+                  <option>Air India</option>
+                  <option>SAS</option>
+                  <option>SWISS</option>
+                  <option>TAP Air Portugal</option>
+                </optgroup>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field"><label>Aircraft Fin #</label>
+              <input type="text" id="v1_aircraft_num" autocomplete="off"
+                placeholder="Select airline then type fin #"
+                oninput="showAircraftDropdown('v1_aircraft_num','v1_aircraft_type')"
+                onfocus="showAircraftDropdown('v1_aircraft_num','v1_aircraft_type')">
+            </div>
+            <div style="display:flex;gap:8px">
+              <div class="field" style="flex:1"><label>Aircraft Type</label>
+                <input type="text" id="v1_aircraft_type" placeholder="Auto-fills" style="background:var(--lgray)">
+              </div>
+              <div class="field" style="flex:1"><label>Flight Number</label>
+                <input type="text" id="v1_flight" data-shared="flight" placeholder="e.g. WS101" oninput="updateSumDate()">
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1426,7 +1495,7 @@ input::placeholder,textarea::placeholder{color:#bbb}
       </div>
       <div class="field"><label>Location / Gate</label><input type="text" id="v3_gate" placeholder="Specific location"></div>
       <div class="field"><label>Employee(s) Involved</label><input type="text" id="v3_employees" placeholder="Full names"></div>
-      <div class="field"><label>Flight / Aircraft</label><input type="text" id="v3_flight" placeholder="Flight number / registration"></div>
+      <div class="field"><label>Flight Number</label><input type="text" id="v3_flight" placeholder="Flight number / registration"></div>
       <div class="field"><label>Vehicles / GSE</label><input type="text" id="v3_vehicles" placeholder="Vehicle numbers and type"></div>
       <div class="field"><label>Incident Type</label>
         <select id="v3_inc_type">
@@ -1516,7 +1585,7 @@ input::placeholder,textarea::placeholder{color:#bbb}
       </div>
       <div class="field"><label>Location / Gate / Stand</label><input type="text" id="v4_gate" placeholder="e.g. Gate B22, Terminal 3"></div>
       <div class="field"><label>Flight Number</label><input type="text" id="v4_flight" placeholder="e.g. WS101"></div>
-      <div class="field"><label>Aircraft Registration</label><input type="text" id="v4_reg" placeholder="e.g. C-FXYZ"></div>
+      <div class="field"><label>Aircraft Fin #</label><input type="text" id="v4_reg" placeholder="e.g. C-GJWO"></div>
       <div class="field"><label>Nature of Incident</label>
         <select id="v4_nature">
           <option value="">-- Select --</option>
@@ -2623,6 +2692,12 @@ function generateFullPDF(g, company, station, sms, now) {
   </div>
 </div>
 
+
+<!-- Suite Back Button -->
+<button class="suite-back" onclick="goHome()" title="Back to GroundWatch Suite">
+  <span class="sb-arrow">⌂</span>
+  <span class="sb-label">Suite</span>
+</button>
 </body></html>`;
   if (!pw) {
     const blob = new Blob([fullHTML],{type:'text/html'});
@@ -2990,6 +3065,93 @@ function wxSetError(msg) {
   if (el) el.textContent = msg;
   document.getElementById('wx_icon').textContent = '📡';
 }
+
+
+
+// ══ AIRCRAFT LOOKUP ═══════════════════════════════════════════
+const AIRCRAFT_DB = {"Air Canada":[{"fin":"101","type":"A220-300"},{"fin":"102","type":"A220-300"},{"fin":"103","type":"A220-300"},{"fin":"104","type":"A220-300"},{"fin":"105","type":"A220-300"},{"fin":"106","type":"A220-300"},{"fin":"107","type":"A220-300"},{"fin":"108","type":"A220-300"},{"fin":"109","type":"A220-300"},{"fin":"110","type":"A220-300"},{"fin":"111","type":"A220-300"},{"fin":"112","type":"A220-300"},{"fin":"113","type":"A220-300"},{"fin":"114","type":"A220-300"},{"fin":"115","type":"A220-300"},{"fin":"116","type":"A220-300"},{"fin":"117","type":"A220-300"},{"fin":"118","type":"A220-300"},{"fin":"119","type":"A220-300"},{"fin":"120","type":"A220-300"},{"fin":"121","type":"A220-300"},{"fin":"122","type":"A220-300"},{"fin":"123","type":"A220-300"},{"fin":"124","type":"A220-300"},{"fin":"125","type":"A220-300"},{"fin":"126","type":"A220-300"},{"fin":"127","type":"A220-300"},{"fin":"128","type":"A220-300"},{"fin":"129","type":"A220-300"},{"fin":"130","type":"A220-300"},{"fin":"131","type":"A220-300"},{"fin":"132","type":"A220-300"},{"fin":"133","type":"A220-300"},{"fin":"134","type":"A220-300"},{"fin":"135","type":"A220-300"},{"fin":"136","type":"A220-300"},{"fin":"137","type":"A220-300"},{"fin":"138","type":"A220-300"},{"fin":"139","type":"A220-300"},{"fin":"140","type":"A220-300"},{"fin":"141","type":"A220-300"},{"fin":"142","type":"A220-300"},{"fin":"235","type":"A320"},{"fin":"236","type":"A320"},{"fin":"237","type":"A320"},{"fin":"238","type":"A320"},{"fin":"239","type":"A320"},{"fin":"240","type":"A320"},{"fin":"241","type":"A320"},{"fin":"242","type":"A320"},{"fin":"243","type":"A320"},{"fin":"244","type":"A320"},{"fin":"245","type":"A320"},{"fin":"246","type":"A320"},{"fin":"247","type":"A320"},{"fin":"255","type":"A319"},{"fin":"256","type":"A319"},{"fin":"257","type":"A319"},{"fin":"259","type":"A319"},{"fin":"262","type":"A319"},{"fin":"263","type":"A319"},{"fin":"278","type":"A319"},{"fin":"279","type":"A319"},{"fin":"281","type":"A319"},{"fin":"284","type":"A319"},{"fin":"286","type":"A319"},{"fin":"287","type":"A319"},{"fin":"290","type":"A319"},{"fin":"301","type":"A321 XLR"},{"fin":"405","type":"A320"},{"fin":"417","type":"A320"},{"fin":"418","type":"A320"},{"fin":"419","type":"A320"},{"fin":"420","type":"A320"},{"fin":"421","type":"A320"},{"fin":"422","type":"A320"},{"fin":"451","type":"A321"},{"fin":"452","type":"A321"},{"fin":"453","type":"A321"},{"fin":"454","type":"A321"},{"fin":"455","type":"A321"},{"fin":"456","type":"A321"},{"fin":"457","type":"A321"},{"fin":"458","type":"A321"},{"fin":"459","type":"A321"},{"fin":"460","type":"A321"},{"fin":"461","type":"A321"},{"fin":"462","type":"A321"},{"fin":"463","type":"A321"},{"fin":"464","type":"A321"},{"fin":"465","type":"A321"},{"fin":"466","type":"A321"},{"fin":"467","type":"A321"},{"fin":"468","type":"A321"},{"fin":"469","type":"A321"},{"fin":"470","type":"A321"},{"fin":"471","type":"A321"},{"fin":"472","type":"A321"},{"fin":"473","type":"A321"},{"fin":"474","type":"A321"},{"fin":"475","type":"A321"},{"fin":"476","type":"A321"},{"fin":"477","type":"A321"},{"fin":"478","type":"A321"},{"fin":"479","type":"A321"},{"fin":"480","type":"A321"},{"fin":"481","type":"A321"},{"fin":"482","type":"A321"},{"fin":"483","type":"A321"},{"fin":"484","type":"A321"},{"fin":"501","type":"B737 MAX 8"},{"fin":"502","type":"B737 MAX 8"},{"fin":"503","type":"B737 MAX 8"},{"fin":"504","type":"B737 MAX 8"},{"fin":"505","type":"B737 MAX 8"},{"fin":"506","type":"B737 MAX 8"},{"fin":"507","type":"B737 MAX 8"},{"fin":"508","type":"B737 MAX 8"},{"fin":"509","type":"B737 MAX 8"},{"fin":"510","type":"B737 MAX 8"},{"fin":"511","type":"B737 MAX 8"},{"fin":"512","type":"B737 MAX 8"},{"fin":"513","type":"B737 MAX 8"},{"fin":"514","type":"B737 MAX 8"},{"fin":"515","type":"B737 MAX 8"},{"fin":"516","type":"B737 MAX 8"},{"fin":"517","type":"B737 MAX 8"},{"fin":"518","type":"B737 MAX 8"},{"fin":"519","type":"B737 MAX 8"},{"fin":"520","type":"B737 MAX 8"},{"fin":"521","type":"B737 MAX 8"},{"fin":"522","type":"B737 MAX 8"},{"fin":"523","type":"B737 MAX 8"},{"fin":"524","type":"B737 MAX 8"},{"fin":"525","type":"B737 MAX 8"},{"fin":"526","type":"B737 MAX 8"},{"fin":"527","type":"B737 MAX 8"},{"fin":"528","type":"B737 MAX 8"},{"fin":"529","type":"B737 MAX 8"},{"fin":"530","type":"B737 MAX 8"},{"fin":"531","type":"B737 MAX 8"},{"fin":"532","type":"B737 MAX 8"},{"fin":"533","type":"B737 MAX 8"},{"fin":"534","type":"B737 MAX 8"},{"fin":"535","type":"B737 MAX 8"},{"fin":"536","type":"B737 MAX 8"},{"fin":"537","type":"B737 MAX 8"},{"fin":"538","type":"B737 MAX 8"},{"fin":"539","type":"B737 MAX 8"},{"fin":"540","type":"B737 MAX 8"},{"fin":"541","type":"B737 MAX 8"},{"fin":"542","type":"B737 MAX 8"},{"fin":"543","type":"B737 MAX 8"},{"fin":"544","type":"B737 MAX 8"},{"fin":"545","type":"B737 MAX 8"},{"fin":"571","type":"B737 MAX 8"},{"fin":"573","type":"B737 MAX 8"},{"fin":"574","type":"B737 MAX 8"},{"fin":"575","type":"B737 MAX 8"},{"fin":"576","type":"B737 MAX 8"},{"fin":"577","type":"B737 MAX 8"},{"fin":"578","type":"B737 MAX 8"},{"fin":"701","type":"B777-200"},{"fin":"702","type":"B777-200"},{"fin":"703","type":"B777-200"},{"fin":"704","type":"B777-200"},{"fin":"705","type":"B777-200"},{"fin":"706","type":"B777-200"},{"fin":"731","type":"B777-300ER"},{"fin":"732","type":"B777-300ER"},{"fin":"733","type":"B777-300ER"},{"fin":"734","type":"B777-300ER"},{"fin":"735","type":"B777-300ER"},{"fin":"736","type":"B777-300ER"},{"fin":"737","type":"B777-300ER"},{"fin":"738","type":"B777-300ER"},{"fin":"739","type":"B777-300ER"},{"fin":"740","type":"B777-300ER"},{"fin":"741","type":"B777-300ER"},{"fin":"742","type":"B777-300ER"},{"fin":"743","type":"B777-300ER"},{"fin":"744","type":"B777-300ER"},{"fin":"745","type":"B777-300ER"},{"fin":"746","type":"B777-300ER"},{"fin":"747","type":"B777-300ER"},{"fin":"748","type":"B777-300ER"},{"fin":"749","type":"B777-300ER"},{"fin":"801","type":"B787-8"},{"fin":"802","type":"B787-8"},{"fin":"803","type":"B787-8"},{"fin":"804","type":"B787-8"},{"fin":"805","type":"B787-8"},{"fin":"806","type":"B787-8"},{"fin":"807","type":"B787-8"},{"fin":"808","type":"B787-8"},{"fin":"831","type":"B787-9"},{"fin":"832","type":"B787-9"},{"fin":"833","type":"B787-9"},{"fin":"834","type":"B787-9"},{"fin":"835","type":"B787-9"},{"fin":"836","type":"B787-9"},{"fin":"837","type":"B787-9"},{"fin":"838","type":"B787-9"},{"fin":"839","type":"B787-9"},{"fin":"840","type":"B787-9"},{"fin":"841","type":"B787-9"},{"fin":"842","type":"B787-9"},{"fin":"843","type":"B787-9"},{"fin":"844","type":"B787-9"},{"fin":"845","type":"B787-9"},{"fin":"846","type":"B787-9"},{"fin":"847","type":"B787-9"},{"fin":"848","type":"B787-9"},{"fin":"849","type":"B787-9"},{"fin":"850","type":"B787-9"},{"fin":"851","type":"B787-9"},{"fin":"852","type":"B787-9"},{"fin":"853","type":"B787-9"},{"fin":"854","type":"B787-9"},{"fin":"855","type":"B787-9"},{"fin":"856","type":"B787-9"},{"fin":"857","type":"B787-9"},{"fin":"858","type":"B787-9"},{"fin":"859","type":"B787-9"},{"fin":"860","type":"B787-9"},{"fin":"861","type":"B787-9"},{"fin":"931","type":"A330-300"},{"fin":"932","type":"A330-300"},{"fin":"933","type":"A330-300"},{"fin":"934","type":"A330-300"},{"fin":"935","type":"A330-300"},{"fin":"936","type":"A330-300"},{"fin":"937","type":"A330-300"},{"fin":"938","type":"A330-300"},{"fin":"939","type":"A330-300"},{"fin":"940","type":"A330-300"},{"fin":"941","type":"A330-300"},{"fin":"942","type":"A330-300"},{"fin":"943","type":"A330-300"},{"fin":"944","type":"A330-300"},{"fin":"945","type":"A330-300"},{"fin":"946","type":"A330-300"},{"fin":"947","type":"A330-300"},{"fin":"948","type":"A330-300"},{"fin":"949","type":"A330-300"},{"fin":"950","type":"A330-300"}],"WestJet":[{"fin":"212","type":"B737-700"},{"fin":"213","type":"B737-700"},{"fin":"215","type":"B737-700"},{"fin":"216","type":"B737-700"},{"fin":"217","type":"B737-700"},{"fin":"218","type":"B737-700"},{"fin":"219","type":"B737-700"},{"fin":"220","type":"B737-700"},{"fin":"221","type":"B737-700"},{"fin":"222","type":"B737-700"},{"fin":"223","type":"B737-700"},{"fin":"225","type":"B737-700"},{"fin":"226","type":"B737-700"},{"fin":"227","type":"B737-700"},{"fin":"228","type":"B737-700"},{"fin":"229","type":"B737-700"},{"fin":"230","type":"B737-700"},{"fin":"233","type":"B737-700"},{"fin":"235","type":"B737-700"},{"fin":"236","type":"B737-700"},{"fin":"237","type":"B737-700"},{"fin":"239","type":"B737-700"},{"fin":"242","type":"B737-700"},{"fin":"243","type":"B737-700"},{"fin":"246","type":"B737-700"},{"fin":"247","type":"B737-700"},{"fin":"248","type":"B737-700"},{"fin":"251","type":"B737-700"},{"fin":"253","type":"B737-700"},{"fin":"256","type":"B737-700"},{"fin":"257","type":"B737-700"},{"fin":"258","type":"B737-700"},{"fin":"259","type":"B737-700"},{"fin":"265","type":"B737-700"},{"fin":"266","type":"B737-700"},{"fin":"301","type":"B737 MAX 8"},{"fin":"302","type":"B737 MAX 8"},{"fin":"303","type":"B737 MAX 8"},{"fin":"305","type":"B737 MAX 8"},{"fin":"306","type":"B737 MAX 8"},{"fin":"307","type":"B737 MAX 8"},{"fin":"308","type":"B737 MAX 8"},{"fin":"309","type":"B737 MAX 8"},{"fin":"310","type":"B737 MAX 8"},{"fin":"311","type":"B737 MAX 8"},{"fin":"312","type":"B737 MAX 8"},{"fin":"313","type":"B737 MAX 8"},{"fin":"315","type":"B737 MAX 8"},{"fin":"316","type":"B737 MAX 8"},{"fin":"317","type":"B737 MAX 8"},{"fin":"318","type":"B737 MAX 8"},{"fin":"319","type":"B737 MAX 8"},{"fin":"320","type":"B737 MAX 8"},{"fin":"321","type":"B737 MAX 8"},{"fin":"322","type":"B737 MAX 8"},{"fin":"323","type":"B737 MAX 8"},{"fin":"325","type":"B737 MAX 8"},{"fin":"326","type":"B737 MAX 8"},{"fin":"327","type":"B737 MAX 8"},{"fin":"328","type":"B737 MAX 8"},{"fin":"329","type":"B737 MAX 8"},{"fin":"330","type":"B737 MAX 8"},{"fin":"331","type":"B737 MAX 8"},{"fin":"332","type":"B737 MAX 8"},{"fin":"333","type":"B737 MAX 8"},{"fin":"335","type":"B737 MAX 8"},{"fin":"336","type":"B737 MAX 8"},{"fin":"337","type":"B737 MAX 8"},{"fin":"338","type":"B737 MAX 8"},{"fin":"339","type":"B737 MAX 8"},{"fin":"340","type":"B737 MAX 8"},{"fin":"341","type":"B737 MAX 8"},{"fin":"342","type":"B737 MAX 8"},{"fin":"373","type":"B737 MAX 8"},{"fin":"375","type":"B737 MAX 8"},{"fin":"376","type":"B737 MAX 8"},{"fin":"377","type":"B737 MAX 8"},{"fin":"378","type":"B737 MAX 8"},{"fin":"379","type":"B737 MAX 8"},{"fin":"380","type":"B737 MAX 8"},{"fin":"381","type":"B737 MAX 8"},{"fin":"382","type":"B737 MAX 8"},{"fin":"383","type":"B737 MAX 8"},{"fin":"385","type":"B737 MAX 8"},{"fin":"386","type":"B737 MAX 8"},{"fin":"387","type":"B737 MAX 8"},{"fin":"388","type":"B737 MAX 8"},{"fin":"389","type":"B737 MAX 8"},{"fin":"390","type":"B737 MAX 8"},{"fin":"391","type":"B737 MAX 8"},{"fin":"392","type":"B737 MAX 8"},{"fin":"393","type":"B737 MAX 8"},{"fin":"395","type":"B737 MAX 8"},{"fin":"396","type":"B737 MAX 8"},{"fin":"397","type":"B737 MAX 8"},{"fin":"398","type":"B737 MAX 8"},{"fin":"399","type":"B737 MAX 8"},{"fin":"781","type":"B767-300ER"},{"fin":"782","type":"B767-300ER"},{"fin":"783","type":"B767-300ER"},{"fin":"784","type":"B767-300ER"},{"fin":"791","type":"B787-9"},{"fin":"792","type":"B787-9"},{"fin":"793","type":"B787-9"},{"fin":"794","type":"B787-9"},{"fin":"795","type":"B787-9"},{"fin":"796","type":"B787-9"},{"fin":"802","type":"B737-800"},{"fin":"803","type":"B737-800"},{"fin":"805","type":"B737-800"},{"fin":"806","type":"B737-800"},{"fin":"809","type":"B737-800"},{"fin":"810","type":"B737-800"},{"fin":"811","type":"B737-800"},{"fin":"812","type":"B737-800"},{"fin":"813","type":"B737-800"},{"fin":"815","type":"B737-800"},{"fin":"816","type":"B737-800"},{"fin":"817","type":"B737-800"},{"fin":"818","type":"B737-800"},{"fin":"819","type":"B737-800"},{"fin":"820","type":"B737-800"},{"fin":"821","type":"B737-800"},{"fin":"822","type":"B737-800"},{"fin":"823","type":"B737-800"},{"fin":"825","type":"B737-800"},{"fin":"826","type":"B737-800"},{"fin":"827","type":"B737-800"},{"fin":"828","type":"B737-800"},{"fin":"829","type":"B737-800"},{"fin":"830","type":"B737-800"},{"fin":"831","type":"B737-800"},{"fin":"832","type":"B737-800"},{"fin":"833","type":"B737-800"},{"fin":"835","type":"B737-800"},{"fin":"836","type":"B737-800"},{"fin":"837","type":"B737-800"},{"fin":"838","type":"B737-800"},{"fin":"839","type":"B737-800"},{"fin":"840","type":"B737-800"},{"fin":"841","type":"B737-800"},{"fin":"842","type":"B737-800"},{"fin":"843","type":"B737-800"},{"fin":"845","type":"B737-800"},{"fin":"846","type":"B737-800"},{"fin":"847","type":"B737-800"},{"fin":"848","type":"B737-800"},{"fin":"849","type":"B737-800"},{"fin":"850","type":"B737-800"},{"fin":"851","type":"B737-800"},{"fin":"852","type":"B737-800"},{"fin":"853","type":"B737-800"},{"fin":"870","type":"B737-800"},{"fin":"871","type":"B737-800"},{"fin":"872","type":"B737-800"},{"fin":"873","type":"B737-800"},{"fin":"875","type":"B737-800"},{"fin":"876","type":"B737-800"},{"fin":"877","type":"B737-800"},{"fin":"878","type":"B737-800"},{"fin":"879","type":"B737-800"}],"Porter Airlines":[{"fin":"801","type":"DH8-400"},{"fin":"802","type":"DH8-400"},{"fin":"803","type":"DH8-400"},{"fin":"804","type":"DH8-400"},{"fin":"805","type":"DH8-400"},{"fin":"806","type":"DH8-400"},{"fin":"807","type":"DH8-400"},{"fin":"808","type":"DH8-400"},{"fin":"809","type":"DH8-400"},{"fin":"810","type":"DH8-400"},{"fin":"811","type":"DH8-400"},{"fin":"812","type":"DH8-400"},{"fin":"813","type":"DH8-400"},{"fin":"814","type":"DH8-400"},{"fin":"815","type":"DH8-400"},{"fin":"816","type":"DH8-400"},{"fin":"817","type":"DH8-400"},{"fin":"818","type":"DH8-400"},{"fin":"819","type":"DH8-400"},{"fin":"820","type":"DH8-400"},{"fin":"821","type":"DH8-400"},{"fin":"822","type":"DH8-400"},{"fin":"823","type":"DH8-400"},{"fin":"824","type":"DH8-400"},{"fin":"825","type":"DH8-400"},{"fin":"826","type":"DH8-400"},{"fin":"827","type":"DH8-400"},{"fin":"828","type":"DH8-400"},{"fin":"829","type":"DH8-400"},{"fin":"901","type":"E195-E2"},{"fin":"902","type":"E195-E2"},{"fin":"903","type":"E195-E2"},{"fin":"904","type":"E195-E2"},{"fin":"905","type":"E195-E2"},{"fin":"906","type":"E195-E2"},{"fin":"907","type":"E195-E2"},{"fin":"908","type":"E195-E2"},{"fin":"909","type":"E195-E2"},{"fin":"910","type":"E195-E2"},{"fin":"911","type":"E195-E2"},{"fin":"912","type":"E195-E2"},{"fin":"913","type":"E195-E2"},{"fin":"914","type":"E195-E2"},{"fin":"915","type":"E195-E2"},{"fin":"916","type":"E195-E2"},{"fin":"917","type":"E195-E2"},{"fin":"918","type":"E195-E2"},{"fin":"919","type":"E195-E2"},{"fin":"920","type":"E195-E2"},{"fin":"921","type":"E195-E2"},{"fin":"922","type":"E195-E2"},{"fin":"923","type":"E195-E2"},{"fin":"924","type":"E195-E2"},{"fin":"925","type":"E195-E2"},{"fin":"926","type":"E195-E2"},{"fin":"927","type":"E195-E2"},{"fin":"928","type":"E195-E2"},{"fin":"929","type":"E195-E2"},{"fin":"930","type":"E195-E2"},{"fin":"931","type":"E195-E2"},{"fin":"932","type":"E195-E2"},{"fin":"933","type":"E195-E2"},{"fin":"934","type":"E195-E2"},{"fin":"935","type":"E195-E2"},{"fin":"936","type":"E195-E2"},{"fin":"937","type":"E195-E2"},{"fin":"938","type":"E195-E2"},{"fin":"939","type":"E195-E2"},{"fin":"940","type":"E195-E2"},{"fin":"941","type":"E195-E2"},{"fin":"942","type":"E195-E2"},{"fin":"943","type":"E195-E2"},{"fin":"944","type":"E195-E2"},{"fin":"945","type":"E195-E2"},{"fin":"946","type":"E195-E2"},{"fin":"947","type":"E195-E2"},{"fin":"948","type":"E195-E2"},{"fin":"949","type":"E195-E2"},{"fin":"950","type":"E195-E2"},{"fin":"951","type":"E195-E2"},{"fin":"952","type":"E195-E2"}],"Flair Airlines":[{"fin":"101","type":"B737-800"},{"fin":"102","type":"B737-800"},{"fin":"103","type":"B737-800"},{"fin":"104","type":"B737-800"},{"fin":"105","type":"B737 MAX 8"},{"fin":"106","type":"B737 MAX 8"},{"fin":"107","type":"B737 MAX 8"},{"fin":"108","type":"B737 MAX 8"},{"fin":"109","type":"B737 MAX 8"},{"fin":"110","type":"B737 MAX 8"}],"Aeromexico":[{"fin":"XA-AMX","type":"B787-9"},{"fin":"XA-ADC","type":"B787-9"},{"fin":"XA-ADD","type":"B787-9"},{"fin":"XA-ADE","type":"B787-9"},{"fin":"XA-ADG","type":"B787-8"},{"fin":"XA-ADH","type":"B787-8"},{"fin":"XA-ADI","type":"B787-8"},{"fin":"EI-DRA","type":"B737-800"},{"fin":"EI-DRB","type":"B737-800"},{"fin":"EI-DRC","type":"B737-800"},{"fin":"XA-AMB","type":"B737 MAX 9"},{"fin":"XA-AMC","type":"B737 MAX 9"}],"SWISS":[{"fin":"HB-JBA","type":"A220-100"},{"fin":"HB-JBB","type":"A220-100"},{"fin":"HB-JBC","type":"A220-100"},{"fin":"HB-JBD","type":"A220-100"},{"fin":"HB-JCA","type":"A220-300"},{"fin":"HB-JCB","type":"A220-300"},{"fin":"HB-JHA","type":"A330-300"},{"fin":"HB-JHB","type":"A330-300"},{"fin":"HB-JHC","type":"A330-300"},{"fin":"HB-JHD","type":"A330-300"},{"fin":"HB-JNA","type":"B777-300ER"},{"fin":"HB-JNB","type":"B777-300ER"},{"fin":"HB-JNC","type":"B777-300ER"}],"Air India":[{"fin":"VT-ANA","type":"B787-8"},{"fin":"VT-ANB","type":"B787-8"},{"fin":"VT-ANC","type":"B787-8"},{"fin":"VT-AND","type":"B787-8"},{"fin":"VT-ANE","type":"B787-8"},{"fin":"VT-ALH","type":"B777-200LR"},{"fin":"VT-ALI","type":"B777-200LR"},{"fin":"VT-ALJ","type":"B777-200LR"},{"fin":"VT-ALK","type":"B777-200LR"},{"fin":"VT-AXA","type":"A350-900"},{"fin":"VT-AXB","type":"A350-900"},{"fin":"VT-AXC","type":"A350-900"}],"TAP Air Portugal":[{"fin":"CS-TUG","type":"A330-900neo"},{"fin":"CS-TUH","type":"A330-900neo"},{"fin":"CS-TUI","type":"A330-900neo"},{"fin":"CS-TUJ","type":"A330-900neo"},{"fin":"CS-TUK","type":"A330-200"},{"fin":"CS-TUL","type":"A330-200"},{"fin":"CS-TOL","type":"A321neo"},{"fin":"CS-TOM","type":"A321neo"}],"SAS":[{"fin":"LN-RKM","type":"A330-300"},{"fin":"LN-RKN","type":"A330-300"},{"fin":"LN-RKO","type":"A330-300"},{"fin":"SE-RTA","type":"A321neo"},{"fin":"SE-RTB","type":"A321neo"},{"fin":"SE-RTC","type":"A321neo"},{"fin":"OY-KBB","type":"A321neo"},{"fin":"OY-KBC","type":"A321neo"}]};
+
+function initAircraftLookup(inputId, typeFieldId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const parent = input.parentElement;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'ac-combo';
+  parent.insertBefore(wrapper, input);
+  wrapper.appendChild(input);
+  const dropdown = document.createElement('div');
+  dropdown.className = 'ac-dropdown';
+  dropdown.id = inputId + '_dropdown';
+  wrapper.appendChild(dropdown);
+  document.addEventListener('click', e => {
+    if (!wrapper.contains(e.target)) dropdown.classList.remove('show');
+  });
+}
+
+function getAirlineAircraft() {
+  const airline = document.getElementById('h_airline')?.value ||
+                  document.getElementById('v1_airline')?.value || '';
+  return AIRCRAFT_DB[airline] || [];
+}
+
+function showAircraftDropdown(inputId, typeFieldId) {
+  const input    = document.getElementById(inputId);
+  const dropdown = document.getElementById(inputId + '_dropdown');
+  if (!input || !dropdown) return;
+  const query    = input.value.toUpperCase().trim();
+  const aircraft = getAirlineAircraft();
+  let filtered = aircraft;
+  if (query) {
+    filtered = aircraft.filter(a =>
+      a.fin.toUpperCase().includes(query) ||
+      a.type.toUpperCase().includes(query)
+    );
+  }
+  const shown = filtered.slice(0, 25);
+  if (!shown.length && !query) { dropdown.classList.remove('show'); return; }
+  let html = '';
+  if (!shown.length) {
+    html = '<div class="ac-no-results">No match — type fin # to enter manually</div>';
+  } else {
+    html = shown.map(a =>
+      `<div class="ac-option" onclick="selectAircraft('${a.fin}','${a.type}','${inputId}','${typeFieldId}')">
+        <span class="ao-reg">${a.fin}</span>
+        <span class="ao-type">${a.type}</span>
+      </div>`
+    ).join('');
+  }
+  html += `<div class="ac-manual-hint" onclick="acceptManual('${inputId}')">
+    ✎ Use "${input.value || '—'}" as entered
+  </div>`;
+  dropdown.innerHTML = html;
+  dropdown.classList.add('show');
+}
+
+function selectAircraft(fin, type, inputId, typeFieldId) {
+  const input     = document.getElementById(inputId);
+  const typeField = document.getElementById(typeFieldId);
+  const dropdown  = document.getElementById(inputId + '_dropdown');
+  if (input)     input.value = fin;
+  if (typeField) typeField.value = type;
+  if (dropdown)  dropdown.classList.remove('show');
+}
+
+function acceptManual(inputId) {
+  const dropdown = document.getElementById(inputId + '_dropdown');
+  if (dropdown) dropdown.classList.remove('show');
+}
+
+function onAirlineChange() {
+  ['h_aircraft_num','v1_aircraft_num'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; }
+    const dd = document.getElementById(id + '_dropdown');
+    if (dd) dd.classList.remove('show');
+    const tf = document.getElementById(id.replace('aircraft_num','aircraft_type'));
+    if (tf) tf.value = '';
+  });
+}
+
 
 // ══ TIMER ════════════════════════════════════════════════════
 let timerSecs=0,timerRunning=false,timerInt=null;
@@ -3859,9 +4021,16 @@ applyConfig();
 document.getElementById('setupOverlay').classList.add('hidden');
 updateSectionProgress();updateHomeS1();updateV2Progress();updateV3Progress();updateV4Progress();
 initWeather();
+initAircraftLookup('v1_aircraft_num','v1_aircraft_type');
 updateHomeArchiveCount();
 setTimeout(()=>{if(document.getElementById("v5").classList.contains("active"))renderTrends();},100);
 updateArchiveCount();
+
+// ── SUITE NAVIGATION ─────────────────────────────
+function goHome() {
+  const base = window.location.href.replace(/[^/]+$/, '');
+  window.location.href = base + 'index.html';
+}
 </script>
 <!-- ══════════════════════════════════════════════════════════
      VIEW 5 — TRENDS
