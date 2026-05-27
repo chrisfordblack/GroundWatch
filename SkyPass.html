@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0B3D52">
+<meta name="format-detection" content="telephone=no">
+<title>SkyPass — Live Weather</title>
+<style>
+  :root {
+    --bg:          #EDF2F6;
+    --surface:     #FFFFFF;
+    --primary:     #0B3D52;
+    --mid:         #1A6E8E;
+    --accent:      #00B2D4;
+    --accent-light:#E3F5FA;
+    --red:         #C81020;
+    --red-light:   #FDECED;
+    --amber:       #D97706;
+    --amber-light: #FEF3E2;
+    --green:       #1E8A4A;
+    --green-light: #E4F5EC;
+    --text:        #0D1B2A;
+    --muted:       #607080;
+    --border:      #D0DBE4;
+    --border-light:#EAF0F4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+                 system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body {
+    display: flex;
+    justify-content: center;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    background: var(--bg);
+    position: relative;
+    padding-bottom: 88px;
+  }
+
+  /* ─── Header ─────────────────────────────────────────────────── */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+  }
+  .brand-name { font-size: 15px; font-weight: 700; line-height: 1; }
+  .brand-sub  { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: 0.5px; }
+
+  /* ─── Layout ─────────────────────────────────────────────────── */
+  .content { padding: 14px 16px 8px; }
+
+  .section-label {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 20px 0 10px;
+  }
+  .section-label .left { display: flex; align-items: center; gap: 8px; }
+  .section-label .left span {
+    font-size: 11px; letter-spacing: 1.2px; font-weight: 700;
+    color: var(--mid); text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .card.flush { padding: 0; overflow: hidden; }
+
+  /* ─── Now tab ────────────────────────────────────────────────── */
+  .hero {
+    background: linear-gradient(160deg, var(--primary) 0%, var(--mid) 100%);
+    border-radius: 18px;
+    padding: 22px 20px 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -40px; right: -30px;
+    width: 180px; height: 180px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,178,212,0.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-loc { display: flex; align-items: center; gap: 6px; opacity: 0.85; }
+  .hero-loc-name { font-size: 13px; font-weight: 500; }
+  .hero-loc-region { font-size: 12px; opacity: 0.7; }
+  .hero-body {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-top: 14px;
+  }
+  .hero-temp {
+    font-size: 64px; font-weight: 300; line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .hero-cond { font-size: 14px; opacity: 0.9; margin-top: 6px; font-weight: 500; }
+  .hero-sub  { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+  .hero-icon { padding-top: 8px; }
+  .hero-foot {
+    margin-top: 16px; padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.18);
+    display: flex; justify-content: space-between;
+    font-size: 11px; opacity: 0.85;
+  }
+
+  /* Alert banner */
+  .alert-banner {
+    margin-top: 14px;
+    background: var(--amber-light);
+    border: 1px solid rgba(217,119,6,0.33);
+    border-left: 4px solid var(--amber);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .alert-banner .ic { flex-shrink: 0; margin-top: 1px; }
+  .alert-banner-body { flex: 1; }
+  .alert-banner-title { font-size: 13px; font-weight: 700; color: var(--amber); }
+  .alert-banner-meta  { font-size: 12px; color: var(--text); margin-top: 2px; opacity: 0.8; }
+
+  /* Hourly strip */
+  .hourly-strip {
+    display: flex; overflow-x: auto; gap: 4px;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .hourly-strip::-webkit-scrollbar { display: none; }
+  .hourly-strip { scrollbar-width: none; }
+  .hour-cell {
+    flex-shrink: 0; min-width: 58px; padding: 4px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .hour-time { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .hour-temp { font-size: 14px; font-weight: 600; color: var(--text); }
+  .hour-pop  { font-size: 10px; font-weight: 600; color: var(--muted); }
+  .hour-pop.high { color: var(--accent); }
+
+  /* Metrics grid */
+  .metrics {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .metric-head { display: flex; align-items: center; gap: 6px; }
+  .metric-label {
+    font-size: 10px; letter-spacing: 1px; font-weight: 700;
+    color: var(--muted); text-transform: uppercase;
+  }
+  .metric-value { font-size: 22px; font-weight: 600; color: var(--text); line-height: 1; }
+  .metric-sub   { font-size: 11px; color: var(--muted); }
+
+  /* Sun block */
+  .sun-row { display: flex; justify-content: space-around; }
+  .sun-item { display: flex; align-items: center; gap: 10px; }
+  .sun-divider { width: 1px; background: var(--border-light); }
+  .sun-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 1px; }
+  .sun-time  { font-size: 18px; font-weight: 600; color: var(--text); }
+
+  /* ─── Hourly tab ─────────────────────────────────────────────── */
+  .hourly-row {
+    display: grid;
+    grid-template-columns: 60px 36px 1fr 56px 50px;
+    align-items: center; gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .hourly-row:last-child { border-bottom: none; }
+  .hourly-row .t  { font-size: 13px; font-weight: 600; color: var(--text); }
+  .hourly-row .l  { font-size: 13px; color: var(--muted); }
+  .hourly-row .p  { font-size: 12px; font-weight: 600; color: var(--muted); text-align: right;
+                    display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+  .hourly-row .p.high { color: var(--accent); }
+  .hourly-row .v  { font-size: 17px; font-weight: 600; color: var(--text); text-align: right; }
+
+  /* ─── Daily tab ──────────────────────────────────────────────── */
+  .daily-row {
+    display: grid;
+    grid-template-columns: 60px 28px 50px 1fr 60px;
+    align-items: center; gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .daily-row:last-child { border-bottom: none; }
+  .daily-row .d  { font-size: 13px; color: var(--text); font-weight: 500; }
+  .daily-row.today .d { font-weight: 700; }
+  .daily-row .p  { font-size: 11px; font-weight: 600; color: var(--muted);
+                   display: flex; align-items: center; gap: 3px; }
+  .daily-row .p.high { color: var(--accent); }
+  .daily-bar { position: relative; height: 6px; background: var(--border-light); border-radius: 3px; }
+  .daily-bar-fill {
+    position: absolute; height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--amber) 100%);
+  }
+  .daily-row .temps { font-size: 13px; font-weight: 600;
+                      display: flex; justify-content: space-between; gap: 8px; }
+  .daily-row .temps .lo { color: var(--muted); }
+  .daily-row .temps .hi { color: var(--text); }
+
+  .outlook-text { font-size: 13px; color: var(--text); line-height: 1.55; }
+
+  /* ─── Locations tab ──────────────────────────────────────────── */
+  .add-btn {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 8px; padding: 6px 10px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .loc-list { display: flex; flex-direction: column; gap: 10px; }
+  .loc-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative;
+  }
+  .loc-item.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-light);
+  }
+  .loc-main { flex: 1; display: flex; align-items: center; gap: 12px; cursor: pointer; min-width: 0; }
+  .loc-info { flex: 1; min-width: 0; }
+  .loc-head { display: flex; align-items: center; gap: 6px; }
+  .loc-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .loc-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.8px;
+    color: var(--accent); background: var(--accent-light);
+    padding: 2px 6px; border-radius: 4px;
+  }
+  .loc-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .loc-temp { font-size: 26px; font-weight: 300; color: var(--text); letter-spacing: -0.02em; }
+  .loc-remove {
+    background: transparent; border: none; color: var(--muted);
+    cursor: pointer; padding: 4px;
+  }
+
+  /* Sheet (add location) */
+  .sheet-backdrop {
+    position: fixed; inset: 0; background: rgba(11,61,82,0.45);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 100;
+  }
+  .sheet {
+    width: 100%; max-width: 430px;
+    background: var(--surface);
+    border-top-left-radius: 18px; border-top-right-radius: 18px;
+    padding: 20px 20px 28px;
+  }
+  .sheet-handle {
+    width: 36px; height: 4px; border-radius: 2px;
+    background: var(--border); margin: 0 auto 16px;
+  }
+  .sheet-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+  .sheet-input-wrap {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 12px;
+  }
+  .sheet-input {
+    border: none; outline: none; flex: 1;
+    font-size: 14px; color: var(--text); background: transparent;
+    font-family: inherit;
+  }
+  .sheet-btn {
+    width: 100%; padding: 12px 0;
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .sheet-btn:disabled { background: var(--border); cursor: default; }
+
+  /* ─── Alerts tab ─────────────────────────────────────────────── */
+  .empty-state { text-align: center; padding: 28px 16px; }
+  .empty-icon {
+    display: inline-flex; padding: 12px;
+    background: var(--green-light); border-radius: 50%;
+    margin-bottom: 12px;
+  }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .empty-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .alert-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .alert-card.red    { border-left: 4px solid var(--red); }
+  .alert-card.amber  { border-left: 4px solid var(--amber); }
+  .alert-card.advisory { border-left: 4px solid var(--mid); }
+  .alert-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  }
+  .alert-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 7px; border-radius: 4px;
+    display: inline-block; margin-bottom: 6px;
+  }
+  .alert-tag.red    { color: var(--red);   background: var(--red-light); }
+  .alert-tag.amber  { color: var(--amber); background: var(--amber-light); }
+  .alert-tag.advisory { color: var(--mid); background: var(--accent-light); }
+  .alert-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .alert-meta  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .alert-body  { font-size: 13px; color: var(--text); margin-top: 10px; line-height: 1.5; }
+  .alert-foot  {
+    margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid var(--border-light);
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted);
+  }
+
+  /* ─── Bottom nav ─────────────────────────────────────────────── */
+  .nav-wrap {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: center;
+    pointer-events: none;
+  }
+  .nav {
+    width: 100%; max-width: 430px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 6px 4px 10px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    pointer-events: auto;
+  }
+  .nav-btn {
+    flex: 1; border: none; background: transparent;
+    padding: 8px 4px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; color: var(--muted);
+    font-family: inherit;
+  }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn .label {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.3px;
+  }
+  .nav-btn.active .label { font-weight: 700; }
+
+  /* ─── Misc ───────────────────────────────────────────────────── */
+  .right-pill {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    padding: 3px 7px; border-radius: 4px;
+  }
+  .right-pill.amber { color: var(--amber); background: var(--amber-light); }
+  .right-pill.muted { font-size: 11px; color: var(--muted); font-weight: normal; letter-spacing: 0; }
+
+  .spacer-12 { height: 12px; }
+</style>
+</head>
+<body>
+  <div id="app" class="app"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+ *  Icons — inline SVG (lucide-style)
+ * ═══════════════════════════════════════════════════════════════════ */
+const ICONS = {
+  cloud:        '<path d="M17.5 19a4.5 4.5 0 1 0-1.41-8.78 7 7 0 1 0-11.16 6.47"/><path d="M17.5 19H9"/>',
+  cloudRain:    '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/>',
+  cloudSnow:    '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 15h.01"/><path d="M8 19h.01"/><path d="M12 17h.01"/><path d="M12 21h.01"/><path d="M16 15h.01"/><path d="M16 19h.01"/>',
+  cloudLightning:'<path d="M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"/><path d="m13 12-3 5h4l-3 5"/>',
+  cloudDrizzle: '<path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 19v1"/><path d="M8 14v1"/><path d="M16 19v1"/><path d="M16 14v1"/><path d="M12 21v1"/><path d="M12 16v1"/>',
+  cloudFog:     '<path d="M16 17H7"/><path d="M17 21H9"/><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/>',
+  sun:          '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  moon:         '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  wind:         '<path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>',
+  droplets:     '<path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/>',
+  thermometer:  '<path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>',
+  sunrise:      '<path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  sunset:       '<path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/>',
+  eye:          '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+  gauge:        '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+  mapPin:       '<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  clock:        '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  calendar:     '<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/>',
+  alertTriangle:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  plus:         '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  x:            '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  chevronRight: '<path d="m9 18 6-6-6-6"/>',
+  navigation:   '<polygon points="3 11 22 2 13 21 11 13 3 11"/>',
+  umbrella:     '<path d="M12 2v8"/><path d="M22 12a10 10 0 0 0-20 0Z"/><path d="M12 12v6a2 2 0 0 0 4 0"/>',
+  search:       '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+};
+
+function icon(name, size = 16, color = 'currentColor', stroke = 2) {
+  const paths = ICONS[name] || '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"
+    viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="${stroke}"
+    stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${paths}</svg>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  Conditions
+ * ═══════════════════════════════════════════════════════════════════ */
+const CONDITION = {
+  clear:        { iconKey: 'sun',            label: 'Clear',           tint: '#F59E0B' },
+  partlyCloudy: { iconKey: 'cloud',          label: 'Partly Cloudy',   tint: '#6B8AA3' },
+  cloudy:       { iconKey: 'cloud',          label: 'Cloudy',          tint: '#607080' },
+  rain:         { iconKey: 'cloudRain',      label: 'Rain',            tint: '#1A6E8E' },
+  drizzle:      { iconKey: 'cloudDrizzle',   label: 'Drizzle',         tint: '#5A8AA8' },
+  thunderstorm: { iconKey: 'cloudLightning', label: 'Thunderstorm',    tint: '#D97706' },
+  snow:         { iconKey: 'cloudSnow',      label: 'Snow',            tint: '#7BA8C8' },
+  fog:          { iconKey: 'cloudFog',       label: 'Fog',             tint: '#8A9AAB' },
+  night:        { iconKey: 'moon',           label: 'Clear Night',     tint: '#2A4A6A' },
+};
+
+function condIcon(condition, size = 32, overrideColor) {
+  const c = CONDITION[condition] || CONDITION.cloudy;
+  return icon(c.iconKey, size, overrideColor || c.tint, 1.8);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  Seed data
+ * ═══════════════════════════════════════════════════════════════════ */
+const INITIAL_DATA = {
+  activeLocationId: 'l1',
+  locations: [
+    {
+      id: 'l1', name: 'Oakville', region: 'ON, Canada',
+      temp: 18, condition: 'partlyCloudy',
+      hi: 21, lo: 12, feelsLike: 17,
+      humidity: 64, wind: 14, windDir: 'SW',
+      pressure: 1014, visibility: 16, uv: 5,
+      dewPoint: 11, sunrise: '05:42', sunset: '20:51',
+      updated: 'Just now',
+      hourly: [
+        { t: 'Now',   temp: 18, c: 'partlyCloudy', pop: 10 },
+        { t: '14:00', temp: 19, c: 'partlyCloudy', pop: 10 },
+        { t: '15:00', temp: 20, c: 'cloudy',       pop: 20 },
+        { t: '16:00', temp: 21, c: 'cloudy',       pop: 30 },
+        { t: '17:00', temp: 20, c: 'rain',         pop: 65 },
+        { t: '18:00', temp: 19, c: 'rain',         pop: 80 },
+        { t: '19:00', temp: 17, c: 'drizzle',      pop: 55 },
+        { t: '20:00', temp: 16, c: 'cloudy',       pop: 30 },
+        { t: '21:00', temp: 15, c: 'cloudy',       pop: 20 },
+        { t: '22:00', temp: 14, c: 'night',        pop: 10 },
+        { t: '23:00', temp: 13, c: 'night',        pop: 10 },
+        { t: '00:00', temp: 13, c: 'night',        pop: 10 },
+      ],
+      daily: [
+        { d: 'Today', c: 'rain',         hi: 21, lo: 12, pop: 80 },
+        { d: 'Thu',   c: 'thunderstorm', hi: 23, lo: 14, pop: 70 },
+        { d: 'Fri',   c: 'partlyCloudy', hi: 25, lo: 15, pop: 20 },
+        { d: 'Sat',   c: 'clear',        hi: 27, lo: 17, pop:  5 },
+        { d: 'Sun',   c: 'clear',        hi: 28, lo: 18, pop:  0 },
+        { d: 'Mon',   c: 'partlyCloudy', hi: 26, lo: 17, pop: 15 },
+        { d: 'Tue',   c: 'rain',         hi: 22, lo: 14, pop: 65 },
+      ],
+      alerts: [{
+        id: 'a1', severity: 'amber',
+        title: 'Rainfall Warning', source: 'Environment Canada',
+        issued: 'Today 11:20', expires: 'Today 22:00',
+        summary: 'Periods of heavy rain expected this afternoon and evening. Total accumulations of 30 to 50 mm possible. Localized flooding in low-lying areas.',
+      }],
+    },
+    {
+      id: 'l2', name: 'Toronto Pearson', region: 'YYZ',
+      temp: 19, condition: 'cloudy',
+      hi: 22, lo: 13, feelsLike: 18,
+      humidity: 61, wind: 18, windDir: 'SW',
+      pressure: 1013, visibility: 14, uv: 4,
+      dewPoint: 11, sunrise: '05:41', sunset: '20:52',
+      updated: '2 min ago',
+      hourly: [], daily: [], alerts: [],
+    },
+    {
+      id: 'l3', name: 'Figueira da Foz', region: 'Portugal',
+      temp: 24, condition: 'clear',
+      hi: 26, lo: 16, feelsLike: 25,
+      humidity: 52, wind: 11, windDir: 'NW',
+      pressure: 1019, visibility: 20, uv: 8,
+      dewPoint: 13, sunrise: '06:14', sunset: '21:08',
+      updated: '5 min ago',
+      hourly: [], daily: [], alerts: [],
+    },
+  ],
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  State
+ * ═══════════════════════════════════════════════════════════════════ */
+const state = {
+  data: JSON.parse(JSON.stringify(INITIAL_DATA)),
+  tab: 'now',
+  addingOpen: false,
+  newName: '',
+};
+
+function setState(patch) {
+  Object.assign(state, patch);
+  render();
+}
+
+function activeLocation() {
+  const d = state.data;
+  const found = d.locations.find(l => l.id === d.activeLocationId);
+  const base = found || d.locations[0];
+  // Borrow primary's hourly/daily when other locations don't have data
+  return {
+    ...base,
+    hourly: base.hourly && base.hourly.length ? base.hourly : d.locations[0].hourly,
+    daily:  base.daily  && base.daily.length  ? base.daily  : d.locations[0].daily,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  Render helpers
+ * ═══════════════════════════════════════════════════════════════════ */
+function sectionLabel(iconName, text, rightHtml) {
+  return `<div class="section-label">
+    <div class="left">${icon(iconName, 15, '#1A6E8E', 2.2)}<span>${text}</span></div>
+    ${rightHtml || ''}
+  </div>`;
+}
+
+function metricTile(iconName, label, value, sub) {
+  return `<div class="metric">
+    <div class="metric-head">
+      ${icon(iconName, 13, '#1A6E8E', 2.2)}
+      <span class="metric-label">${label}</span>
+    </div>
+    <div class="metric-value">${value}</div>
+    ${sub ? `<div class="metric-sub">${sub}</div>` : ''}
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  Tab views
+ * ═══════════════════════════════════════════════════════════════════ */
+function renderNow(loc) {
+  const cond = CONDITION[loc.condition] || CONDITION.cloudy;
+
+  const hero = `
+    <div class="hero">
+      <div class="hero-loc">
+        ${icon('mapPin', 13, '#fff', 2.2)}
+        <span class="hero-loc-name">${loc.name}</span>
+        <span class="hero-loc-region">· ${loc.region}</span>
+      </div>
+      <div class="hero-body">
+        <div>
+          <div class="hero-temp">${loc.temp}°</div>
+          <div class="hero-cond">${cond.label}</div>
+          <div class="hero-sub">Feels like ${loc.feelsLike}° · H ${loc.hi}° L ${loc.lo}°</div>
+        </div>
+        <div class="hero-icon">${condIcon(loc.condition, 64, '#fff')}</div>
+      </div>
+      <div class="hero-foot">
+        <span>Updated ${loc.updated}</span>
+        <span>● Live</span>
+      </div>
+    </div>`;
+
+  const alert = loc.alerts && loc.alerts[0] ? `
+    <div class="alert-banner">
+      <span class="ic">${icon('alertTriangle', 18, '#D97706', 2.2)}</span>
+      <div class="alert-banner-body">
+        <div class="alert-banner-title">${loc.alerts[0].title}</div>
+        <div class="alert-banner-meta">${loc.alerts[0].source} · Until ${loc.alerts[0].expires}</div>
+      </div>
+      ${icon('chevronRight', 16, '#D97706', 2)}
+    </div>` : '';
+
+  const hourly = `
+    ${sectionLabel('clock', 'Next 12 Hours')}
+    <div class="card" style="padding:14px 4px">
+      <div class="hourly-strip">
+        ${loc.hourly.map(h => `
+          <div class="hour-cell">
+            <div class="hour-time">${h.t}</div>
+            ${condIcon(h.c, 22)}
+            <div class="hour-temp">${h.temp}°</div>
+            <div class="hour-pop ${h.pop >= 50 ? 'high' : ''}">${h.pop}%</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+
+  const metrics = `
+    ${sectionLabel('gauge', 'Current Conditions')}
+    <div class="metrics">
+      ${metricTile('wind',       'Wind',       loc.wind + ' km/h', loc.windDir + ' · ' + (loc.wind < 20 ? 'Light' : 'Moderate'))}
+      ${metricTile('droplets',   'Humidity',   loc.humidity + '%',  'Dew pt ' + loc.dewPoint + '°')}
+      ${metricTile('gauge',      'Pressure',   loc.pressure,        'hPa · steady')}
+      ${metricTile('eye',        'Visibility', loc.visibility + ' km', 'Clear')}
+      ${metricTile('sun',        'UV Index',   loc.uv,              loc.uv < 3 ? 'Low' : loc.uv < 6 ? 'Moderate' : loc.uv < 8 ? 'High' : 'Very High')}
+      ${metricTile('thermometer','Feels Like', loc.feelsLike + '°', loc.feelsLike < loc.temp ? 'Wind chill' : 'Heat index')}
+    </div>`;
+
+  const sun = `
+    ${sectionLabel('sun', 'Sun')}
+    <div class="card">
+      <div class="sun-row">
+        <div class="sun-item">
+          ${icon('sunrise', 26, '#D97706', 1.8)}
+          <div>
+            <div class="sun-label">SUNRISE</div>
+            <div class="sun-time">${loc.sunrise}</div>
+          </div>
+        </div>
+        <div class="sun-divider"></div>
+        <div class="sun-item">
+          ${icon('sunset', 26, '#D97706', 1.8)}
+          <div>
+            <div class="sun-label">SUNSET</div>
+            <div class="sun-time">${loc.sunset}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  return hero + alert + hourly + metrics + sun + '<div class="spacer-12"></div>';
+}
+
+function renderHourly(loc) {
+  const right = `<span class="right-pill muted">${loc.name}</span>`;
+
+  const rows = loc.hourly.map(h => {
+    const c = CONDITION[h.c] || CONDITION.cloudy;
+    return `<div class="hourly-row">
+      <div class="t">${h.t}</div>
+      ${condIcon(h.c, 22)}
+      <div class="l">${c.label}</div>
+      <div class="p ${h.pop >= 50 ? 'high' : ''}">${icon('umbrella', 11, 'currentColor', 2)}${h.pop}%</div>
+      <div class="v">${h.temp}°</div>
+    </div>`;
+  }).join('');
+
+  return sectionLabel('clock', 'Hourly Forecast', right)
+    + `<div class="card flush">${rows}</div>`
+    + '<div class="spacer-12"></div>';
+}
+
+function renderDaily(loc) {
+  const right = `<span class="right-pill muted">${loc.name}</span>`;
+
+  const allHi = loc.daily.map(d => d.hi);
+  const allLo = loc.daily.map(d => d.lo);
+  const min = Math.min(...allLo);
+  const max = Math.max(...allHi);
+  const range = max - min || 1;
+
+  const rows = loc.daily.map((d, i) => {
+    const c = CONDITION[d.c] || CONDITION.cloudy;
+    const leftPct = ((d.lo - min) / range) * 100;
+    const widthPct = Math.max(((d.hi - d.lo) / range) * 100, 8);
+    return `<div class="daily-row ${i === 0 ? 'today' : ''}">
+      <div class="d">${d.d}</div>
+      ${condIcon(d.c, 22)}
+      <div class="p ${d.pop >= 50 ? 'high' : ''}">${icon('umbrella', 10, 'currentColor', 2)}${d.pop}%</div>
+      <div class="daily-bar">
+        <div class="daily-bar-fill" style="left:${leftPct}%;width:${widthPct}%"></div>
+      </div>
+      <div class="temps"><span class="lo">${d.lo}°</span><span class="hi">${d.hi}°</span></div>
+    </div>`;
+  }).join('');
+
+  const outlook = `
+    ${sectionLabel('thermometer', 'Outlook')}
+    <div class="card">
+      <div class="outlook-text">
+        Unsettled today and Thursday with periods of rain and the chance of
+        thunderstorms, then clearing through the long weekend. Temperatures
+        climbing into the upper 20s by Sunday, with overnight lows in the
+        mid-teens.
+      </div>
+    </div>`;
+
+  return sectionLabel('calendar', '7-Day Forecast', right)
+    + `<div class="card flush">${rows}</div>`
+    + outlook
+    + '<div class="spacer-12"></div>';
+}
+
+function renderLocations() {
+  const d = state.data;
+  const right = `<button class="add-btn" data-action="open-add">${icon('plus', 13, '#fff', 2)} Add</button>`;
+
+  const list = d.locations.map(l => {
+    const c = CONDITION[l.condition] || CONDITION.cloudy;
+    const isActive = l.id === d.activeLocationId;
+    const removable = d.locations.length > 1
+      ? `<button class="loc-remove" data-action="remove-loc" data-id="${l.id}" aria-label="Remove">${icon('x', 14, 'currentColor', 2)}</button>`
+      : '';
+    return `<div class="loc-item ${isActive ? 'active' : ''}">
+      <div class="loc-main" data-action="select-loc" data-id="${l.id}">
+        ${condIcon(l.condition, 36)}
+        <div class="loc-info">
+          <div class="loc-head">
+            <span class="loc-name">${l.name}</span>
+            ${isActive ? '<span class="loc-badge">CURRENT</span>' : ''}
+          </div>
+          <div class="loc-meta">${l.region} · ${c.label}</div>
+        </div>
+        <div class="loc-temp">${l.temp}°</div>
+      </div>
+      ${removable}
+    </div>`;
+  }).join('');
+
+  let sheet = '';
+  if (state.addingOpen) {
+    sheet = `<div class="sheet-backdrop" data-action="close-add">
+      <div class="sheet" data-stop="1">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">Add Location</div>
+        <div class="sheet-input-wrap">
+          ${icon('search', 16, '#607080', 2)}
+          <input id="newLocInput" class="sheet-input" placeholder="City or airport" value="${state.newName.replace(/"/g, '&quot;')}">
+        </div>
+        <button class="sheet-btn" data-action="confirm-add" ${state.newName.trim() ? '' : 'disabled'}>Add</button>
+      </div>
+    </div>`;
+  }
+
+  return sectionLabel('mapPin', 'Saved Locations', right)
+    + `<div class="loc-list">${list}</div>`
+    + sheet
+    + '<div class="spacer-12"></div>';
+}
+
+function renderAlerts() {
+  const all = state.data.locations.flatMap(l =>
+    (l.alerts || []).map(a => ({ ...a, locationName: l.name }))
+  );
+
+  if (all.length === 0) {
+    return sectionLabel('alertTriangle', 'Active Alerts')
+      + `<div class="card empty-state">
+          <div class="empty-icon">${icon('sun', 28, '#1E8A4A', 1.8)}</div>
+          <div class="empty-title">All Clear</div>
+          <div class="empty-sub">No active weather alerts for your saved locations.</div>
+        </div>`;
+  }
+
+  const right = `<span class="right-pill amber">${all.length} ACTIVE</span>`;
+
+  const cards = all.map(a => {
+    const sev = a.severity === 'red' ? 'red' : a.severity === 'amber' ? 'amber' : 'advisory';
+    const sevColor = sev === 'red' ? '#C81020' : sev === 'amber' ? '#D97706' : '#1A6E8E';
+    const sevLabel = sev === 'red' ? 'Severe' : sev === 'amber' ? 'Warning' : 'Advisory';
+    return `<div class="alert-card ${sev}">
+      <div class="alert-head">
+        <div style="flex:1">
+          <div class="alert-tag ${sev}">${sevLabel}</div>
+          <div class="alert-title">${a.title}</div>
+          <div class="alert-meta">${a.locationName} · ${a.source}</div>
+        </div>
+        ${icon('alertTriangle', 20, sevColor, 2.2)}
+      </div>
+      <div class="alert-body">${a.summary}</div>
+      <div class="alert-foot">
+        <span>Issued ${a.issued}</span>
+        <span>Expires ${a.expires}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  return sectionLabel('alertTriangle', 'Active Alerts', right)
+    + `<div style="display:flex;flex-direction:column;gap:12px">${cards}</div>`
+    + '<div class="spacer-12"></div>';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  Shell
+ * ═══════════════════════════════════════════════════════════════════ */
+function render() {
+  const loc = activeLocation();
+
+  let content = '';
+  if (state.tab === 'now')       content = renderNow(loc);
+  if (state.tab === 'hourly')    content = renderHourly(loc);
+  if (state.tab === 'daily')     content = renderDaily(loc);
+  if (state.tab === 'locations') content = renderLocations();
+  if (state.tab === 'alerts')    content = renderAlerts();
+
+  const tabs = [
+    { id: 'now',       label: 'Now',    iconKey: 'sun' },
+    { id: 'hourly',    label: 'Hourly', iconKey: 'clock' },
+    { id: 'daily',     label: '7-Day',  iconKey: 'calendar' },
+    { id: 'locations', label: 'Places', iconKey: 'mapPin' },
+    { id: 'alerts',    label: 'Alerts', iconKey: 'alertTriangle' },
+  ];
+
+  const navHtml = tabs.map(t => {
+    const isActive = state.tab === t.id;
+    return `<button class="nav-btn ${isActive ? 'active' : ''}" data-action="set-tab" data-id="${t.id}">
+      ${icon(t.iconKey, 20, 'currentColor', isActive ? 2.4 : 2)}
+      <span class="label">${t.label}</span>
+    </button>`;
+  }).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="header">
+      <div class="brand">
+        <div class="brand-mark">${icon('cloud', 18, '#fff', 2.2)}</div>
+        <div>
+          <div class="brand-name">SkyPass</div>
+          <div class="brand-sub">LIVE WEATHER</div>
+        </div>
+      </div>
+      ${icon('navigation', 18, '#1A6E8E', 2)}
+    </div>
+    <div class="content">${content}</div>
+    <div class="nav-wrap"><div class="nav">${navHtml}</div></div>
+  `;
+
+  // Focus the input if the sheet just opened
+  if (state.addingOpen) {
+    const inp = document.getElementById('newLocInput');
+    if (inp && document.activeElement !== inp) {
+      inp.focus();
+      const v = inp.value;
+      inp.value = '';
+      inp.value = v;
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  Events (delegation)
+ * ═══════════════════════════════════════════════════════════════════ */
+document.addEventListener('click', e => {
+  const target = e.target.closest('[data-action]');
+  if (!target) return;
+  const action = target.dataset.action;
+
+  if (action === 'set-tab') {
+    setState({ tab: target.dataset.id });
+  }
+  if (action === 'open-add') {
+    setState({ addingOpen: true, newName: '' });
+  }
+  if (action === 'close-add') {
+    // Only close if clicking the backdrop itself, not the sheet
+    if (e.target.classList.contains('sheet-backdrop')) {
+      setState({ addingOpen: false, newName: '' });
+    }
+  }
+  if (action === 'select-loc') {
+    state.data.activeLocationId = target.dataset.id;
+    setState({ tab: 'now' });
+  }
+  if (action === 'remove-loc') {
+    const id = target.dataset.id;
+    const remaining = state.data.locations.filter(l => l.id !== id);
+    state.data.locations = remaining;
+    if (state.data.activeLocationId === id && remaining[0]) {
+      state.data.activeLocationId = remaining[0].id;
+    }
+    render();
+  }
+  if (action === 'confirm-add') {
+    confirmAdd();
+  }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'newLocInput') {
+    state.newName = e.target.value;
+    // Just toggle the button enabled-state without a full re-render so the
+    // input keeps focus.
+    const btn = document.querySelector('[data-action="confirm-add"]');
+    if (btn) btn.disabled = !state.newName.trim();
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'newLocInput') {
+    confirmAdd();
+  }
+});
+
+function confirmAdd() {
+  const name = state.newName.trim();
+  if (!name) return;
+  const conditions = ['clear', 'partlyCloudy', 'cloudy', 'rain'];
+  const newLoc = {
+    id: 'l' + Date.now(),
+    name,
+    region: '—',
+    temp: Math.round(15 + Math.random() * 12),
+    condition: conditions[Math.floor(Math.random() * conditions.length)],
+    hi: 24, lo: 14, feelsLike: 18,
+    humidity: 60, wind: 12, windDir: 'SW',
+    pressure: 1015, visibility: 15, uv: 4,
+    dewPoint: 10, sunrise: '05:45', sunset: '20:48',
+    updated: 'Just now',
+    hourly: [], daily: [], alerts: [],
+  };
+  state.data.locations.push(newLoc);
+  setState({ addingOpen: false, newName: '' });
+}
+
+// First render
+render();
+</script>
+</body>
+</html>
