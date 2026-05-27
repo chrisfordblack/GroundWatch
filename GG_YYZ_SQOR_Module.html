@@ -35,8 +35,19 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .pbar-fill{height:100%;background:var(--gg);transition:width .3s}
 
 /* ── HEADER FORM ────────────────────────────────────── */
-.hdr-form{background:var(--dark);padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
-.hdr-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.hdr-form{background:var(--dark);padding:0;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.hdr-form.collapsed .hdr-grid{display:none}
+.hdr-toggle{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px;cursor:pointer;background:var(--dark);
+  -webkit-tap-highlight-color:transparent}
+.hdr-toggle:active{opacity:.8}
+.hdr-summary{font-size:11px;font-weight:700;color:rgba(255,255,255,.7);
+  flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-chevron{font-size:12px;color:rgba(255,255,255,.5);margin-left:8px;
+  transition:transform .25s;display:inline-block}
+.hdr-form:not(.collapsed) .hdr-chevron{transform:rotate(180deg)}
+.hdr-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;
+  padding:10px 12px;background:var(--dark)}
 .hf{display:flex;flex-direction:column;gap:3px}
 .hf label{font-size:9px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.05em}
 .hf input,.hf select{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:7px 10px;font-size:13px;font-family:inherit;color:#fff;outline:none;-webkit-appearance:none}
@@ -10333,7 +10344,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   <div class="hdr-form" id="hdr_form">
     <div class="hdr-toggle" onclick="toggleHeader()">
       <div class="hdr-summary" id="hdr_summary">Tap to enter flight details</div>
-      <div class="hdr-chevron">▲</div>
+      <div class="hdr-chevron">▼</div>
     </div>
     <div class="hdr-grid">
       <div class="hf"><label>Truck #</label><input id="h_truck" type="text" placeholder="e.g. 78" oninput="updateHeaderSummary()"></div>
@@ -11146,7 +11157,6 @@ function confirmArchive() {
   showToast('✅ SQOR archived — ' + arr.length + ' total');
   pendingRecord = null;
   updateHomeCount();
-  document.getElementById('hdr_form')?.classList.add('collapsed');
 }
 
 function getSqorArchive() {
@@ -11256,9 +11266,12 @@ function showToast(msg) {
 // ══ INIT ═════════════════════════════════════════════
 setApproach('one');
 updateHomeCount();
-// Start header collapsed — tap to expand when filling in details
-document.getElementById('hdr_form')?.classList.add('collapsed');
 initAircraftLookup('h_aircraft_num','h_aircraft_type');
+// Collapse header by default
+(function() {
+  const hf = document.getElementById('hdr_form');
+  if (hf) hf.classList.add('collapsed');
+})();
 
 // ── SUITE NAVIGATION ─────────────────────────────
 function goHome() {
