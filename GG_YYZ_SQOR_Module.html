@@ -10330,12 +10330,16 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   <div class="pbar"><div class="pbar-fill" id="pbar_fill" style="width:0%"></div></div>
 
   <!-- HEADER FORM -->
-  <div class="hdr-form">
+  <div class="hdr-form" id="hdr_form">
+    <div class="hdr-toggle" onclick="toggleHeader()">
+      <div class="hdr-summary" id="hdr_summary">Tap to enter flight details</div>
+      <div class="hdr-chevron">▲</div>
+    </div>
     <div class="hdr-grid">
-      <div class="hf"><label>Truck #</label><input id="h_truck" type="text" placeholder="e.g. 78"></div>
+      <div class="hf"><label>Truck #</label><input id="h_truck" type="text" placeholder="e.g. 78" oninput="updateHeaderSummary()"></div>
       <div class="hf full-width">
           <label>Driver Name</label>
-          <input id="h_driver" type="text" placeholder="Full name">
+          <input id="h_driver" type="text" placeholder="Full name" oninput="updateHeaderSummary()">
           <div class="qr-scan-row">
             <button class="qr-scan-btn" onclick="openQRScanner('driver')">
               <span class="qbs-icon">⬛</span> Scan Driver ID Card
@@ -10365,7 +10369,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
       </div>
 
       <div class="hf"><label>Airline</label>
-        <select id="h_airline" onchange="onAirlineChange()">
+        <select id="h_airline" onchange="onAirlineChange();updateHeaderSummary()">
           <option value="">-- Select --</option>
           <optgroup label="Domestic">
             <option>Air Canada</option>
@@ -10383,7 +10387,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
           <option>Other</option>
         </select>
       </div>
-      <div class="hf"><label>Fin #</label><input id="h_aircraft_num" type="text" placeholder="e.g. 263 or XA-AMX" autocomplete="off" oninput="showAircraftDropdown('h_aircraft_num','h_aircraft_type')" onfocus="showAircraftDropdown('h_aircraft_num','h_aircraft_type')"></div>
+      <div class="hf"><label>Fin #</label><input id="h_aircraft_num" type="text" placeholder="e.g. 263 or XA-AMX" autocomplete="off" oninput="showAircraftDropdown('h_aircraft_num','h_aircraft_type');updateHeaderSummary()" onfocus="showAircraftDropdown('h_aircraft_num','h_aircraft_type')"></div>
       <div class="hf"><label>Aircraft Type</label>
         <input id="h_aircraft_type" type="text" placeholder="Auto-fills on selection">
       </div>
@@ -10516,6 +10520,27 @@ function setGalley(pos, btn) {
 }
 
 // ── FOOTER COLLAPSE ───────────────────────────────────
+function toggleHeader() {
+  const hf = document.getElementById('hdr_form');
+  hf.classList.toggle('collapsed');
+}
+
+function updateHeaderSummary() {
+  const truck    = document.getElementById('h_truck')?.value?.trim();
+  const driver   = document.getElementById('h_driver')?.value?.trim();
+  const airline  = document.getElementById('h_airline')?.value;
+  const fin      = document.getElementById('h_aircraft_num')?.value?.trim();
+  const actype   = document.getElementById('h_aircraft_type')?.value?.trim();
+  const parts = [];
+  if (truck)   parts.push('Truck ' + truck);
+  if (driver)  parts.push(driver);
+  if (airline) parts.push(airline);
+  if (fin)     parts.push(fin + (actype ? ' · ' + actype : ''));
+  const summary = parts.length ? parts.join(' · ') : 'Tap to enter flight details';
+  const el = document.getElementById('hdr_summary');
+  if (el) el.textContent = summary;
+}
+
 function toggleFooter() {
   const ff = document.getElementById('footer_form');
   ff.classList.toggle('collapsed');
@@ -10895,6 +10920,7 @@ function onAirlineChange() {
 function setApproach(type) {
   currentApproach = type;
   results = {};
+  // Pre-populate N/A — will be set properly in renderChecklist
   document.getElementById('btn_one').classList.toggle('active', type==='one');
   document.getElementById('btn_two').classList.toggle('active', type==='two');
   document.getElementById('guide_row').style.display = type==='two' ? '' : 'none';
@@ -10905,6 +10931,10 @@ function setApproach(type) {
 // ══ RENDER CHECKLIST ══════════════════════════════════
 function renderChecklist() {
   const items = currentApproach === 'one' ? ONE_ITEMS : TWO_ITEMS;
+  // Default all items to N/A on first render
+  items.forEach(it => {
+    if (!results[it.id]) results[it.id] = { result: 'na', comment: '' };
+  });
   const scroll = document.getElementById('checklist_scroll');
   
   // Group by category
@@ -11116,6 +11146,7 @@ function confirmArchive() {
   showToast('✅ SQOR archived — ' + arr.length + ' total');
   pendingRecord = null;
   updateHomeCount();
+  document.getElementById('hdr_form')?.classList.add('collapsed');
 }
 
 function getSqorArchive() {
@@ -11225,6 +11256,8 @@ function showToast(msg) {
 // ══ INIT ═════════════════════════════════════════════
 setApproach('one');
 updateHomeCount();
+// Start header collapsed — tap to expand when filling in details
+document.getElementById('hdr_form')?.classList.add('collapsed');
 initAircraftLookup('h_aircraft_num','h_aircraft_type');
 
 // ── SUITE NAVIGATION ─────────────────────────────
