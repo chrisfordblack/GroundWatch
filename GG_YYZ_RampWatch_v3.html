@@ -1,7 +1,59 @@
 <!DOCTYPE html>
+<!--
+================================================================================
+  GroundWatch Safety Suite
+  © 2026 CF Black Aviation. All Rights Reserved.
+
+  Unauthorized reproduction, copying, distribution, or modification of this
+  software without express written permission of CF Black Aviation is prohibited.
+
+  GroundWatch™ and Heimdal™ are trademarks of CF Black Aviation.
+
+  THIRD-PARTY ATTRIBUTION
+  Third-party logos, trademarks and brand names (including Gate Gourmet, Air Canada,
+  WestJet, Porter Airlines, Boeing, Airbus, and associated marks) are the property
+  of their respective owners, referenced herein for operational identification only.
+================================================================================
+-->
 <html lang="en">
 <head>
+<script>
+(function(){
+  'use strict';
+  // CF Black Aviation - GroundWatch Safety Suite
+  // (c) 2026 CF Black Aviation. All Rights Reserved.
+  function cfbProtect(){
+    document.addEventListener('contextmenu',function(e){
+      e.preventDefault();
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(26,45,90,.95);color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-family:Arial,sans-serif;z-index:99999;pointer-events:none;box-shadow:0 2px 12px rgba(0,0,0,.3)';
+      t.textContent=String.fromCharCode(169)+' 2026 CF Black Aviation — All Rights Reserved';
+      document.body.appendChild(t);
+      setTimeout(function(){t.remove();},2200);
+      return false;
+    },true);
+    window.addEventListener('contextmenu',function(e){e.preventDefault();return false;},true);
+    document.addEventListener('keydown',function(e){
+      var ctrl=e.ctrlKey||e.metaKey;
+      if(ctrl&&['s','S','u','U'].indexOf(e.key)>-1){e.preventDefault();return false;}
+      if(ctrl&&e.shiftKey&&['i','I','j','J'].indexOf(e.key)>-1){e.preventDefault();return false;}
+      if(e.key==='F12'){e.preventDefault();return false;}
+    },true);
+    document.addEventListener('dragstart',function(e){e.preventDefault();return false;},true);
+    console.log('%c GroundWatch Safety Suite ','color:#C8101E;font-size:16px;font-weight:800');
+    console.log('%c'+String.fromCharCode(169)+' 2026 CF Black Aviation. All Rights Reserved.','color:#1A2D5A;font-size:12px;font-weight:600');
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',cfbProtect);
+  } else {
+    cfbProtect();
+  }
+})();
+</script>
 <meta charset="UTF-8">
+  <meta name="copyright" content="© 2026 CF Black Aviation. All Rights Reserved.">
+  <meta name="author" content="CF Black Aviation">
+  <meta name="application-name" content="GroundWatch Safety Suite">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>GroundWatch — RampWatch · Gate Gourmet YYZ</title>
 <!--
@@ -708,6 +760,133 @@ input::placeholder,textarea::placeholder{color:#bbb}
   border-top:1px solid #f0f0f0;cursor:pointer;text-align:center;font-weight:600}
 .ac-manual-hint:active{background:rgba(72,175,68,.06)}
 
+/* ══ AI COPILOT ══════════════════════════════════════════════ */
+.copilot-fab{position:fixed;bottom:88px;right:16px;width:50px;height:50px;
+  border-radius:50%;background:#1565C0;color:#fff;border:none;font-size:18px;
+  cursor:pointer;z-index:9400;box-shadow:0 3px 12px rgba(0,0,0,.35);
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+  -webkit-tap-highlight-color:transparent}
+.copilot-fab:active{transform:scale(.93)}
+.copilot-panel{position:fixed;bottom:0;left:0;right:0;
+  display:none;background:#fff;border-radius:18px 18px 0 0;z-index:9500;
+  max-height:78vh;flex-direction:column;
+  box-shadow:0 -4px 24px rgba(0,0,0,.22)}
+.copilot-panel.open{display:flex;animation:cpSlideUp .28s ease-out}
+@keyframes cpSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.cp-header{padding:14px 16px 10px;border-bottom:1px solid #E0E4EA;
+  display:flex;align-items:center;gap:10px}
+.cp-indicator{width:8px;height:8px;border-radius:50%;background:#1565C0;
+  animation:cpBlink 2.2s ease-in-out infinite;flex-shrink:0}
+@keyframes cpBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+.cp-title{font-size:14px;font-weight:700;color:#1A2D5A;flex:1}
+.cp-ctx{font-size:10px;color:#888;font-weight:400;margin-left:6px}
+.cp-close{background:none;border:none;font-size:20px;cursor:pointer;
+  color:#aaa;padding:2px 6px;line-height:1}
+.cp-context-bar{padding:7px 14px;background:#EEF4FF;font-size:11px;
+  color:#1565C0;border-bottom:1px solid #D8E8FF;line-height:1.4}
+.cp-presets{display:flex;gap:6px;padding:10px 12px;overflow-x:auto;
+  border-bottom:1px solid #E0E4EA;scrollbar-width:none}
+.cp-presets::-webkit-scrollbar{display:none}
+.cp-preset{flex-shrink:0;background:#EEF4FF;border:1px solid #C0D4F0;
+  border-radius:16px;padding:6px 12px;font-size:11.5px;font-weight:600;
+  color:#1565C0;cursor:pointer;white-space:nowrap;font-family:inherit;
+  -webkit-tap-highlight-color:transparent}
+.cp-preset:active{background:#D0E4FF}
+.cp-msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;
+  flex-direction:column;gap:10px;min-height:120px}
+.cp-msg-wrap{display:flex;flex-direction:column;gap:2px}
+.cp-msg-role{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;color:#aaa}
+.cp-msg{padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.6;
+  max-width:90%}
+.cp-msg.user{background:#1565C0;color:#fff;border-radius:12px 12px 4px 12px;align-self:flex-end}
+.cp-msg.ai{background:#F4F7FF;color:#1A2D5A;border-radius:12px 12px 12px 4px;align-self:flex-start}
+.cp-msg.thinking{color:#999;font-style:italic;font-size:12px;background:none;padding:4px 0}
+.cp-input-row{display:flex;gap:8px;padding:10px 12px 14px;border-top:1px solid #E0E4EA;
+  padding-bottom:max(14px,env(safe-area-inset-bottom,14px))}
+.cp-input{flex:1;border:1.5px solid #E0E4EA;border-radius:22px;padding:9px 16px;
+  font-size:13px;font-family:inherit;outline:none;color:#111}
+.cp-input:focus{border-color:#1565C0}
+.cp-send{width:40px;height:40px;border-radius:50%;background:#1565C0;
+  color:#fff;border:none;font-size:16px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center}
+.cp-send:disabled{opacity:.4;cursor:not-allowed}
+
+/* ══ GSIR HOME CARD ═══════════════════════════════════════════ */
+.gsir-home-card{background:linear-gradient(135deg,#1A2D5A 0%,#2A4070 100%);
+  border-radius:12px;margin:0 14px 14px;padding:16px;cursor:pointer;
+  border:none;width:calc(100% - 28px);text-align:left;font-family:inherit;
+  -webkit-tap-highlight-color:transparent}
+.gsir-home-card:active{opacity:.88}
+.ghc-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(200,16,30,.25);
+  border:1px solid rgba(200,16,30,.4);border-radius:10px;padding:3px 8px;
+  font-size:10px;font-weight:700;color:#FF6B6B;text-transform:uppercase;
+  letter-spacing:.04em;margin-bottom:8px}
+.ghc-title{font-size:16px;font-weight:800;color:#fff;margin-bottom:4px}
+.ghc-sub{font-size:12px;color:rgba(255,255,255,.55);line-height:1.5}
+.ghc-footer{display:flex;align-items:center;justify-content:space-between;
+  margin-top:12px}
+.ghc-status{font-size:11px;color:rgba(255,255,255,.5)}
+.ghc-arrow{font-size:18px;color:rgba(255,255,255,.4)}
+
+/* ══ GSIR VIEW ════════════════════════════════════════════════ */
+.gsir-auto-btn{width:100%;background:#1565C0;color:#fff;border:none;
+  border-radius:10px;padding:12px;font-size:14px;font-weight:700;
+  cursor:pointer;font-family:inherit;margin-bottom:12px;display:flex;
+  align-items:center;justify-content:center;gap:8px}
+.gsir-auto-btn:active{opacity:.85}
+.gsir-sec{background:#fff;border-radius:10px;margin-bottom:10px;
+  border:1px solid #E0E4EA;overflow:hidden}
+.gsir-sec-hdr{background:#1A2D5A;padding:10px 14px;
+  font-size:11px;font-weight:700;color:#fff;text-transform:uppercase;
+  letter-spacing:.06em;display:flex;align-items:center;gap:7px}
+.gsir-sec-body{padding:14px}
+.gf{margin-bottom:11px}
+.gf:last-child{margin-bottom:0}
+.gf label{font-size:10px;font-weight:700;color:#1A2D5A;text-transform:uppercase;
+  letter-spacing:.04em;display:block;margin-bottom:4px}
+.gf input,.gf select,.gf textarea{width:100%;border:1.5px solid #E0E4EA;
+  border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;color:#111;background:#fff}
+.gf input:focus,.gf select:focus,.gf textarea:focus{outline:none;border-color:#1A2D5A}
+.gf textarea{resize:none;min-height:72px;line-height:1.6}
+.gf-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.gf-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.risk-matrix-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.risk-tbl{border-collapse:collapse;width:100%;font-size:10px;min-width:340px}
+.risk-tbl th,.risk-tbl td{border:1px solid #E0E4EA;padding:5px 4px;text-align:center;line-height:1.3}
+.risk-tbl th{background:#1A2D5A;color:#fff;font-weight:600;font-size:10px}
+.risk-tbl .prob-col{background:#2A4070;color:#fff;font-weight:600;font-size:10px;text-align:left;padding-left:6px}
+.rc-e{background:#C8101E;color:#fff;font-weight:700;font-size:11px}
+.rc-h{background:#E07818;color:#fff;font-weight:700;font-size:11px}
+.rc-m{background:#D4A040;color:#111;font-weight:700;font-size:11px}
+.rc-l{background:#48AF44;color:#fff;font-weight:700;font-size:11px}
+.rc-i{background:#C8C8C8;color:#555;font-weight:700;font-size:11px}
+.risk-result{background:#F4F7FF;border-radius:8px;padding:10px 12px;
+  margin-top:10px;font-size:13px;font-weight:600;color:#1A2D5A}
+.risk-result span{font-weight:800}
+.timeline-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.timeline-tbl th{background:#1A2D5A;color:#fff;padding:7px 8px;text-align:left;font-size:11px}
+.timeline-tbl td{border:1px solid #E0E4EA;padding:4px 6px;vertical-align:top}
+.timeline-tbl input{border:none;width:100%;font-size:12px;font-family:inherit;
+  background:none;padding:4px 2px;outline:none}
+.add-row-btn{background:none;border:1.5px dashed #C8D8E8;border-radius:8px;
+  width:100%;padding:8px;font-size:12px;color:#5B8DB8;cursor:pointer;
+  margin-top:6px;font-family:inherit}
+.cf-item{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.cf-num{background:#1A2D5A;color:#fff;border-radius:5px;width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  font-weight:700;flex-shrink:0;margin-top:9px}
+.actions-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.actions-tbl th{background:#1A2D5A;color:#fff;padding:7px 8px;font-size:11px;text-align:left}
+.actions-tbl td{border:1px solid #E0E4EA;padding:4px 6px;vertical-align:top}
+.actions-tbl input{border:none;width:100%;font-size:12px;font-family:inherit;
+  background:none;padding:4px 2px;outline:none}
+.gsir-gen-btn{width:100%;background:#C8101E;color:#fff;border:none;
+  border-radius:10px;padding:14px;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:inherit;margin-top:4px;display:flex;
+  align-items:center;justify-content:center;gap:8px}
+.gsir-gen-btn:active{opacity:.85}
+
 </style>
 </head>
 <body>
@@ -959,11 +1138,28 @@ input::placeholder,textarea::placeholder{color:#bbb}
       </div>
     </div>
 
+
+    <!-- GSIR Card -->
+    <button class="gsir-home-card" onclick="openView('v6')">
+      <div class="ghc-badge">📋 GF Standard</div>
+      <div class="ghc-title">Ground Safety Incident Report</div>
+      <div class="ghc-sub">Auto-populate from Steps 1–3. Generate the formal GSIR Word document for SMS submission.</div>
+      <div class="ghc-footer">
+        <span class="ghc-status" id="gsir_home_status">Populates from completed steps</span>
+        <span class="ghc-arrow">›</span>
+      </div>
+    </button>
+
         <!-- FULL REPORT BUTTONS -->
     <div style="display:flex;gap:8px;margin-top:4px">
       <button onclick="generateFullReport('pdf')" style="flex:1;background:#48AF44;color:#fff;border:none;border-radius:10px;padding:13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">📋 Full Report PDF</button>
       <button onclick="generateFullReport('txt')" style="flex:1;background:var(--dark);color:#fff;border:none;border-radius:10px;padding:13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px">📄 Full Report TXT</button>
     </div>
+
+    <!-- DEMO BUTTON -->
+    <button onclick="loadDemoIncident()" style="width:100%;margin-top:8px;background:none;border:1.5px dashed #888;border-radius:10px;padding:11px;font-size:13px;color:#888;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px">
+      🧪 Load Demo Incident — Gate C25 WestJet Contact
+    </button>
 
     <!-- Card 5 — Trends -->
     <div class="trends-card tool-card" onclick="openView('v5');renderTrends(currentPeriod)">
@@ -4031,6 +4227,611 @@ function goHome() {
   const base = window.location.href.replace(/[^/]+$/, '');
   window.location.href = base + 'index.html';
 }
+// ══ AI COPILOT ════════════════════════════════════════════════
+let cpOpen = false;
+let cpHistory = [];
+
+const CP_SYSTEM = `You are a safety investigation assistant for Gate Gourmet YYZ, a federally regulated airline catering operation at Toronto Pearson International Airport (CYYZ). You assist safety investigators with:
+- Drafting factual, chronological incident descriptions in passive, objective language
+- Reviewing 5 Whys analyses (must terminate at systemic or organisational factors, not individual behaviour)
+- Identifying contributing factors using REDA (Recognition, Error, Deviation, At-Risk) and HFACS four-level framework
+- Classifying root causes: Organizational Support, Job Expectations, Skills and Knowledge, Environment and Tools, Performance, Caused by Human Error
+- Suggesting corrective actions using the Hierarchy of Control
+- Reviewing GSIR documents for completeness against the GF-000-050-0218-1 standard
+
+Key regulatory references: Canada Labour Code Part II (federal jurisdiction). TR5042 §1: 5mph max / idle speed when reversing. Global Ramp Safety Manual V4 XP.0000.050.00015.004 §6.3.3: Circle of Safety. GG SMS leading indicator framework. Dirty Dozen. HFACS four levels.
+
+Be concise, professional, and cite specific standards when relevant. Never speculate about legal liability or personal fault. Focus on factual reconstruction and systemic analysis. When drafting text, produce report-ready language — factual, chronological, no opinions.`;
+
+function toggleCopilot() {
+  cpOpen = !cpOpen;
+  const panel = document.getElementById('copilot_panel');
+  const bd    = document.getElementById('cp_backdrop');
+  const fab   = document.getElementById('copilot_fab');
+  if (cpOpen) {
+    panel.classList.add('open');
+    if(bd) bd.style.display = 'block';
+    if(fab) fab.style.opacity = '0.5';
+    refreshCopilotContext();
+    setTimeout(() => document.getElementById('cp_input')?.focus(), 300);
+  } else {
+    panel.classList.remove('open');
+    if(bd) bd.style.display = 'none';
+    if(fab) fab.style.opacity = '1';
+  }
+}
+
+function refreshCopilotContext() {
+  const ctx = getCopilotContext();
+  document.getElementById('cp_context_bar').textContent = ctx.summary;
+  document.getElementById('cp_ctx_label').textContent = ctx.step;
+  renderCopilotPresets(ctx.step);
+}
+
+function getCopilotContext() {
+  const g = id => (document.getElementById(id)?.value || '').trim();
+  const parts = [];
+  let step = '— No active step —';
+
+  // Detect active view
+  const activeViews = ['v1','v2','v3','v4','v6'].filter(id =>
+    document.getElementById(id)?.classList.contains('active'));
+  const active = activeViews[0];
+
+  if (active === 'v1' || active === 'v2' || active === 'v3') {
+    if (g('v1_inc_date')) parts.push('Date: ' + g('v1_inc_date'));
+    if (g('v1_gate'))     parts.push('Location: ' + g('v1_gate'));
+    if (g('v1_airline'))  parts.push('Airline: ' + g('v1_airline'));
+    if (g('v1_flight'))   parts.push('Flight: ' + g('v1_flight'));
+    if (g('v1_inc_type')) parts.push('Type: ' + g('v1_inc_type'));
+    if (g('v1_aircraft_type')) parts.push('Aircraft: ' + g('v1_aircraft_type'));
+    step = 'Steps 1–2';
+  }
+  if (active === 'v3') {
+    if (g('v3_desc'))      parts.push('Description: ' + g('v3_desc').slice(0,120));
+    if (g('v3_employees')) parts.push('Employees: ' + g('v3_employees'));
+    if (g('v3_rootcause')) parts.push('Root cause: ' + g('v3_rootcause'));
+    if (g('v3_w1'))        parts.push('Why1: ' + g('v3_w1'));
+    if (g('v3_w2'))        parts.push('Why2: ' + g('v3_w2'));
+    step = 'Step 3 — Investigation';
+  }
+  if (active === 'v6') {
+    if (g('gs_title'))    parts.push('Title: ' + g('gs_title'));
+    if (g('gs_desc'))     parts.push('Description: ' + g('gs_desc').slice(0,120));
+    if (g('gs_rootcause'))parts.push('Root cause: ' + g('gs_rootcause'));
+    if (g('gs_cf1'))      parts.push('CF1: ' + g('gs_cf1'));
+    step = 'GSIR';
+  }
+
+  const contextStr = parts.length
+    ? 'Context: ' + parts.join(' | ')
+    : 'No data entered yet. Fill in the current step to get context-aware assistance.';
+
+  return { summary: contextStr, step, raw: parts.join('\n') };
+}
+
+const CP_PRESETS = {
+  'Steps 1–2': [
+    'Summarise the incident in one paragraph',
+    'What notifications should I make?',
+    'What immediate actions are required?',
+    'Help me write the employee names section',
+  ],
+  'Step 3 — Investigation': [
+    'Review my root cause analysis',
+    'Check my 5 Whys for logical consistency',
+    'Suggest REDA contributing factors',
+    'Draft the investigation description',
+    'Suggest corrective actions',
+  ],
+  'GSIR': [
+    'Review this report for completeness',
+    'Check root cause and contributing factors alignment',
+    'Draft the discussion / analysis section',
+    'Suggest corrective actions using hierarchy of control',
+    'Summarise findings for the executive section',
+  ],
+};
+
+function renderCopilotPresets(step) {
+  const container = document.getElementById('cp_presets');
+  const presets = CP_PRESETS[step] || CP_PRESETS['Steps 1–2'];
+  container.innerHTML = presets.map(p =>
+    `<button class="cp-preset" onclick="useCopilotPreset(this.textContent)">${p}</button>`
+  ).join('');
+}
+
+function useCopilotPreset(text) {
+  document.getElementById('cp_input').value = text;
+  sendCopilot();
+}
+
+function addCopilotMsg(role, text) {
+  const msgs = document.getElementById('cp_msgs');
+  const wrap = document.createElement('div');
+  wrap.className = 'cp-msg-wrap';
+  const msg = document.createElement('div');
+  msg.className = 'cp-msg ' + role;
+  msg.textContent = text;
+  wrap.appendChild(msg);
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+  return msg;
+}
+
+async function sendCopilot() {
+  const input = document.getElementById('cp_input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  document.getElementById('cp_send_btn').disabled = true;
+
+  addCopilotMsg('user', text);
+  const thinking = addCopilotMsg('ai thinking', '…');
+
+  // Build messages with context
+  const ctx = getCopilotContext();
+  const contextMessage = 'Current investigation context:\n' + ctx.raw;
+
+  cpHistory.push({ role:'user', content: text });
+
+  const messages = cpHistory.length === 1
+    ? [{ role:'user', content: contextMessage + '\n\nUser question: ' + text }]
+    : [
+        { role:'user', content: contextMessage },
+        { role:'assistant', content: 'Understood. I have the investigation context.' },
+        ...cpHistory.slice(0, -1),
+        { role:'user', content: text }
+      ];
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: CP_SYSTEM,
+        messages
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'Unable to get a response. Please try again.';
+    thinking.textContent = reply;
+    thinking.className = 'cp-msg ai';
+    cpHistory.push({ role:'assistant', content: reply });
+    if (cpHistory.length > 10) cpHistory = cpHistory.slice(-10);
+  } catch(e) {
+    thinking.textContent = 'Connection error. Please check your network and try again.';
+    thinking.className = 'cp-msg ai';
+  }
+  document.getElementById('cp_send_btn').disabled = false;
+}
+
+// ══ DEMO INCIDENT LOADER ═══════════════════════════════════════
+function loadDemoIncident() {
+  if (!confirm('Load a sample incident? This will overwrite any data currently in the form.')) return;
+
+  const s = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+  const c = (id) => { const el = document.getElementById(id); if(el) el.checked = true; };
+
+  // ── STEP 1 — Incident Response ─────────────────────────────
+  s('v1_ops_time', '22:14');
+  s('v1_gate', 'Gate C25');
+  s('v1_inc_date', new Date().toISOString().slice(0,10));
+  s('v1_inc_time', '22:14');
+  // Airline — set WestJet
+  const airline = document.getElementById('v1_airline');
+  if(airline) { airline.value = 'WestJet'; airline.dispatchEvent(new Event('change')); }
+  setTimeout(() => {
+    s('v1_aircraft_num', '822');
+    s('v1_aircraft_type', 'Boeing 737-800');
+  }, 200);
+  s('v1_flight', 'WS 2241');
+  // Incident type
+  const incType = document.getElementById('v1_inc_type');
+  if(incType) { for(let o of incType.options){ if(o.text.includes('CAT 1A')){ o.selected=true; break; }}}
+  s('v1_sms_ref', 'ILX-I-' + (77000 + Math.floor(Math.random()*1000)));
+  s('v1_risk', 'High');
+  // Notifications
+  s('nc_mgr_name', 'M. Ferreira');
+  s('nc_safety_name', 'C. Black');
+  s('nc_client_name', 'WestJet Ops YYZ');
+  s('v1_employees', 'A. Osei (Driver), K. Singh (Guide)');
+  s('v1_vehicles', 'GL #14 — Global Highloader 3500');
+
+  // ── STEP 2 — Post-Incident ──────────────────────────────────
+  s('room_location', 'Safety Office — Ground Floor');
+  s('int_name', 'A. Osei');
+  s('int_role', 'Driver');
+  s('int_by', 'C. Black');
+  s('int_time', '22:35');
+  const unionSel = document.querySelector('input[name="union_rep"][value="present"]');
+  if(unionSel) { unionSel.checked = true; unionSel.dispatchEvent(new Event('change')); }
+  s('union_rep_name', 'J. Tremblay');
+
+  // ── STEP 3 — Investigation ──────────────────────────────────
+  const today = new Date().toISOString().slice(0,10);
+  s('v3_ref', document.getElementById('v1_sms_ref')?.value || 'ILX-I-77722');
+  s('v3_date', today);
+  s('v3_time', '22:14');
+  s('v3_gate', 'Gate C25 — Terminal C Domestic');
+  s('v3_employees', 'A. Osei (Driver 4.5 yrs), K. Singh (Guide 2.1 yrs)');
+  s('v3_flight', 'WS 2241');
+  s('v3_vehicles', 'Global Highloader GL #14');
+  const v3type = document.getElementById('v3_inc_type');
+  if(v3type) { for(let o of v3type.options){ if(o.text.includes('CAT 1A')){ o.selected=true; break; }}}
+  s('v3_investigator', 'C. Black — RSO');
+  s('v3_desc', 'At approximately 22:14 on ' + today + ', a Global Highloader (Unit GL #14) operated by A. Osei made contact with the aft cargo door frame of WestJet B737-800 fin 822 (C-FBWI) at Gate C25 during a catering approach for WS 2241. The guide (K. Singh) had completed the Circle of Safety walk-around and called the driver forward. Contact occurred during the final approach phase at Position 4. Minor paint transfer was noted on the aircraft door frame. No personnel injuries. Operations suspended at 22:14 per post-incident protocol. The aircraft was inspected by the WestJet line maintenance team at 22:31.');
+  // 5 Whys
+  s('v3_w1', 'Contact occurred because the driver continued forward past Position 4 without receiving a secondary confirmation from the guide.');
+  s('v3_w2', 'The driver did not stop because the guide call was unclear at that distance and he assumed clearance had been confirmed.');
+  s('v3_w3', 'The guide communication was unclear because the guide was positioned at the aircraft nose rather than at the driver sight line per Circle of Safety standard (§6.3.3).');
+  s('v3_w4', 'The guide was not in the correct position because there is no consistent enforcement of guide positioning requirements during C-stand approaches on the night shift.');
+  s('v3_w5', 'There is no consistent enforcement because supervisory SQOR observation frequency on night shift has been below the 2-per-shift target for 6 weeks, and positional non-compliance has not been recorded as at-risk.');
+  s('v3_rootcause', 'Organizational Support: Supervisory monitoring of Circle of Safety guide positioning compliance on the night shift has been insufficient. Observed deviations from §6.3.3 positioning requirements have not been consistently captured in the SQOR system, allowing at-risk behaviour to become normalized without corrective intervention.');
+  s('v3_cf_desc', '1. Skills and Knowledge: Guide positional requirements under §6.3.3 were not operationally reinforced at the briefing level. 2. Job Expectations: Night shift SQOR observation targets (2/shift) have not been consistently met for 6 weeks prior to this incident. 3. Environment and Tools: Gate C25 approach angle creates reduced driver-to-guide sightline at Position 4, increasing reliance on clear audio communication. 4. Caused by Human Error: Initial investigation suggested driver inattention as primary cause; evidence from guide positioning records and SQOR data disproves this framing.');
+  s('v3_summary', 'Investigation conducted by RSO C. Black. Resources reviewed: employee interview records (A. Osei, K. Singh, TM M. Ferreira), training records (both employees — current), SQOR archive (6-week review), Global Ramp Safety Manual V4 §6.3.3, TR5042 §1, CCTV footage Gate C25 (timestamp 22:10–22:20), Vehicle pre-op inspection GL #14 (current), OTP data for WS 2241.');
+  s('v3_conclusion', 'This incident reflects a systemic failure in supervisory observation frequency rather than an individual competency or attentiveness failure. The driver and guide have clean safety records. The root cause — insufficient supervisory monitoring of guide positioning compliance — is addressable through corrective SQOR target enforcement and a focused positional compliance observation campaign on the night shift.');
+  // REDA checkboxes
+  const redaLabels = ['Situational Awareness','Communication'];
+  document.querySelectorAll('#v3_redaGrid input[type=checkbox]').forEach(cb => {
+    if(redaLabels.some(l => cb.value?.includes(l) || cb.id?.includes(l))) cb.checked = true;
+  });
+  // Risk
+  const aRating = document.getElementById('v3_aRating');
+  if(aRating) aRating.textContent = 'High';
+
+  // ── STEP 4 — External ──────────────────────────────────────
+  s('v4_date', today);
+  s('v4_time', '22:14');
+  s('v4_gate', 'Gate C25, Terminal C, Toronto Pearson (YYZ)');
+  s('v4_flight', 'WS 2241');
+  s('v4_reg', 'C-FBWI');
+  const v4nat = document.getElementById('v4_nature');
+  if(v4nat) { for(let o of v4nat.options){ if(o.text?.includes('Contact')){ o.selected=true; break; }}}
+  s('v4_description', 'At approximately 22:14 local time, a Gate Gourmet YYZ catering vehicle made minor contact with the aft cargo door frame of C-FBWI during a catering approach at Gate C25. Paint transfer noted. Aircraft inspected by WestJet line maintenance at 22:31 and released for service at 23:10. No personnel injuries. Full investigation conducted by Gate Gourmet YYZ Safety.');
+  s('v4_scene_actions', 'Operations suspended immediately. Scene preserved. Personnel separated and interviewed. WestJet Ops YYZ notified at 22:16. Line maintenance inspection completed 22:31. Safety RSS notified 22:18. ILX notification opened 22:25.');
+
+  showToastRW('✓ Demo incident loaded across all steps — tap any step card to review');
+}
+
+// ══ GSIR ══════════════════════════════════════════════════════
+function populateGSIR() {
+  const g = id => (document.getElementById(id)?.value || '').trim();
+  const sel = id => document.getElementById(id);
+
+  // Occurrence Title
+  const incType = g('v3_inc_type') || g('v1_inc_type');
+  if (incType && !g('gs_title')) {
+    const d = document.getElementById('gs_title');
+    if(d) d.value = incType;
+  }
+
+  // Ref
+  if (!g('gs_ref')) {
+    const ref = g('v3_ref') || g('v1_sms_ref');
+    if(ref){ const d=document.getElementById('gs_ref'); if(d) d.value=ref; }
+  }
+
+  // Customer
+  if (!g('gs_customer')) {
+    const airline = g('v1_airline');
+    if(airline){ const d=document.getElementById('gs_customer'); if(d) d.value=airline; }
+  }
+
+  // Location
+  if (!g('gs_location')) {
+    const gate = g('v3_gate') || g('v1_gate');
+    if(gate){ const d=document.getElementById('gs_location'); if(d) d.value=gate; }
+  }
+
+  // Aircraft registration
+  if (!g('gs_reg')) {
+    const reg = g('v4_reg');
+    if(reg){ const d=document.getElementById('gs_reg'); if(d) d.value=reg; }
+  }
+
+  // Flight
+  if (!g('gs_flight')) {
+    const flt = g('v3_flight') || g('v1_flight');
+    if(flt){ const d=document.getElementById('gs_flight'); if(d) d.value=flt; }
+  }
+
+  // Aircraft type
+  if (!g('gs_actype')) {
+    const type = g('v1_aircraft_type');
+    if(type){ const d=document.getElementById('gs_actype'); if(d) d.value=type; }
+  }
+
+  // Date
+  if (!g('gs_date')) {
+    const dt = g('v1_inc_date') || g('v3_date');
+    if(dt){ const d=document.getElementById('gs_date'); if(d) d.value=dt; }
+  }
+
+  // Time
+  if (!g('gs_time')) {
+    const tm = g('v1_inc_time') || g('v3_time');
+    if(tm){ const d=document.getElementById('gs_time'); if(d) d.value=tm; }
+  }
+
+  // Description
+  if (!g('gs_desc')) {
+    const desc = g('v3_desc');
+    if(desc){ const d=document.getElementById('gs_desc'); if(d) d.value=desc; }
+  }
+
+  // Investigation process
+  if (!g('gs_process')) {
+    const summary = g('v3_summary');
+    if(summary){ const d=document.getElementById('gs_process'); if(d) d.value=summary; }
+  }
+
+  // Root cause
+  if (!g('gs_rootcause')) {
+    const rc = g('v3_rootcause');
+    if(rc){ const d=document.getElementById('gs_rootcause'); if(d) d.value=rc; }
+  }
+
+  // Discussion from conclusion
+  if (!g('gs_discussion')) {
+    const conc = g('v3_conclusion');
+    if(conc){ const d=document.getElementById('gs_discussion'); if(d) d.value=conc; }
+  }
+
+  // Contributing factors from cf_desc — try to split into lines
+  const cfRaw = g('v3_cf_desc');
+  if (cfRaw && !g('gs_cf1')) {
+    const lines = cfRaw.split(/\n|;/).map(s=>s.trim()).filter(Boolean);
+    ['gs_cf1','gs_cf2','gs_cf3','gs_cf4'].forEach((id,i) => {
+      const d = document.getElementById(id);
+      if(d && lines[i] && !d.value) d.value = lines[i];
+    });
+  }
+
+  // REDA factors as a contributing factor
+  const redaChecked = [...document.querySelectorAll('#v3_redaGrid input:checked')].map(c=>c.value);
+  if (redaChecked.length && !g('gs_cf1')) {
+    const d = document.getElementById('gs_cf1');
+    if(d) d.value = 'REDA Factors: ' + redaChecked.join(', ');
+  }
+
+  // Investigator as completed by
+  const inv = g('v3_investigator');
+  if(inv && !g('gs_completed_by')){
+    const d=document.getElementById('gs_completed_by'); if(d) d.value=inv;
+  }
+
+  // Risk rating
+  const riskVal = g('v1_risk');
+  if(riskVal) {
+    const prob = document.getElementById('gs_prob');
+    const sev = document.getElementById('gs_sev');
+    // Map GG risk rating to rough probability
+    const rmap = { 'Extreme':'5','High':'4','Medium':'3','Low':'2','Insignificant':'1' };
+    if(prob && rmap[riskVal]) { prob.value = rmap[riskVal]; }
+    calcRisk();
+  }
+
+  showToastRW('✓ GSIR populated from Steps 1–3');
+}
+
+function calcRisk() {
+  const MATRIX = {
+    '5A':'E','5B':'E','5C':'H','5D':'M','5E':'M',
+    '4A':'E','4B':'H','4C':'H','4D':'M','4E':'L',
+    '3A':'H','3B':'H','3C':'M','3D':'L','3E':'L',
+    '2A':'H','2B':'M','2C':'L','2D':'L','2E':'I',
+    '1A':'M','1B':'M','1C':'L','1D':'I','1E':'I',
+  };
+  const LABELS = { E:'Extreme Risk', H:'High Risk', M:'Medium Risk', L:'Low Risk', I:'Insignificant Risk' };
+  const COLORS = { E:'#C8101E', H:'#E07818', M:'#D4A040', L:'#48AF44', I:'#888' };
+  const prob = document.getElementById('gs_prob')?.value;
+  const sev  = document.getElementById('gs_sev')?.value;
+  const resultEl = document.getElementById('gs_risk_result');
+  const labelEl  = document.getElementById('gs_risk_label');
+  if (!prob || !sev || !resultEl) return;
+  const key = prob + sev;
+  const rating = MATRIX[key] || '—';
+  const label  = LABELS[rating] || rating;
+  const color  = COLORS[rating] || '#888';
+  resultEl.style.display = 'block';
+  labelEl.textContent = label;
+  labelEl.style.color = color;
+}
+
+function addTimelineRow() {
+  const tbody = document.getElementById('gs_timeline_body');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td><input type="text" placeholder="dd/mm/yyyy"></td>' +
+    '<td><input type="text" placeholder="HH:MM"></td>' +
+    '<td><input type="text"></td>';
+  tbody.appendChild(tr);
+}
+
+function addActionRow() {
+  const tbody = document.getElementById('gs_actions_body');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td><input type="text" placeholder="Corrective action…"></td>' +
+    '<td><input type="text"></td>' +
+    '<td><input type="date"></td>' +
+    '<td><input type="date"></td>';
+  tbody.appendChild(tr);
+}
+
+function generateGSIRWord() {
+  const g = id => (document.getElementById(id)?.value || '').trim();
+  const company = (typeof CFG !== 'undefined' && CFG.company) || 'Gate Gourmet YYZ';
+  const now = new Date().toLocaleDateString('en-CA');
+
+  // Collect timeline
+  const tlRows = [...document.querySelectorAll('#gs_timeline_body tr')].map(tr => {
+    const cells = [...tr.querySelectorAll('input')].map(i => i.value.trim());
+    return cells.some(Boolean) ? cells : null;
+  }).filter(Boolean);
+
+  // Collect actions
+  const actRows = [...document.querySelectorAll('#gs_actions_body tr')].map(tr => {
+    const cells = [...tr.querySelectorAll('input')].map(i => i.value.trim());
+    return cells.some(Boolean) ? cells : null;
+  }).filter(Boolean);
+
+  const riskLabel = document.getElementById('gs_risk_label')?.textContent || '—';
+
+  const wordHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:w="urn:schemas-microsoft-com:office:word"
+    xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<style>
+  body{font-family:Arial,sans-serif;font-size:10pt;margin:0;padding:0}
+  .doc{width:700px;margin:0 auto;padding:20px}
+  h1{font-size:14pt;color:#1A2D5A;margin:0 0 4px}
+  .header-table{width:100%;border-collapse:collapse;margin-bottom:16px}
+  .header-table td{padding:6px 8px;border:1px solid #ccc;font-size:9pt}
+  .header-table th{padding:6px 8px;border:1px solid #ccc;background:#1A2D5A;color:#fff;font-size:9pt;text-align:left}
+  .section-hdr{background:#1A2D5A;color:#fff;padding:6px 10px;font-size:10pt;
+    font-weight:bold;text-transform:uppercase;letter-spacing:.03em;margin:14px 0 0}
+  .section-body{border:1px solid #ccc;border-top:none;padding:10px;margin-bottom:0}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .field-label{font-size:8pt;font-weight:bold;color:#1A2D5A;text-transform:uppercase;
+    letter-spacing:.03em;margin-bottom:2px}
+  .field-value{font-size:10pt;border-bottom:1px solid #ccc;min-height:18px;padding:2px 0}
+  .risk-val{font-weight:bold;font-size:12pt;color:#C8101E}
+  table.tbl{width:100%;border-collapse:collapse;font-size:9pt}
+  table.tbl th{background:#1A2D5A;color:#fff;padding:5px 6px;text-align:left;font-size:8.5pt}
+  table.tbl td{border:1px solid #ccc;padding:5px 6px;vertical-align:top}
+  .cf-num{font-weight:bold;color:#1A2D5A;margin-right:4px}
+  .footer{margin-top:20px;border-top:1px solid #ccc;padding-top:8px;
+    font-size:8pt;color:#888;text-align:center}
+  .title-block{background:#1A2D5A;color:#fff;padding:12px 16px;margin-bottom:14px}
+  .title-block .doc-ref{font-size:8pt;color:rgba(255,255,255,.6);margin-top:2px}
+</style>
+</head><body><div class="doc">
+
+<div class="title-block">
+  <div style="font-size:8pt;font-weight:bold;color:#C8101E;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">GROUND SAFETY INCIDENT REPORT</div>
+  <h1>GROUND SAFETY INCIDENT REPORT</h1>
+  <div class="doc-ref">${company} &nbsp;·&nbsp; GF-000-050-0218-1 REV JAN 2024 &nbsp;·&nbsp; Generated: ${now}</div>
+</div>
+
+<div class="section-hdr">Occurrence Details</div>
+<div class="section-body">
+  <table class="header-table">
+    <tr><th>Occurrence Title</th><td colspan="3">${g('gs_title') || '—'}</td></tr>
+    <tr><th>gatePerform / SMS Ref #</th><td>${g('gs_ref') || '—'}</td><th>Customer</th><td>${g('gs_customer') || '—'}</td></tr>
+    <tr><th>Location</th><td>${g('gs_location') || '—'}</td><th>Aircraft Registration</th><td>${g('gs_reg') || '—'}</td></tr>
+    <tr><th>Flight Number</th><td>${g('gs_flight') || '—'}</td><th>Aircraft Type</th><td>${g('gs_actype') || '—'}</td></tr>
+    <tr><th>Incident Date</th><td>${g('gs_date') || '—'}</td><th>Incident Time</th><td>${g('gs_time') || '—'}</td></tr>
+    <tr><th>Incident Description</th><td colspan="3">${(g('gs_desc') || '—').split('\n').join('<br>')}</td></tr>
+  </table>
+</div>
+
+<div class="section-hdr">Consequence — Actual and Potential</div>
+<div class="section-body">
+  <table class="header-table">
+    <tr><th>Actual Consequence</th><td>${g('gs_actual') || '—'}</td><th>Potential Consequence</th><td>${g('gs_potential') || '—'}</td></tr>
+    <tr><th>Risk Probability</th><td>${document.getElementById('gs_prob')?.options[document.getElementById('gs_prob').selectedIndex]?.text || '—'}</td>
+        <th>Risk Severity</th><td>${document.getElementById('gs_sev')?.options[document.getElementById('gs_sev').selectedIndex]?.text || '—'}</td></tr>
+    <tr><th>Assessment Risk Index</th><td class="risk-val">${riskLabel}</td>
+        <th>Investigation Priority</th><td>${g('gs_priority') || '—'}</td></tr>
+    <tr><th>Due Date</th><td>${g('gs_due') || '—'}</td><th>Completed By</th><td>${g('gs_completed_by') || '—'}</td></tr>
+  </table>
+</div>
+
+<div class="section-hdr">Investigation Process</div>
+<div class="section-body">
+  <div style="margin-bottom:8px">
+    <div class="field-label">Resources Reviewed / Process Used</div>
+    <div style="font-size:10pt;min-height:40px;border:1px solid #eee;padding:6px;background:#fafafa">${(g('gs_process') || '—').split('\n').join('<br>')}</div>
+  </div>
+  <div>
+    <div class="field-label">Normal Process Description</div>
+    <div style="font-size:10pt;min-height:32px;border:1px solid #eee;padding:6px;background:#fafafa">${(g('gs_normal_process') || '—').split('\n').join('<br>')}</div>
+  </div>
+</div>
+
+<div class="section-hdr">Timeline of Events</div>
+<div class="section-body">
+  <table class="tbl">
+    <thead><tr><th style="width:90px">Date</th><th style="width:70px">Time</th><th>Occurrence</th></tr></thead>
+    <tbody>
+      ${tlRows.length
+        ? tlRows.map(r => `<tr><td>${r[0]||'&nbsp;'}</td><td>${r[1]||'&nbsp;'}</td><td>${r[2]||'&nbsp;'}</td></tr>`).join('')
+        : '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>'.repeat(5)
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="section-hdr">Findings</div>
+<div class="section-body">
+  <div style="margin-bottom:10px">
+    <div class="field-label">Contributing Factors</div>
+    ${[1,2,3,4].map(i => {
+      const val = g('gs_cf'+i);
+      return val ? `<div style="margin-bottom:5px;font-size:10pt"><span class="cf-num">${i}.</span>${val}</div>` : '';
+    }).filter(Boolean).join('') || '<div style="color:#999;font-size:10pt">None recorded</div>'}
+  </div>
+  <div style="margin-bottom:10px">
+    <div class="field-label">Root Cause</div>
+    <div style="font-size:10pt;min-height:32px;border:1px solid #eee;padding:6px;background:#fafafa">${(g('gs_rootcause') || '—').split('\n').join('<br>')}</div>
+  </div>
+  <div>
+    <div class="field-label">Discussion / Analysis</div>
+    <div style="font-size:10pt;min-height:48px;border:1px solid #eee;padding:6px;background:#fafafa">${(g('gs_discussion') || '—').split('\n').join('<br>')}</div>
+  </div>
+</div>
+
+<div class="section-hdr">Response — Preventative &amp; Corrective Actions</div>
+<div class="section-body">
+  <table class="tbl">
+    <thead><tr><th>Action</th><th style="width:110px">Assigned To</th><th style="width:90px">Proposed Date</th><th style="width:90px">Actual Date</th></tr></thead>
+    <tbody>
+      ${actRows.length
+        ? actRows.map(r => `<tr><td>${r[0]||'&nbsp;'}</td><td>${r[1]||'&nbsp;'}</td><td>${r[2]||'&nbsp;'}</td><td>${r[3]||'&nbsp;'}</td></tr>`).join('')
+        : '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>'.repeat(3)
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  ${company} &nbsp;·&nbsp; Ground Safety Incident Report &nbsp;·&nbsp; GF-000-050-0218-1 REV JAN 2024 &nbsp;·&nbsp; Generated ${now}
+</div>
+</div></body></html>`;
+
+  const fname = 'GSIR_' + (g('gs_ref') || 'draft').replace(/[^a-z0-9_\-]/gi,'_') + '_' + now.replace(/\//g,'-') + '.doc';
+  const blob = new Blob(['﻿', wordHtml], { type: 'application/msword' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = fname; a.click();
+  URL.revokeObjectURL(url);
+  showToastRW('✓ GSIR Word document downloaded');
+}
+
+function showToastRW(msg) {
+  if (typeof showToast === 'function') { showToast(msg); return; }
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1A2D5A;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// Hook openView to also refresh copilot context when view changes
+const _origOpenView = typeof openView === 'function' ? openView : null;
+if (_origOpenView) {
+  window.openView = function(id) {
+    _origOpenView(id);
+    if (id === 'v6') populateGSIR();
+    setTimeout(() => { if(cpOpen) refreshCopilotContext(); }, 100);
+  };
+}
+
 </script>
 <!-- ══════════════════════════════════════════════════════════
      VIEW 5 — TRENDS
@@ -4123,5 +4924,208 @@ function goHome() {
   </div>
 </div>
 
+<!-- ══ AI COPILOT ═══════════════════════════════════════════ -->
+<div id="cp_backdrop" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:9400" onclick="toggleCopilot()"></div>
+<button class="copilot-fab" id="copilot_fab" onclick="toggleCopilot()" title="AI Investigation Assistant">✦</button>
+
+<div class="copilot-panel" id="copilot_panel">
+  <div class="cp-header">
+    <div class="cp-indicator"></div>
+    <div class="cp-title">Investigation Copilot <span class="cp-ctx" id="cp_ctx_label"></span></div>
+    <button class="cp-close" onclick="toggleCopilot()">×</button>
+  </div>
+  <div class="cp-context-bar" id="cp_context_bar">Context loaded from current step</div>
+  <div class="cp-presets" id="cp_presets"></div>
+  <div class="cp-msgs" id="cp_msgs">
+    <div class="cp-msg ai">Hello. I have context from your current investigation. Ask me to help draft text, review findings, check your root cause, or suggest corrective actions.</div>
+  </div>
+  <div class="cp-input-row">
+    <input class="cp-input" id="cp_input" type="text" placeholder="Ask me anything about this investigation…"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCopilot()}">
+    <button class="cp-send" id="cp_send_btn" onclick="sendCopilot()">➤</button>
+  </div>
+</div>
+
+<!-- ══ GSIR VIEW (v6) ══════════════════════════════════════════ -->
+<div id="v6" class="view">
+  <div class="appbar">
+    <button class="back-btn" onclick="closeView('v6')">←</button>
+    <div class="appbar-text">
+      <div class="appbar-title">Ground Safety Incident Report</div>
+      <div class="appbar-sub" id="v6_sub">GF-000-050-0218-1 · REV JAN 2024</div>
+    </div>
+  </div>
+  <div class="view-scroll" style="padding:12px 12px 24px">
+
+    <!-- Auto-populate banner -->
+    <div style="background:linear-gradient(135deg,#1A2D5A,#2A4070);border-radius:10px;padding:14px;margin-bottom:12px;color:#fff">
+      <div style="font-size:14px;font-weight:800;margin-bottom:4px">📋 Ground Safety Incident Report</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:12px">Auto-populate from completed steps, then review and complete remaining fields. Generate a Word document for SMS submission.</div>
+      <button class="gsir-auto-btn" style="margin-bottom:0" onclick="populateGSIR()">⟳ Auto-populate from Steps 1–3</button>
+    </div>
+
+    <!-- OCCURRENCE DETAILS -->
+    <div class="gsir-sec">
+      <div class="gsir-sec-hdr">📍 Occurrence Details</div>
+      <div class="gsir-sec-body">
+        <div class="gf"><label>Occurrence Title</label>
+          <input id="gs_title" type="text" placeholder="Brief descriptive title of the incident"></div>
+        <div class="gf-row">
+          <div class="gf"><label>gatePerform / SMS Ref #</label>
+            <input id="gs_ref" type="text" placeholder="e.g. ILX-I-77722"></div>
+          <div class="gf"><label>Customer / Airline</label>
+            <input id="gs_customer" type="text" placeholder="e.g. Air Canada"></div>
+        </div>
+        <div class="gf-row">
+          <div class="gf"><label>Location / Gate</label>
+            <input id="gs_location" type="text" placeholder="e.g. Gate C25"></div>
+          <div class="gf"><label>Aircraft Registration</label>
+            <input id="gs_reg" type="text" placeholder="e.g. C-GJWO"></div>
+        </div>
+        <div class="gf-row">
+          <div class="gf"><label>Flight Number</label>
+            <input id="gs_flight" type="text" placeholder="e.g. WS101"></div>
+          <div class="gf"><label>Aircraft Type</label>
+            <input id="gs_actype" type="text" placeholder="e.g. Boeing 737-800"></div>
+        </div>
+        <div class="gf-row">
+          <div class="gf"><label>Incident Date</label>
+            <input id="gs_date" type="date"></div>
+          <div class="gf"><label>Incident Time</label>
+            <input id="gs_time" type="time"></div>
+        </div>
+        <div class="gf"><label>Incident Description</label>
+          <textarea id="gs_desc" rows="4" placeholder="Concise factual description of what occurred, where, and immediate outcome…"></textarea></div>
+      </div>
+    </div>
+
+    <!-- CONSEQUENCE / RISK -->
+    <div class="gsir-sec">
+      <div class="gsir-sec-hdr">⚠️ Consequence — Actual &amp; Potential</div>
+      <div class="gsir-sec-body">
+        <div class="gf-row">
+          <div class="gf"><label>Actual Consequence</label>
+            <input id="gs_actual" type="text" placeholder="e.g. Minor aircraft damage"></div>
+          <div class="gf"><label>Potential Consequence</label>
+            <input id="gs_potential" type="text" placeholder="e.g. Aircraft grounding"></div>
+        </div>
+        <div class="gf-row">
+          <div class="gf"><label>Risk Probability (1–5)</label>
+            <select id="gs_prob" onchange="calcRisk()">
+              <option value="">-- Select --</option>
+              <option value="5">5 – Frequent</option>
+              <option value="4">4 – Likely</option>
+              <option value="3">3 – Occasional</option>
+              <option value="2">2 – Seldom</option>
+              <option value="1">1 – Improbable</option>
+            </select></div>
+          <div class="gf"><label>Risk Severity (A–E)</label>
+            <select id="gs_sev" onchange="calcRisk()">
+              <option value="">-- Select --</option>
+              <option value="A">A – Catastrophic</option>
+              <option value="B">B – Major</option>
+              <option value="C">C – Moderate</option>
+              <option value="D">D – Minor</option>
+              <option value="E">E – Insignificant</option>
+            </select></div>
+        </div>
+        <div id="gs_risk_result" class="risk-result" style="display:none">
+          Risk Index: <span id="gs_risk_label">—</span>
+        </div>
+        <div class="risk-matrix-wrap" style="margin-top:10px">
+          <table class="risk-tbl">
+            <tr><th>Probability</th><th>A Catastrophic</th><th>B Major</th><th>C Moderate</th><th>D Minor</th><th>E Insignificant</th></tr>
+            <tr><td class="prob-col">5 – Frequent</td><td class="rc-e">E</td><td class="rc-e">E</td><td class="rc-h">H</td><td class="rc-m">M</td><td class="rc-m">M</td></tr>
+            <tr><td class="prob-col">4 – Likely</td><td class="rc-e">E</td><td class="rc-h">H</td><td class="rc-h">H</td><td class="rc-m">M</td><td class="rc-l">L</td></tr>
+            <tr><td class="prob-col">3 – Occasional</td><td class="rc-h">H</td><td class="rc-h">H</td><td class="rc-m">M</td><td class="rc-l">L</td><td class="rc-l">L</td></tr>
+            <tr><td class="prob-col">2 – Seldom</td><td class="rc-h">H</td><td class="rc-m">M</td><td class="rc-l">L</td><td class="rc-l">L</td><td class="rc-i">I</td></tr>
+            <tr><td class="prob-col">1 – Improbable</td><td class="rc-m">M</td><td class="rc-m">M</td><td class="rc-l">L</td><td class="rc-i">I</td><td class="rc-i">I</td></tr>
+          </table>
+        </div>
+        <div class="gf-row" style="margin-top:12px">
+          <div class="gf"><label>Investigation Priority</label>
+            <select id="gs_priority">
+              <option value="">-- Select --</option>
+              <option>High</option><option>Medium</option><option>Low</option>
+            </select></div>
+          <div class="gf"><label>Due Date</label>
+            <input id="gs_due" type="date"></div>
+        </div>
+        <div class="gf"><label>Completed By</label>
+          <input id="gs_completed_by" type="text" placeholder="Investigator name and title"></div>
+      </div>
+    </div>
+
+    <!-- INVESTIGATION PROCESS -->
+    <div class="gsir-sec">
+      <div class="gsir-sec-hdr">🔍 Investigation Process</div>
+      <div class="gsir-sec-body">
+        <div class="gf"><label>Resources Reviewed / Process Used</label>
+          <textarea id="gs_process" rows="5" placeholder="Staff interviewed, training records consulted, CCTV reviewed, vehicle pre-op inspection checked, SQOR data reviewed, etc…"></textarea></div>
+        <div class="gf"><label>Normal Process Description</label>
+          <textarea id="gs_normal_process" rows="3" placeholder="What is the standard process for completing this task? If everything had gone perfectly, what would have happened?"></textarea></div>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="gsir-sec">
+      <div class="gsir-sec-hdr">⏱ Timeline of Events</div>
+      <div class="gsir-sec-body">
+        <table class="timeline-tbl" id="gs_timeline_tbl">
+          <thead><tr><th style="width:90px">Date</th><th style="width:70px">Time</th><th>Occurrence</th></tr></thead>
+          <tbody id="gs_timeline_body">
+            <tr><td><input type="text" placeholder="dd/mm/yyyy"></td><td><input type="text" placeholder="HH:MM"></td><td><input type="text" placeholder="Describe the event…"></td></tr>
+            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="text"></td></tr>
+          </tbody>
+        </table>
+        <button class="add-row-btn" onclick="addTimelineRow()">+ Add row</button>
+      </div>
+    </div>
+
+    <!-- FINDINGS -->
+    <div class="gsir-sec">
+      <div class="gsir-sec-hdr">📊 Findings</div>
+      <div class="gsir-sec-body">
+        <div style="margin-bottom:12px">
+          <label style="font-size:10px;font-weight:700;color:#1A2D5A;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:8px">Contributing Factors</label>
+          <div id="gs_cf_container">
+            <div class="cf-item"><div class="cf-num">1</div><input class="gf" style="flex:1;border:1.5px solid #E0E4EA;border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit" type="text" id="gs_cf1" placeholder="Contributing factor 1…"></div>
+            <div class="cf-item"><div class="cf-num">2</div><input class="gf" style="flex:1;border:1.5px solid #E0E4EA;border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit" type="text" id="gs_cf2" placeholder="Contributing factor 2…"></div>
+            <div class="cf-item"><div class="cf-num">3</div><input class="gf" style="flex:1;border:1.5px solid #E0E4EA;border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit" type="text" id="gs_cf3" placeholder="Contributing factor 3…"></div>
+            <div class="cf-item"><div class="cf-num">4</div><input class="gf" style="flex:1;border:1.5px solid #E0E4EA;border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit" type="text" id="gs_cf4" placeholder="Contributing factor 4…"></div>
+          </div>
+        </div>
+        <div class="gf"><label>Root Cause</label>
+          <textarea id="gs_rootcause" rows="3" placeholder="The initial circumstance that started the chain of events leading to this incident…"></textarea></div>
+        <div class="gf"><label>Discussion / Analysis</label>
+          <textarea id="gs_discussion" rows="4" placeholder="An analysis of the incident including systemic factors, HFACS levels, and REDA classification…"></textarea></div>
+      </div>
+    </div>
+
+    <!-- RESPONSE / CORRECTIVE ACTIONS -->
+    <div class="gsir-sec">
+      <div class="gsir-sec-hdr">✅ Response — Preventative &amp; Corrective Actions</div>
+      <div class="gsir-sec-body">
+        <table class="actions-tbl" id="gs_actions_tbl">
+          <thead><tr><th>Action</th><th style="width:100px">Assigned To</th><th style="width:80px">Proposed Date</th><th style="width:80px">Actual Date</th></tr></thead>
+          <tbody id="gs_actions_body">
+            <tr><td><input type="text" placeholder="Corrective action description…"></td><td><input type="text"></td><td><input type="date"></td><td><input type="date"></td></tr>
+            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="date"></td><td><input type="date"></td></tr>
+            <tr><td><input type="text"></td><td><input type="text"></td><td><input type="date"></td><td><input type="date"></td></tr>
+          </tbody>
+        </table>
+        <button class="add-row-btn" onclick="addActionRow()">+ Add corrective action</button>
+      </div>
+    </div>
+
+    <!-- GENERATE -->
+    <button class="gsir-gen-btn" onclick="generateGSIRWord()">
+      📄 Generate GSIR Word Document
+    </button>
+
+  </div><!-- /view-scroll -->
+</div><!-- /v6 -->
+<div style="text-align:center;padding:10px 16px 20px;font-size:10px;color:rgba(255,255,255,.2);font-family:Arial,sans-serif;user-select:none;-webkit-user-select:none" id="cfa_copyright_footer">© 2026 CF Black Aviation · All Rights Reserved · GroundWatch™<br>Third-party trademarks are the property of their respective owners</div>
 </body>
 </html>

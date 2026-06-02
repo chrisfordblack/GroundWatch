@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  GroundWatch Safety Suite
+  © 2026 CF Black Aviation. All Rights Reserved.
+
+  This software, including its source code, design, structure, and all associated
+  content, is the exclusive intellectual property of CF Black Aviation.
+
+  Unauthorized reproduction, copying, distribution, modification, reverse-
+  engineering, or use of this software — in whole or in part — without the express
+  written permission of CF Black Aviation is strictly prohibited and may constitute
+  an infringement of copyright and/or trademark rights.
+
+  GroundWatch™ and Heimdal™ are trademarks of CF Black Aviation.
+
+  THIRD-PARTY ATTRIBUTION
+  Third-party logos, trademarks, brand names, aircraft type designations, and
+  airline livery references displayed within this software (including but not
+  limited to Gate Gourmet, Air Canada, WestJet, Porter Airlines, Boeing, Airbus,
+  and associated marks) are the intellectual property of their respective owners
+  and are referenced herein solely for operational identification purposes.
+  Their display does not imply endorsement of, sponsorship by, or affiliation
+  with CF Black Aviation.
+
+  For licensing enquiries: CF Black Aviation
+================================================================================
+-->
+<html lang="en">
+<head>
+<script>
+(function(){
+  'use strict';
+  // CF Black Aviation - GroundWatch Safety Suite
+  // (c) 2026 CF Black Aviation. All Rights Reserved.
+  function cfbProtect(){
+    document.addEventListener('contextmenu',function(e){
+      e.preventDefault();
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(26,45,90,.95);color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-family:Arial,sans-serif;z-index:99999;pointer-events:none;box-shadow:0 2px 12px rgba(0,0,0,.3)';
+      t.textContent=String.fromCharCode(169)+' 2026 CF Black Aviation — All Rights Reserved';
+      document.body.appendChild(t);
+      setTimeout(function(){t.remove();},2200);
+      return false;
+    },true);
+    window.addEventListener('contextmenu',function(e){e.preventDefault();return false;},true);
+    document.addEventListener('keydown',function(e){
+      var ctrl=e.ctrlKey||e.metaKey;
+      if(ctrl&&['s','S','u','U'].indexOf(e.key)>-1){e.preventDefault();return false;}
+      if(ctrl&&e.shiftKey&&['i','I','j','J'].indexOf(e.key)>-1){e.preventDefault();return false;}
+      if(e.key==='F12'){e.preventDefault();return false;}
+    },true);
+    document.addEventListener('dragstart',function(e){e.preventDefault();return false;},true);
+    console.log('%c GroundWatch Safety Suite ','color:#C8101E;font-size:16px;font-weight:800');
+    console.log('%c'+String.fromCharCode(169)+' 2026 CF Black Aviation. All Rights Reserved.','color:#1A2D5A;font-size:12px;font-weight:600');
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',cfbProtect);
+  } else {
+    cfbProtect();
+  }
+})();
+</script>
+<meta charset="UTF-8">
+  <meta name="copyright" content="© 2026 CF Black Aviation. All Rights Reserved.">
+  <meta name="author" content="CF Black Aviation">
+  <meta name="application-name" content="GroundWatch Safety Suite">
+  <meta name="rights" content="Unauthorized reproduction prohibited. © 2026 CF Black Aviation.">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Safety Specialist Orientation — Gate Gourmet YYZ</title>
+<style>
+:root{
+  --navy:#1A2D5A;--red:#C8101E;--gg:#48AF44;--amber:#E8A020;
+  --dark:#111827;--mid:#6B7280;--lgray:#F2F2F2;--border:#E0E4EA;
+  --white:#fff;--black:#111;--green:#2E7D32;--purple:#6D28D9;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  background:#F0F2F5;color:var(--black);font-size:14px;min-height:100vh}
+
+/* ── APPBAR ── */
+.appbar{background:var(--navy);padding:12px 16px;display:flex;align-items:center;
+  gap:10px;position:sticky;top:0;z-index:100}
+.appbar-logo{width:32px;height:32px;background:var(--red);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;color:#fff;flex-shrink:0}
+.appbar-title{color:#fff;font-size:15px;font-weight:700;flex:1}
+.appbar-sub{color:rgba(255,255,255,.5);font-size:10px}
+.back-btn{color:rgba(255,255,255,.7);background:none;border:none;font-size:18px;
+  cursor:pointer;padding:4px;margin-right:4px}
+
+/* ── VIEWS ── */
+.view{display:none;min-height:100vh}
+.view.active{display:block}
+
+/* ── HOME ── */
+.home-hero{background:var(--dark);padding:20px 16px 24px;color:#fff}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(72,175,68,.15);
+  border:1px solid rgba(72,175,68,.3);border-radius:20px;padding:4px 10px;
+  font-size:11px;font-weight:700;color:var(--gg);margin-bottom:12px}
+.hero-title{font-size:22px;font-weight:800;line-height:1.2;margin-bottom:6px}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.55);line-height:1.5}
+.hero-specialist{margin-top:14px;background:rgba(255,255,255,.06);border-radius:10px;
+  padding:10px 12px;display:flex;align-items:center;gap:10px}
+.hero-specialist input{background:none;border:none;color:#fff;font-size:13px;
+  font-family:inherit;flex:1;outline:none}
+.hero-specialist input::placeholder{color:rgba(255,255,255,.3)}
+.hero-specialist label{font-size:10px;color:rgba(255,255,255,.4);font-weight:700;
+  text-transform:uppercase;letter-spacing:.05em}
+
+.week-label{padding:14px 16px 6px;font-size:10px;font-weight:800;color:var(--mid);
+  text-transform:uppercase;letter-spacing:.08em}
+
+/* ── DAY CARD ── */
+.day-card{background:#fff;margin:0 12px 10px;border-radius:12px;
+  border:1px solid var(--border);overflow:hidden;cursor:pointer;
+  transition:transform .1s,box-shadow .1s}
+.day-card:active{transform:scale(.98)}
+.day-card.locked{opacity:.55;cursor:not-allowed}
+.day-card.complete{border-color:var(--gg)}
+.dc-header{display:flex;align-items:center;gap:12px;padding:14px}
+.dc-ring{width:44px;height:44px;flex-shrink:0;position:relative}
+.dc-ring svg{transform:rotate(-90deg)}
+.dc-ring .ring-bg{stroke:var(--lgray);fill:none}
+.dc-ring .ring-fill{fill:none;stroke-linecap:round;transition:stroke-dashoffset .4s}
+.dc-ring .ring-num{position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:800;color:var(--navy)}
+.dc-ring.complete .ring-num{color:var(--gg)}
+.dc-ring.locked .ring-num{color:var(--mid)}
+.dc-body{flex:1;min-width:0}
+.dc-day{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:2px}
+.dc-title{font-size:15px;font-weight:700;color:var(--navy);line-height:1.2}
+.dc-sub{font-size:11px;color:var(--mid);margin-top:2px}
+.dc-badge{padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;
+  flex-shrink:0}
+.badge-locked{background:var(--lgray);color:var(--mid)}
+.badge-active{background:rgba(72,175,68,.12);color:var(--gg)}
+.badge-done{background:rgba(72,175,68,.12);color:var(--gg)}
+.dc-progress-bar{height:3px;background:var(--lgray)}
+.dc-progress-fill{height:3px;background:var(--gg);transition:width .3s}
+
+/* ── DAY VIEW ── */
+.day-meta{background:var(--navy);padding:14px 16px}
+.day-meta .dm-num{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);
+  text-transform:uppercase;letter-spacing:.05em}
+.day-meta .dm-title{font-size:20px;font-weight:800;color:#fff;margin-top:2px}
+.day-meta .dm-focus{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px}
+.day-progress{height:4px;background:rgba(255,255,255,.1)}
+.day-progress-fill{height:4px;background:var(--gg);transition:width .4s}
+
+/* ── SECTION ── */
+.section{margin:10px 12px;border-radius:10px;overflow:hidden;
+  border:1px solid var(--border);background:#fff}
+.section.locked-section{opacity:.4;pointer-events:none}
+.section-header{display:flex;align-items:center;gap:10px;padding:12px 14px;
+  cursor:pointer;background:#fff}
+.section-header:active{background:var(--lgray)}
+.sh-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:13px;flex-shrink:0}
+.sh-icon.content{background:rgba(26,45,90,.1)}
+.sh-icon.tasks{background:rgba(72,175,68,.1)}
+.sh-icon.check{background:rgba(232,160,32,.1)}
+.sh-icon.signoff{background:rgba(200,16,30,.1)}
+.sh-icon.complete{background:rgba(72,175,68,.15)}
+.sh-title{font-size:13px;font-weight:700;color:var(--navy);flex:1}
+.sh-status{font-size:11px;color:var(--mid)}
+.sh-chevron{font-size:11px;color:var(--mid);transition:transform .2s}
+.section.open .sh-chevron{transform:rotate(180deg)}
+.section-body{display:none;border-top:1px solid var(--border)}
+.section.open .section-body{display:block}
+
+/* ── CONTENT BLOCKS ── */
+.content-block{padding:14px}
+.cb-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.cb-text{font-size:13px;color:#333;line-height:1.7}
+.cb-text p{margin-bottom:10px}
+.cb-text p:last-child{margin-bottom:0}
+.key-point{background:rgba(26,45,90,.06);border-left:3px solid var(--navy);
+  border-radius:0 6px 6px 0;padding:10px 12px;margin:10px 0;
+  font-size:12.5px;color:var(--navy);font-weight:600;line-height:1.5}
+.scenario-box{background:rgba(232,160,32,.08);border:1px solid rgba(232,160,32,.3);
+  border-radius:8px;padding:12px;margin:10px 0}
+.scenario-box .sb-label{font-size:10px;font-weight:800;color:var(--amber);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.scenario-box .sb-text{font-size:13px;color:#444;line-height:1.6}
+.ref-tag{display:inline-block;background:var(--lgray);border-radius:4px;
+  padding:2px 7px;font-size:10px;font-weight:700;color:var(--mid);margin:2px}
+.expand-btn{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--navy);
+  font-weight:600;background:none;border:none;cursor:pointer;padding:6px 0;
+  font-family:inherit}
+.expandable{display:none;margin-top:8px}
+.expandable.open{display:block}
+
+/* ── TASKS ── */
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;
+  border-bottom:1px solid var(--border)}
+.task-item:last-child{border-bottom:none}
+.task-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  margin-top:1px;transition:all .15s}
+.task-check.checked{background:var(--gg);border-color:var(--gg);color:#fff}
+.task-body{flex:1}
+.task-title{font-size:13px;font-weight:600;color:var(--black);line-height:1.4}
+.task-sub{font-size:11px;color:var(--mid);margin-top:3px;line-height:1.5}
+.task-notes{width:100%;border:1px solid var(--border);border-radius:6px;
+  padding:7px 10px;font-size:12px;font-family:inherit;margin-top:8px;
+  resize:none;min-height:48px;color:var(--black);background:var(--lgray)}
+.task-notes:focus{outline:none;border-color:var(--navy)}
+
+/* ── KNOWLEDGE CHECK ── */
+.kc-intro{padding:12px 14px;font-size:12px;color:var(--mid);
+  border-bottom:1px solid var(--border);line-height:1.5}
+.kc-question{padding:14px}
+.kq-num{font-size:10px;font-weight:700;color:var(--mid);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:6px}
+.kq-text{font-size:13px;font-weight:600;color:var(--black);line-height:1.5;
+  margin-bottom:12px}
+.kq-scenario{background:rgba(26,45,90,.05);border-radius:8px;padding:10px;
+  font-size:12.5px;color:#444;line-height:1.6;margin-bottom:12px;font-style:italic}
+.kq-options{display:flex;flex-direction:column;gap:8px}
+.kq-option{display:flex;align-items:flex-start;gap:10px;background:var(--lgray);
+  border-radius:8px;padding:10px 12px;cursor:pointer;border:2px solid transparent;
+  transition:all .15s}
+.kq-option:active{background:#e8e8e8}
+.kq-option.selected{border-color:var(--navy);background:rgba(26,45,90,.06)}
+.kq-option.correct{border-color:var(--gg);background:rgba(72,175,68,.1)}
+.kq-option.wrong{border-color:var(--red);background:rgba(200,16,30,.06)}
+.kq-letter{width:22px;height:22px;border-radius:6px;background:rgba(26,45,90,.12);
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  font-weight:800;color:var(--navy);flex-shrink:0}
+.kq-opt-text{font-size:13px;color:var(--black);flex:1;line-height:1.4}
+.kq-explanation{display:none;background:rgba(72,175,68,.08);border-radius:6px;
+  padding:10px 12px;margin-top:10px;font-size:12px;color:var(--green);
+  line-height:1.5;font-weight:500}
+.kq-explanation.show{display:block}
+.kq-explanation.wrong-exp{background:rgba(200,16,30,.06);color:var(--red)}
+.kc-submit-btn{width:calc(100% - 28px);margin:0 14px 14px;background:var(--navy);
+  color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;
+  font-weight:700;cursor:pointer;font-family:inherit}
+.kc-submit-btn:disabled{opacity:.4;cursor:not-allowed}
+.kc-result{margin:0 14px 14px;padding:12px;border-radius:8px;font-size:13px;
+  font-weight:600;text-align:center;display:none}
+.kc-result.pass{background:rgba(72,175,68,.1);color:var(--green)}
+.kc-result.fail{background:rgba(200,16,30,.08);color:var(--red)}
+
+/* ── SIGN-OFF ── */
+.signoff-body{padding:14px}
+.signoff-note{font-size:12px;color:var(--mid);line-height:1.6;margin-bottom:14px}
+.signoff-field{margin-bottom:12px}
+.sf-label{font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:5px}
+.sf-input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;
+  font-size:14px;font-family:inherit;color:var(--black);background:#fff}
+.sf-input:focus{outline:none;border-color:var(--navy)}
+.sf-timestamp{font-size:11px;color:var(--mid);margin-top:4px}
+.signoff-btn{width:100%;background:var(--red);color:#fff;border:none;border-radius:8px;
+  padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
+  margin-top:4px}
+.signoff-btn:disabled{opacity:.4;cursor:not-allowed}
+.signoff-complete{background:rgba(72,175,68,.08);border:1px solid rgba(72,175,68,.2);
+  border-radius:8px;padding:12px;display:none}
+.signoff-complete .sc-icon{font-size:20px;margin-bottom:6px}
+.signoff-complete .sc-text{font-size:13px;color:var(--green);font-weight:600}
+.signoff-complete .sc-detail{font-size:11px;color:var(--mid);margin-top:4px}
+
+/* ── DAY 10 COMPETENCY ── */
+.competency-section{padding:14px}
+.comp-criteria{background:var(--lgray);border-radius:8px;padding:12px;margin-bottom:10px}
+.comp-criteria .cc-title{font-size:11px;font-weight:700;color:var(--navy);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.comp-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;
+  font-size:12.5px;color:#333;line-height:1.4}
+.comp-item:last-child{margin-bottom:0}
+.obs-field{width:100%;border:1.5px solid var(--border);border-radius:8px;
+  padding:10px 12px;font-size:13px;font-family:inherit;min-height:80px;
+  resize:none;color:var(--black);margin-top:8px}
+.obs-field:focus{outline:none;border-color:var(--navy)}
+.result-btns{display:flex;gap:8px;margin-top:12px}
+.result-btn{flex:1;border:none;border-radius:8px;padding:12px;font-size:14px;
+  font-weight:700;cursor:pointer;font-family:inherit}
+.result-btn.pass{background:var(--gg);color:#fff}
+.result-btn.fail{background:var(--red);color:#fff}
+
+/* ── REPORT ── */
+.report-btn{width:calc(100% - 24px);margin:12px;background:var(--navy);color:#fff;
+  border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:700;
+  cursor:pointer;font-family:inherit;display:flex;align-items:center;
+  justify-content:center;gap:8px}
+.report-btn:disabled{opacity:.4}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(17,24,39,.95);color:#fff;padding:10px 18px;border-radius:8px;
+  font-size:13px;font-weight:600;z-index:9000;opacity:0;transition:all .25s;
+  pointer-events:none;white-space:nowrap;max-width:88vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media print{
+  .no-print{display:none!important}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- ── HOME VIEW ──────────────────────────────────────── -->
+<div class="view active" id="v_home">
+  <div class="appbar no-print">
+    <div class="appbar-logo">g</div>
+    <div>
+      <div class="appbar-title">Safety Specialist Orientation</div>
+      <div class="appbar-sub">Gate Gourmet YYZ · CF Black Aviation</div>
+    </div>
+  </div>
+
+  <div class="home-hero">
+    <div class="hero-badge">🛡 2-Week Programme</div>
+    <div class="hero-title">Field-Ready Safety Specialist</div>
+    <div class="hero-sub">Ten days. Ten modules. Built for autonomous decision-making on the ramp, in the investigation room, and anywhere else the job takes you.</div>
+    <div class="hero-specialist">
+      <div style="flex:1">
+        <label>Specialist Name</label>
+        <input id="specialist_name" type="text" placeholder="Enter full name to begin"
+          oninput="saveSpecialistName()">
+      </div>
+    </div>
+  </div>
+
+  <div class="week-label">Week 1 — Foundation &amp; Context</div>
+  <div id="day_cards_w1"></div>
+  <div class="week-label">Week 2 — Investigation &amp; Competency</div>
+  <div id="day_cards_w2"></div>
+
+  <div style="height:20px"></div>
+</div>
+
+<!-- ── DAY VIEW ──────────────────────────────────────── -->
+<div class="view" id="v_day">
+  <div class="appbar no-print">
+    <button class="back-btn" onclick="showHome()">←</button>
+    <div>
+      <div class="appbar-title" id="day_appbar_title">Day 1</div>
+      <div class="appbar-sub" id="day_appbar_sub">The Operation</div>
+    </div>
+  </div>
+  <div class="day-meta">
+    <div class="dm-num" id="day_meta_num">Day 1 of 10</div>
+    <div class="dm-title" id="day_meta_title">The Operation</div>
+    <div class="dm-focus" id="day_meta_focus">Understanding what GG YYZ actually does</div>
+  </div>
+  <div class="day-progress"><div class="day-progress-fill" id="day_prog_fill" style="width:0%"></div></div>
+  <div id="day_sections" style="padding-bottom:20px"></div>
+  <div id="report_btn_area" style="display:none;padding:0 12px 24px">
+    <button class="report-btn" onclick="generateReport()">
+      📄 Generate & Print Training Record
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ DATA ══════════════════════════════════════════════════════
+const DAYS = [
+{
+  id:1, title:'The Operation', focus:'What GG YYZ actually does — and why it matters to safety',
+  week:1, checkType:'comprehension',
+  content:[
+    {
+      title:'Gate Gourmet YYZ at a Glance',
+      body:`<p>Gate Gourmet operates one of the largest airline catering facilities in Canada at Toronto Pearson International Airport (CYYZ). The operation runs 24 hours a day, 365 days a year, serving dozens of airline customers across international, domestic, and regional departures.</p>
+<p>Your role as a Safety Specialist sits at the intersection of three distinct operational environments: the production floor, the ramp, and the aircraft galley. Each has its own hazard profile, regulatory framework, and risk tolerance.</p>`,
+      keyPoint:'You cannot assess a risk you do not understand. Before you enforce a standard, you must understand why that standard exists in this specific operation.'
+    },
+    {
+      title:'The Ramp Turn — From Truck to Aircraft Door',
+      body:`<p>A typical catering turn begins when the aircraft parks at the gate. The catering crew — a driver and one or more guides depending on the approach type — drives a Global Highloader to the aircraft. The approach, positioning, and loading sequence are governed by the MDC (Mission Delivery Checklist) and GG's Global Ramp Safety Manual.</p>
+<p>Aircraft families you will encounter at YYZ include narrow-body single-aisle aircraft (A319, A320, A321, B737-700/800/MAX, A220), wide-body twin-aisle aircraft (B777, B787, A330), and regional aircraft (E195-E2, DH8-400). Each has different galley configurations, door clearances, and approach requirements.</p>`,
+      keyPoint:'The difference between a safe approach and a contact incident is often measured in centimetres. Aircraft type awareness is a safety skill, not a trivia exercise.',
+      expandable:{
+        label:'Aircraft families at YYZ',
+        body:`<p><strong>Air Canada:</strong> A220 (fins 101–142), A319 (255–290), A320/neo (235–247, 405–422), A321/neo (451–484), A330-300 (931–950), B737 MAX 8 (501–578), B777-200/300ER (701–749), B787-8/9 (801–861)</p>
+<p><strong>WestJet:</strong> B737-700 (200s), B737-800 (800s), B737 MAX 8 (300–399), B767-300ER (781–784), B787-9 (791–796)</p>
+<p><strong>Porter Airlines:</strong> Q400/DH8-400 (801–829), E195-E2 (901–952)</p>
+<p><strong>International:</strong> Aeromexico B787, Air India B787/B777/A350, SWISS A220/A330/B777, TAP A330, SAS A330/A321</p>`
+      }
+    },
+    {
+      title:'The Regulatory Landscape — Who Governs What',
+      body:`<p>Gate Gourmet YYZ operates under multiple overlapping regulatory authorities. Understanding who owns what is fundamental to your ability to escalate and enforce correctly.</p>`,
+      keyPoint:null,
+      refs:['Canada Labour Code Part II','Transport Canada','GTAA (Toronto Pearson)','GG SMS','IATA AHM']
+    }
+  ],
+  tasks:[
+    {id:'t1_1', title:'Tour the Production Floor', sub:'Complete a supervised walkthrough of the main production floor. Note three hazards you observe and how they are controlled.'},
+    {id:'t1_2', title:'Observe a Ramp Turn', sub:'Shadow a complete aircraft turn from truck dispatch to galley door close. Identify the aircraft type and approach category used.'},
+    {id:'t1_3', title:'Review the GG Airline Customer List', sub:'Identify which airlines GG YYZ services, their primary aircraft types, and any special handling requirements noted in the operation briefing.'},
+    {id:'t1_4', title:'Locate the Global Ramp Safety Manual', sub:'Find the current version of XP.0000.050.00015.004. Note the section numbers for Circle of Safety (§6.3.3) and approach speed (§1).'},
+  ],
+  questions:[
+    {
+      text:'A TM tells you that Circle of Safety doesn\'t apply at a remote stand because there are no other aircraft nearby. What is your response?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'Accept the TM\'s assessment — remote stand conditions are different from gate operations.'},
+        {letter:'B', text:'Consult the Global Ramp Safety Manual and confirm Circle of Safety applies to all aircraft approaches regardless of location, then document the interaction.'},
+        {letter:'C', text:'Escalate immediately to the RSS before taking any action.'},
+        {letter:'D', text:'Note it as a risk item but do not challenge the TM directly.'},
+      ],
+      correct:1,
+      explanation:'Circle of Safety is a non-negotiable standard under the Global Ramp Safety Manual §6.3.3 regardless of stand type. You have both the authority and the obligation to enforce it. Document all interactions where a standard is challenged — this is your paper trail.'
+    },
+    {
+      text:'Which of the following best describes the purpose of the MDC (Mission Delivery Checklist)?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'A customer satisfaction survey tool tracking galley delivery quality.'},
+        {letter:'B', text:'A sequential operational checklist that governs the safe execution of a catering approach from pre-approach to door close.'},
+        {letter:'C', text:'An HR document recording employee attendance and task allocation.'},
+        {letter:'D', text:'A transport manifest tracking galley contents by flight number.'},
+      ],
+      correct:1,
+      explanation:'The MDC is the operational and safety standard for every approach. Each step has a safety rationale. Understanding the MDC end to end is fundamental to conducting a meaningful SQOR.'
+    },
+    {
+      text:'You observe a driver approaching an A330-300 without completing a pre-approach walk-around. No TM is present. What do you do?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'Wait until a TM arrives before intervening — it\'s not your role to stop operational work.'},
+        {letter:'B', text:'Call out to the driver, halt the approach, explain the standard required, and document the observation in GroundWatch SQOR.'},
+        {letter:'C', text:'Record the observation but allow the approach to continue to avoid disrupting the turn.'},
+        {letter:'D', text:'Report to the RSS after the turn is complete.'},
+      ],
+      correct:1,
+      explanation:'Your authority to act on safety concerns is immediate and does not require managerial presence or approval. Halting an unsafe approach is exactly what this role exists to do. Document every intervention — it establishes pattern evidence and protects you.'
+    }
+  ]
+},
+{
+  id:2, title:'The Regulatory Framework', focus:'Canada Labour Code, GG SMS, and your legal authority',
+  week:1, checkType:'comprehension',
+  content:[
+    {
+      title:'Canada Labour Code Part II — The Foundation',
+      body:`<p>Gate Gourmet operates under federal jurisdiction as an aviation services employer. This means the Canada Labour Code Part II governs workplace health and safety — not the Ontario OHSA. This distinction matters because the CLC has specific provisions around employee rights, employer obligations, and the authority of safety officers that differ from provincial legislation.</p>
+<p>Under the CLC, employees have three fundamental rights: the right to know about hazards, the right to participate in the safety process, and the right to refuse dangerous work. As a Safety Specialist, your role directly supports all three.</p>`,
+      keyPoint:'When you cite a safety standard, cite the authority behind it. "The Canada Labour Code requires..." carries more weight than "we\'re supposed to..."'
+    },
+    {
+      title:'The GG Safety Management System',
+      body:`<p>GG operates a formal Safety Management System (SMS) aligned with Transport Canada requirements. The SMS is the internal framework through which safety obligations are identified, assessed, and controlled. It is not optional and it is not advisory — it is operational policy.</p>
+<p>Key SMS elements you will work within daily: hazard identification and risk assessment, incident investigation and reporting (ILX), corrective action tracking, and the SQOR observation program as a leading indicator framework.</p>`,
+      keyPoint:'The SMS is only as strong as the data that feeds it. Every SQOR you conduct, every ILX investigation you complete, and every corrective action you document makes the SMS more accurate and defensible.'
+    },
+    {
+      title:'Your Authority — What You Can and Cannot Do',
+      body:`<p>Your authority as a Safety Specialist derives from the Canada Labour Code, the GG SMS, and your designation by the employer. You are authorized to: stop unsafe work, conduct safety observations, initiate incident investigations, interview employees, and document non-compliances.</p>
+<p>You do not require managerial approval to exercise these authorities in the moment. Management direction operates within the safety framework — it does not override it. If you are directed to soften a finding or overlook a non-compliance, document the direction and escalate to the RSS.</p>`,
+      keyPoint:'You will face pressure. The documentation habit you build in your first two weeks is the protection you will rely on in your second year.'
+    }
+  ],
+  tasks:[
+    {id:'t2_1', title:'Read CLC Part II — Key Sections', sub:'Review sections covering employee rights to refuse (s.128), internal complaint resolution (s.127.1), and employer obligations (s.124-125). Note three provisions directly relevant to your role.'},
+    {id:'t2_2', title:'Locate the GG SMS Documentation', sub:'Find the current GG SMS policy and identify the sections covering incident investigation obligations and the SQOR leading indicator program.'},
+    {id:'t2_3', title:'Review a Completed ILX Investigation', sub:'With RSS guidance, review one closed ILX investigation. Note the workflow stages used and identify the root cause categories applied.'},
+  ],
+  questions:[
+    {
+      text:'A driver invokes their right to refuse dangerous work under the Canada Labour Code. As the Safety Specialist on shift, what is the correct immediate response?',
+      scenario:'A driver approaches you after being told to service an aircraft where the jet bridge has not been retracted. She says she believes it creates an unsafe approach and she is refusing the work.',
+      options:[
+        {letter:'A', text:'Tell her to raise it with her TM and continue with her next assignment.'},
+        {letter:'B', text:'Acknowledge the refusal, investigate the hazard yourself, document findings, and report to the RSS — work on the assignment cannot resume until the hazard is addressed or assessed as not constituting a danger.'},
+        {letter:'C', text:'Override the refusal since the aircraft needs to be serviced on time.'},
+        {letter:'D', text:'Reassign the work to another driver without investigating the concern.'},
+      ],
+      correct:1,
+      explanation:'Under CLC s.128, a refusal must be investigated. The employee cannot be disciplined or reassigned to circumvent the refusal process. Your role is to investigate the hazard, document your findings, and escalate to the RSS. This is a legal process, not a managerial discretion.'
+    },
+    {
+      text:'Management asks you to change your root cause classification in an ILX investigation from "Organizational Support" to "Individual Performance" before the file is closed. What do you do?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'Make the change — management has final authority over investigation findings.'},
+        {letter:'B', text:'Discuss the request with the RSS, retain your original documentation, and do not alter your findings without an evidence-based reason.'},
+        {letter:'C', text:'Make the change to avoid conflict, but note your original finding informally.'},
+        {letter:'D', text:'Close the file without changes and say nothing.'},
+      ],
+      correct:1,
+      explanation:'Investigation findings must reflect the evidence. Altering root cause classifications under management direction without new evidence is a documentation integrity issue and can constitute obstruction under the SMS. Document the direction, retain originals, escalate to the RSS immediately.'
+    }
+  ]
+},
+{
+  id:3, title:'Airside Safety Standards', focus:'TR5042, Global Ramp Safety Manual, and the logic behind the standards',
+  week:1, checkType:'comprehension',
+  content:[
+    {
+      title:'TR5042 — The Speed Standard',
+      body:`<p>TR5042 §1 establishes the fundamental speed requirements for ground support equipment operating on the ramp: 5 mph maximum speed and idle speed when reversing. These are not guidelines — they are hard limits enforced under the GG SMS and subject to ILX investigation when violated.</p>
+<p>The reasoning is not arbitrary. At idle speed reversing, the driver can see, stop, and respond to a hazard before contact occurs. At any speed above idle, stopping distance exceeds awareness distance in the confined environment of an aircraft approach.</p>`,
+      keyPoint:'When a driver exceeds idle speed reversing, the risk of a contact incident is not slightly elevated — it is fundamentally different. This is the standard you hold unconditionally.'
+    },
+    {
+      title:'Circle of Safety — §6.3.3',
+      body:`<p>The Circle of Safety is the pre-approach walk-around standard that establishes clearance around the aircraft before any GSE movement begins. Under Global Ramp Safety Manual V4 §6.3.3, the guide must complete a full 360-degree walk-around confirming clearance before calling the driver forward.</p>
+<p>The Circle of Safety is the single most important preventive measure in ramp operations. Every aircraft contact incident in GG's history that was properly investigated has a Circle of Safety failure somewhere in the contributing factor chain — either it was skipped, abbreviated, or poorly executed.</p>`,
+      keyPoint:'A completed Circle of Safety takes 45 seconds. A contact incident investigation takes 40 hours and may follow the employee for the rest of their career.'
+    },
+    {
+      title:'The 5-Stop Approach',
+      body:`<p>The 5-Stop Approach is the structured positioning sequence for a Global Highloader approach to an aircraft. Each stop is a defined pause point where the driver verifies clearance, equipment position, and guide communication before proceeding to the next phase.</p>
+<p>Understanding each stop — what it checks, what it protects against, and what a failure at that stop looks like — is core to conducting a meaningful SQOR and building a credible root cause analysis when something goes wrong.</p>`
+    }
+  ],
+  tasks:[
+    {id:'t3_1', title:'Read TR5042 §1 in Full', sub:'Review the speed requirements and note the specific conditions under which each applies. Be ready to cite the standard by number.'},
+    {id:'t3_2', title:'Observe a Circle of Safety Walk-Around', sub:'Watch three complete Circle of Safety walk-arounds during live turns. Note any deviations observed and how (or whether) they were addressed.'},
+    {id:'t3_3', title:'Complete a 5-Stop Approach Diagram', sub:'Sketch or describe each of the five stop positions for a standard Global Highloader approach. Note what each stop verifies and what hazard it mitigates.'},
+    {id:'t3_4', title:'GTAA Airside Vehicle Permit Review', sub:'Locate and review the GTAA airside vehicle operating permit requirements. Note which apply to GG catering vehicles and what the consequence of violation is.'},
+  ],
+  questions:[
+    {
+      text:'A driver has completed the Circle of Safety walk-around but the guide says "you\'re clear" before the driver has stopped at Position 3. What do you record in the SQOR?',
+      scenario:'You are observing a turn. The guide completes the walk-around correctly but calls the driver forward at Position 2, skipping the Position 3 stop. No contact occurs.',
+      options:[
+        {letter:'A', text:'Nothing — no contact occurred so there is no incident to record.'},
+        {letter:'B', text:'An at-risk observation under 5-Stop Approach compliance, noting the premature call and the specific position skipped.'},
+        {letter:'C', text:'A safety violation requiring immediate ILX notification.'},
+        {letter:'D', text:'A note to the TM only — SQOR is for contact incidents.'},
+      ],
+      correct:1,
+      explanation:'SQOR captures at-risk behaviour — not just outcomes. A premature guide call is an at-risk observation regardless of whether contact occurred. This is exactly the leading indicator data the SMS needs. An ILX is appropriate only if damage or injury resulted.'
+    },
+    {
+      text:'Under TR5042 §1, what is the maximum permitted speed for reversing a Global Highloader on the ramp?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'Walking pace — approximately 3 mph'},
+        {letter:'B', text:'5 mph'},
+        {letter:'C', text:'Idle speed only'},
+        {letter:'D', text:'At the driver\'s discretion based on conditions'},
+      ],
+      correct:2,
+      explanation:'TR5042 §1 specifies idle speed for reversing — not 5 mph. The 5 mph limit applies to forward travel. Idle speed when reversing is a hard standard because stopping distance at even low speeds exceeds safe awareness distance in a reverse approach.'
+    }
+  ]
+},
+{
+  id:4, title:'The SQOR System', focus:'Conducting effective safety observations using GroundWatch',
+  week:1, checkType:'scenario',
+  content:[
+    {
+      title:'What a SQOR Is — and What It Isn\'t',
+      body:`<p>A Safety Quality Observation Report (SQOR) is a leading indicator tool. It captures what is happening on the ramp before incidents occur. It is not an audit, not a gotcha exercise, and not a disciplinary tool. It is a structured observation that, in aggregate, tells the story of the operation's safety culture.</p>
+<p>The GG SMS uses SQOR compliance rates as a leading indicator — meaning the data predicts future incident likelihood. A sustained drop in SQOR compliance rates in a specific approach category signals elevated risk before anyone gets hurt.</p>`,
+      keyPoint:'A well-conducted SQOR that captures an at-risk observation is more valuable than a perfect-score SQOR on a turn you watched but didn\'t fully engage with.'
+    },
+    {
+      title:'Using GroundWatch SQOR Module',
+      body:`<p>The GroundWatch SQOR module is a mobile application developed for GG YYZ that guides you through a structured observation against the MDC. It includes QR-based employee identification, aircraft fin number lookup, galley position selection, and REDA-mapped at-risk observations.</p>
+<p>Each checklist item defaults to N/A — you actively select Safe, Not Observed, or At Risk for the items that apply to the approach you are observing. Compliance is calculated only on scored items, excluding N/A. At-risk observations prompt a comment field and are tagged to REDA factors automatically.</p>`,
+      keyPoint:'Open GroundWatch before the truck reaches the aircraft. An observation started after the approach has begun is incomplete by definition.'
+    }
+  ],
+  tasks:[
+    {id:'t4_1', title:'Complete Three Independent SQORs', sub:'Conduct three complete SQOR observations using the GroundWatch module without supervisor assistance. Archive each one. Discuss the observations with the RSS afterward.'},
+    {id:'t4_2', title:'Review the MDC Step Descriptions', sub:'Open GroundWatch SQOR and read the full step description (ℹ) for every item in both the 1-Person and 2-Person approach checklists. Note any step whose purpose was not immediately obvious to you.'},
+    {id:'t4_3', title:'Analyse Three Archived SQORs', sub:'With RSS access, review three archived SQORs from the GG YYZ record. Identify the at-risk items, the REDA categories they map to, and any patterns across the three observations.'},
+  ],
+  questions:[
+    {
+      text:'You are conducting a SQOR on a 2-person approach to an Air Canada A320 (fin 263). The guide completes the Circle of Safety but does not make eye contact with the driver before calling him forward. How do you score this item?',
+      scenario:'The driver is in position, the guide has completed the walk-around, but calls "clear" facing away from the driver. The driver proceeds. No contact occurs.',
+      options:[
+        {letter:'A', text:'Safe — the Circle of Safety was completed.'},
+        {letter:'B', text:'N/A — eye contact is not a formal requirement.'},
+        {letter:'C', text:'At Risk — communication confirmation is part of the Circle of Safety standard and the guide\'s call was not verified as received.'},
+        {letter:'D', text:'Not Observed — you are not close enough to verify.'},
+      ],
+      correct:2,
+      explanation:'Communication confirmation is integral to the Circle of Safety — the guide must establish that the driver has received the clear signal. A call made facing away from the driver is an at-risk behaviour. Score it, note the specific deviation, and tag it to the communication REDA factor.'
+    },
+    {
+      text:'A TM approaches you mid-SQOR and says "don\'t score that last item, he was just adjusting." What do you do?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'Remove the score — the TM has operational context you may not have.'},
+        {letter:'B', text:'Complete your SQOR as observed, document the TM\'s comment in the notes field, and discuss with the RSS.'},
+        {letter:'C', text:'Stop the SQOR and restart it on a different turn.'},
+        {letter:'D', text:'Score it Safe to avoid conflict.'},
+      ],
+      correct:1,
+      explanation:'Your SQOR must reflect what you observed, not what someone tells you to record. Document the TM\'s comment verbatim in the notes field — this is important pattern evidence. The RSS needs to know when observation integrity is being challenged.'
+    }
+  ]
+},
+{
+  id:5, title:'Ramp Observation', focus:'Independent field observation and pattern recognition',
+  week:1, checkType:'scenario',
+  content:[
+    {
+      title:'Reading a Turn Before It Happens',
+      body:`<p>An experienced safety specialist reads the conditions before the truck moves. Aircraft type, galley configuration, approach category, crew experience level, time pressure, weather, and ground conditions all affect risk level. The observation starts when you arrive at the gate — not when the highloader begins its approach.</p>
+<p>Key pre-approach indicators of elevated risk: crew rushing, equipment arriving late, guide not in position before the truck begins moving, driver not completing pre-movement checks, TM standing at the aircraft door signalling urgency.</p>`,
+      keyPoint:'Time pressure is the leading environmental contributor to ramp incidents. When you sense a rush, your alertness increases — not decreases.'
+    },
+    {
+      title:'What Patterns Look Like',
+      body:`<p>A single at-risk observation is a data point. Three at-risk observations from the same driver in the same category over two weeks is a pattern. Five at-risk observations across three drivers on the same shift is a systemic issue. Learning to distinguish between individual behaviour and systemic failure is one of the highest-value skills in this role.</p>
+<p>The GroundWatch SafetyFusion dashboard aggregates SQOR data across all observations. Regular review of that data — not just your own observations — is part of your weekly rhythm.</p>`
+    }
+  ],
+  tasks:[
+    {id:'t5_1', title:'Complete a Full Observation Shift', sub:'Complete a minimum 4-hour ramp observation shift independently. Conduct at least three SQORs. Note pre-approach conditions for each turn observed — not just the approach itself.'},
+    {id:'t5_2', title:'Identify Three Systemic Observations', sub:'Review the last 30 days of SQOR data in SafetyFusion. Identify three observations that appear more than once across multiple drivers or shifts. Document what pattern they suggest.'},
+    {id:'t5_3', title:'Complete a Shift Summary Report', sub:'Write a brief summary (one page or equivalent) of your observation shift: conditions observed, SQORs conducted, at-risk items noted, and any patterns you identified. Present to the RSS.'},
+  ],
+  questions:[
+    {
+      text:'During your observation shift you notice the same driver has been scored at-risk for seatbelt compliance in three separate SQORs across two weeks by two different observers. No incident has occurred. What action is appropriate?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'No action — no incident has occurred so there is no grounds for intervention.'},
+        {letter:'B', text:'Flag the pattern in SafetyFusion, document it as a leading indicator concern, and raise it with the RSS for consideration of targeted corrective action — potentially an Alchemy training assignment.'},
+        {letter:'C', text:'Confront the driver directly and issue a verbal warning.'},
+        {letter:'D', text:'Conduct another SQOR on the driver to gather more data before acting.'},
+      ],
+      correct:1,
+      explanation:'Three at-risk observations on the same standard from two observers is a clear pattern — not noise. This is exactly the leading indicator the SMS exists to capture. The correct response is to document the pattern, flag it formally, and route it through the corrective action process. The Alchemy training connection closes the loop.'
+    }
+  ]
+},
+{
+  id:6, title:'Incident Classification & ILX', focus:'From notification to investigation — the ILX workflow',
+  week:2, checkType:'scenario',
+  content:[
+    {
+      title:'Recordable vs. Non-Recordable',
+      body:`<p>Not every incident requires the same level of response. The first judgment call you make when notified of an incident is classification: does this require an ILX investigation, a SQOR at-risk observation, or a verbal note to the TM?</p>
+<p>Recordable incidents include: any contact between GSE and aircraft resulting in damage, any employee injury requiring medical treatment beyond first aid, any near-miss where contact was prevented only by chance rather than procedure, and any work refusal under CLC s.128.</p>`,
+      keyPoint:'When in doubt, open an ILX. It is significantly easier to close an investigation without findings than to reconstruct one days later when memories have faded.'
+    },
+    {
+      title:'The ILX Workflow — Stages',
+      body:`<p>The ILX system (Intelex) processes investigations through five stages: Notification Draft → Verification → Investigation → Investigation Review → Closed. Your active role spans the first four.</p>
+<p>At Notification Draft you capture the immediate facts — what, where, when, who. At Verification you confirm the classification and assign the investigation. At Investigation you conduct interviews, gather evidence, and complete the six-component documentation package. At Investigation Review the RSS reviews your findings before closure.</p>`,
+      keyPoint:'The six-component package — incident description, 5 Whys, root cause, contributory causes, investigation process, investigation conclusion — is your deliverable. Everything else feeds into it.'
+    }
+  ],
+  tasks:[
+    {id:'t6_1', title:'Open a Practice ILX Notification', sub:'With RSS guidance, open a practice Notification Draft in ILX for a scripted incident scenario provided by the RSS. Complete all required fields through to Verification stage.'},
+    {id:'t6_2', title:'Review the Six-Component Package Format', sub:'Review a completed ILX investigation package with the RSS. Identify each of the six components, understand how they relate to each other, and note where root cause and contributing causes differ.'},
+    {id:'t6_3', title:'Classify Three Scenario Incidents', sub:'Given three written scenario descriptions by the RSS, classify each as: ILX required, SQOR observation only, or verbal note. Explain your reasoning for each.'},
+  ],
+  questions:[
+    {
+      text:'A Global Highloader makes contact with an aircraft door frame. The damage appears cosmetic — a small paint transfer. The driver says it barely touched. What do you do?',
+      scenario:'You arrive at Gate C25 two minutes after the incident. The TM is present. The driver is with the truck. The guide is at the aircraft.',
+      options:[
+        {letter:'A', text:'Photograph the damage, note it in your observation log, and tell the TM to monitor it.'},
+        {letter:'B', text:'Open an ILX Notification Draft immediately, preserve the scene, conduct initial interviews with driver and guide before they are separated, and notify the RSS.'},
+        {letter:'C', text:'Ask the TM to assess the damage first — if they think it\'s minor, stand down.'},
+        {letter:'D', text:'Wait until the shift ends to open the ILX to avoid disrupting the operation.'},
+      ],
+      correct:1,
+      explanation:'Aircraft contact is a recordable incident regardless of apparent damage severity. The first 15 minutes after an incident are the most valuable investigation time you have. Preserve the scene, separate witnesses, and begin documentation before anyone has a chance to compare accounts. The ILX gets opened now — not later.'
+    },
+    {
+      text:'In the ILX root cause framework, which category applies when a safety standard was known and documented but was not operationally reinforced through supervision or monitoring?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'Caused by Human Error'},
+        {letter:'B', text:'Skills and Knowledge'},
+        {letter:'C', text:'Job Expectations'},
+        {letter:'D', text:'Environment and Tools'},
+      ],
+      correct:2,
+      explanation:'"Job Expectations" covers situations where the standard existed but was not consistently enforced through operational practice. This is distinct from an employee not knowing the standard (Skills and Knowledge) or the organisation failing to provide resources (Organizational Support).'
+    }
+  ]
+},
+{
+  id:7, title:'Root Cause Analysis', focus:'5 Whys, HFACS, REDA, and findings that hold up',
+  week:2, checkType:'scenario',
+  content:[
+    {
+      title:'5 Whys — The Right Way',
+      body:`<p>The 5 Whys technique traces a symptom back to its root cause through a sequence of causal questions. The key discipline is asking "why did that condition exist?" rather than "who caused this?" The 5 Whys should always terminate at a systemic or organisational factor — if they terminate at "the employee made a mistake," you have stopped too early.</p>
+<p>In a GG YYZ context, most contact incident 5 Whys will arrive at one of three places: inadequate supervision/monitoring, a training gap, or an environmental/equipment factor. Finding "the driver was distracted" as a root cause is not an investigation — it is a conclusion that closes inquiry prematurely.</p>`,
+      keyPoint:'The root cause is where the corrective action must be applied. If you get the root cause wrong, the corrective action will not prevent recurrence.'
+    },
+    {
+      title:'HFACS and the Dirty Dozen',
+      body:`<p>The Human Factors Analysis and Classification System (HFACS) provides a four-level framework for understanding how organisational, supervisory, precondition, and individual factors combine to produce an incident. In an aviation catering context, HFACS is particularly useful because most incidents involve a combination of all four levels.</p>
+<p>The Dirty Dozen — twelve common human factors contributors including distraction, fatigue, pressure, lack of resources, and complacency — provides accessible language for discussing the precondition level with TMs and employees who are not trained investigators.</p>`
+    },
+    {
+      title:'REDA Contributing Factors',
+      body:`<p>REDA (Recognition, Error, Deviation, At-Risk) categorises contributing factors at the individual level. REDA factors are what you observe in a SQOR and what you analyse in an investigation. The key distinction is between an error (unintentional deviation from standard) and an at-risk behaviour (deliberate action believed to be acceptable by the individual).</p>
+<p>That distinction drives the corrective action. An error suggests a training or knowledge gap. An at-risk behaviour suggests a culture, supervision, or consequence-structure problem.</p>`
+    }
+  ],
+  tasks:[
+    {id:'t7_1', title:'Complete a 5 Whys Analysis', sub:'Using a real or composite incident provided by the RSS, complete a full 5 Whys analysis. Must terminate at a systemic factor — not an individual behaviour.'},
+    {id:'t7_2', title:'Apply HFACS to a Completed Investigation', sub:'Review a closed ILX investigation with the RSS. Map the contributing factors to the four HFACS levels. Identify which level the corrective actions addressed and whether they were sufficient.'},
+    {id:'t7_3', title:'Classify REDA Factors', sub:'Given five written observation descriptions, classify each as: Error, Deviation, or At-Risk Behaviour. Explain how the classification changes the appropriate corrective action.'},
+  ],
+  questions:[
+    {
+      text:'A 5 Whys analysis of a contact incident arrives at: "The driver did not complete the Circle of Safety check because he was under time pressure to make the departure." What is the correct next step?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'This is the root cause — time pressure is an acceptable explanation and the investigation is complete.'},
+        {letter:'B', text:'Continue the 5 Whys: Why was the driver under time pressure? Why was the departure margin insufficient? Why was staffing at this level? — until you reach the organisational or systemic factor.'},
+        {letter:'C', text:'Classify root cause as Individual Performance and close the investigation.'},
+        {letter:'D', text:'Reclassify as a Dirty Dozen distraction factor and close.'},
+      ],
+      correct:1,
+      explanation:'"Time pressure" is a precondition — not a root cause. The 5 Whys must continue: why was he under time pressure? Why wasn\'t there margin built into the schedule? Why was the crew ratio set the way it was? This typically arrives at Organizational Support or Job Expectations. The corrective action that prevents recurrence lives there — not at the individual level.'
+    },
+    {
+      text:'A driver regularly skips the pre-movement GSE inspection because "it takes too long and no one checks anyway." Which REDA classification applies and what does it tell you about the corrective action needed?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'Error — the driver doesn\'t know the standard is required. Corrective action: retraining.'},
+        {letter:'B', text:'At-Risk Behaviour — the driver knows the standard but has normalised skipping it because there are no consistent consequences. Corrective action: supervision, accountability, and culture change.'},
+        {letter:'C', text:'Deviation — the driver is deliberately defying the standard. Corrective action: disciplinary action.'},
+        {letter:'D', text:'N/A — pre-movement inspection is discretionary.'},
+      ],
+      correct:1,
+      explanation:'"No one checks anyway" is the signature phrase of normalised at-risk behaviour. The employee knows the standard exists and has made a risk calculation that skipping it is acceptable. Training alone will not fix this — the consequence structure and supervision model must change. This is a culture and management finding, not an individual failing.'
+    }
+  ]
+},
+{
+  id:8, title:'Employee Interviewing', focus:'The three-step framework — unguided narrative, clarifying questions, written confirmation',
+  week:2, checkType:'scenario',
+  content:[
+    {
+      title:'Why the Interview Is the Most Important 15 Minutes',
+      body:`<p>The first account an employee gives of an incident is the most accurate one they will ever give. Memory degrades, accounts are influenced by conversations with colleagues, and the natural human tendency to self-protect emerges over time. Your ability to conduct a proper interview in the first hour after an incident determines the quality of everything that follows in the investigation.</p>
+<p>The three-step framework — unguided narrative, clarifying questions, written confirmation — is not a bureaucratic process. It is the structure that protects the account from contamination while giving the employee the fullest possible opportunity to tell their story.</p>`,
+      keyPoint:'Your job in Step 1 is to be a recorder, not a questioner. The moment you begin directing the account, you begin contaminating it.'
+    },
+    {
+      title:'Conducting the Interview Under Pressure',
+      body:`<p>In a GG YYZ context, interviews happen in difficult conditions: in the middle of a shift, with a TM watching, with an aircraft on the ground and another approaching, and with an employee who is shaken, defensive, or both.</p>
+<p>Your ability to create a psychologically safe space for the employee to speak freely — regardless of the operational pressure around you — is a skill that develops with practice. Key elements: physical separation from the scene and from management, explicit assurance that the interview is for investigation purposes, and a tone that communicates interest rather than judgment.</p>`,
+      keyPoint:'Rank pressure is invisible until it isn\'t. If a TM or manager is present during your interview, the account you receive is not the unguided narrative you need.'
+    }
+  ],
+  tasks:[
+    {id:'t8_1', title:'Conduct a Mock Interview', sub:'With the RSS playing the role of an involved employee (scripted scenario provided), conduct a full three-step interview. RSS debriefs technique afterward — focus on neutrality, completeness, and documentation quality.'},
+    {id:'t8_2', title:'Identify Leading Questions', sub:'Review a transcript of a fictional interview (provided by RSS). Identify every leading question in the transcript and rewrite each as a neutral alternative.'},
+    {id:'t8_3', title:'Draft a Written Confirmation', sub:'From your mock interview notes, draft a written confirmation document that the "employee" would review and confirm. Include all required fields: date, time, location, names, account, confirmation statement.'},
+  ],
+  questions:[
+    {
+      text:'During your Step 1 unguided narrative, the employee says "and then I checked my mirrors." You need to know which mirror and when exactly, but Step 1 is still in progress. What do you do?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'Immediately ask "which mirror?" to get the detail while it\'s fresh.'},
+        {letter:'B', text:'Note it in your interview record with an asterisk, continue listening without interrupting, and return to it in Step 2 clarifying questions.'},
+        {letter:'C', text:'Let the detail go — if it was important, they would have specified.'},
+        {letter:'D', text:'Ask them to stop and clarify before continuing.'},
+      ],
+      correct:1,
+      explanation:'Step 1 is uninterrupted. Every interruption — however well-intentioned — redirects the narrative and potentially suppresses the next detail the employee was about to offer. Note it, flag it, and come back in Step 2. The discipline of the framework is the entire point.'
+    },
+    {
+      text:'You have completed your three-step interview. The employee reviewed your notes and said "yes, that\'s accurate." A TM then tells you the employee now wants to change part of their account. What do you do?',
+      scenario:'It is three hours after the incident. The employee originally confirmed your written record. The TM says the employee was "confused" at the time.',
+      options:[
+        {letter:'A', text:'Allow the change — the employee has the right to amend their account.'},
+        {letter:'B', text:'Retain the original confirmed account in your investigation file, document the request for amendment and its timing, note who communicated the request, and discuss with the RSS before making any changes.'},
+        {letter:'C', text:'Make the change to avoid conflict — the investigation conclusion won\'t change anyway.'},
+        {letter:'D', text:'Discard the original account and re-interview the employee.'},
+      ],
+      correct:1,
+      explanation:'The timing of an account change request is itself an investigation data point. A change request coming through a TM three hours after a confirmed interview is a significant flag. Retain everything, document the request in full, and escalate to the RSS. Do not alter confirmed documentation without an evidence-based reason and RSS direction.'
+    }
+  ]
+},
+{
+  id:9, title:'Investigation Documentation', focus:'Writing findings that hold up under review, pressure, and time',
+  week:2, checkType:'scenario',
+  content:[
+    {
+      title:'The Six-Component ILX Package',
+      body:`<p>Every completed ILX investigation requires six components, formatted for direct entry into the Intelex system. These are: (1) Investigator incident description, (2) 5 Whys with references, (3) Root cause, (4) Contributory causes, (5) Investigation process, (6) Investigation conclusion.</p>
+<p>Each component serves a distinct purpose. The incident description is factual and chronological — no conclusions. The 5 Whys traces causation with references to standards or evidence at each step. Root cause is singular. Contributory causes may be multiple. The investigation process is your methodology. The conclusion ties root cause to corrective action.</p>`,
+      keyPoint:'A well-written investigation package needs no verbal explanation. If a Ministry of Labour officer picked it up cold, they should be able to understand exactly what happened, why, and what was done about it.'
+    },
+    {
+      title:'Writing Under Pressure',
+      body:`<p>Investigation findings will sometimes be challenged. Management may push back on root cause classifications that imply organisational failure. TMs may contest factual elements. Employees may dispute accounts through union representatives.</p>
+<p>The protection against all of these is documentation quality. Findings grounded in cited evidence — interview records, SQOR data, TR5042 references, Global Ramp Safety Manual sections — are significantly harder to contest than findings expressed as opinions. Cite everything. Reference the standard. Quote the interview where relevant.</p>`,
+      keyPoint:'Your investigation conclusion is only as strong as the evidence trail behind it. Build the trail as you go — not after the fact.'
+    }
+  ],
+  tasks:[
+    {id:'t9_1', title:'Write a Complete ILX Package', sub:'Using a composite incident scenario provided by the RSS, write all six components of an ILX investigation package. RSS reviews and provides written feedback.'},
+    {id:'t9_2', title:'Respond to a Management Challenge', sub:'RSS will present a written challenge to one of your root cause classifications. Draft a written response defending your finding with evidence citations. This simulates a real-world scenario you will face.'},
+    {id:'t9_3', title:'Corrective Action Quality Review', sub:'Review the corrective actions in three closed ILX investigations. For each, assess whether the corrective action addresses the root cause or only the symptom. Document your assessment.'},
+  ],
+  questions:[
+    {
+      text:'Your investigation concludes that the root cause of a contact incident is "Organizational Support" — specifically, that supervisory monitoring of Circle of Safety compliance was insufficient over the six months preceding the incident. Management says this classification reflects poorly on supervision and asks you to change it to "Individual Performance." What is your response?',
+      scenario:null,
+      options:[
+        {letter:'A', text:'Change it — management has authority over investigation conclusions.'},
+        {letter:'B', text:'Provide your evidence trail supporting the Organizational Support classification: SQOR data showing pattern non-compliance, interview records, and any prior corrective actions. Retain your original classification. Escalate to RSS if pressure continues.'},
+        {letter:'C', text:'Offer a compromise — classify it as both Organizational Support and Individual Performance.'},
+        {letter:'D', text:'Remove the root cause classification entirely to avoid conflict.'},
+      ],
+      correct:1,
+      explanation:'Evidence-based findings are not negotiable on the basis of how they reflect on individuals or departments. Your investigation conclusion must follow the evidence. Provide the trail, retain your position, and escalate to the RSS. This is a test of exactly the autonomous judgment this role requires.'
+    }
+  ]
+},
+{
+  id:10, title:'Competency Assessment', focus:'Demonstrating independent operational and investigative capability',
+  week:2, checkType:'assessment',
+  content:[
+    {
+      title:'What Today Is',
+      body:`<p>Today is not an exam. It is a demonstration of the judgment, authority, and decision-making you have built over the past nine days. You will be given a scenario — a real or composite GG YYZ incident — and asked to work through it as you would on shift.</p>
+<p>The RSS will observe. They will not guide you. The standard is not perfection — it is autonomous, evidence-based action consistent with everything you have learned.</p>`,
+      keyPoint:'By the end of today, you should be making decisions and telling the RSS about them — not asking the RSS what to decide.'
+    },
+    {
+      title:'The Assessment Criteria',
+      body:`<p>You will be assessed across five areas: operational awareness (did you read the situation before it developed?), SQOR execution (did you conduct a complete, accurate observation?), incident response (did you act correctly and immediately?), interview conduct (did you apply the three-step framework?), and documentation (does your ILX package hold up?).</p>
+<p>The RSS will provide written feedback on each area. A pass requires demonstrated competency across all five. If any area requires further development, a targeted remediation plan will be designed before sign-off.</p>`
+    }
+  ],
+  tasks:[
+    {id:'t10_1', title:'Complete the Competency Scenario', sub:'RSS will provide a full scenario. Work through it independently: observe, SQOR, respond to incident, conduct interview, open ILX, document findings. RSS observes throughout.'},
+    {id:'t10_2', title:'Verbal Debrief with RSS', sub:'Following the scenario, present your decisions and reasoning to the RSS. Be prepared to explain why you acted at each decision point — not just what you did.'},
+    {id:'t10_3', title:'Review RSS Written Feedback', sub:'Review the RSS written assessment across all five competency areas. Sign and date the feedback form. This becomes part of your training record.'},
+    {id:'t10_4', title:'Generate and Sign Training Report', sub:'Generate the complete orientation training report using the button below. Print and sign. The RSS counter-signs. One copy to the personnel file, one copy to the RSS file.'},
+  ],
+  questions:[] // assessment day — no knowledge check
+}
+];
+
+// ══ STATE ══════════════════════════════════════════════════════
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('gw_orientation_days') || '{}'); } catch(e) { return {}; }
+}
+function saveState(state) {
+  localStorage.setItem('gw_orientation_days', JSON.stringify(state));
+}
+function loadSpecialist() {
+  return localStorage.getItem('gw_orientation_specialist') || '';
+}
+function saveSpecialistName() {
+  const n = document.getElementById('specialist_name').value;
+  localStorage.setItem('gw_orientation_specialist', n);
+  renderHome();
+}
+
+let currentDay = null;
+
+// ══ HOME ═══════════════════════════════════════════════════════
+function renderHome() {
+  const state = loadState();
+  const specialist = loadSpecialist();
+  if (specialist) {
+    const el = document.getElementById('specialist_name');
+    if (el) el.value = specialist;
+  }
+  ['day_cards_w1','day_cards_w2'].forEach(id => {
+    document.getElementById(id).innerHTML = '';
+  });
+  DAYS.forEach((day, i) => {
+    const dayState = state[day.id] || {};
+    const prevComplete = i === 0 || (state[DAYS[i-1].id]?.complete);
+    const locked = !prevComplete && i > 0;
+    const progress = getDayProgress(day, dayState);
+    const complete = dayState.complete;
+
+    const containerId = day.week === 1 ? 'day_cards_w1' : 'day_cards_w2';
+    const card = document.createElement('div');
+    card.className = 'day-card' + (locked ? ' locked' : '') + (complete ? ' complete' : '');
+    if (!locked) card.onclick = () => openDay(day.id);
+
+    const pct = Math.round(progress * 100);
+    const r = 18, circ = 2 * Math.PI * r;
+    const dashOffset = circ - (circ * progress);
+    const ringColor = complete ? 'var(--gg)' : locked ? 'var(--mid)' : 'var(--navy)';
+    const badge = locked ? '<span class="dc-badge badge-locked">Locked</span>'
+      : complete ? '<span class="dc-badge badge-done">✓ Complete</span>'
+      : '<span class="dc-badge badge-active">In Progress</span>';
+
+    card.innerHTML = `
+      <div class="dc-header">
+        <div class="dc-ring${complete?' complete':locked?' locked':''}">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle class="ring-bg" cx="22" cy="22" r="${r}" stroke-width="4"/>
+            <circle class="ring-fill" cx="22" cy="22" r="${r}" stroke-width="4"
+              stroke="${ringColor}"
+              stroke-dasharray="${circ}"
+              stroke-dashoffset="${dashOffset}"/>
+          </svg>
+          <div class="dc-ring-num">${day.id}</div>
+        </div>
+        <div class="dc-body">
+          <div class="dc-day">Day ${day.id}</div>
+          <div class="dc-title">${day.title}</div>
+          <div class="dc-sub">${day.focus}</div>
+        </div>
+        ${badge}
+      </div>
+      <div class="dc-progress-bar">
+        <div class="dc-progress-fill" style="width:${pct}%"></div>
+      </div>`;
+
+    document.getElementById(containerId).appendChild(card);
+  });
+}
+
+function getDayProgress(day, dayState) {
+  if (dayState.complete) return 1;
+  let total = 0, done = 0;
+  // sections: content (1), tasks (day.tasks.length), kc (questions), signoff (1)
+  total += 1; if (dayState.content_read) done++;
+  total += day.tasks.length;
+  (day.tasks || []).forEach(t => { if (dayState.tasks?.[t.id]?.done) done++; });
+  if (day.questions.length > 0) { total += 1; if (dayState.kc_passed) done++; }
+  total += 1; // signoff
+  return total > 0 ? done / total : 0;
+}
+
+// ══ DAY VIEW ═══════════════════════════════════════════════════
+function openDay(dayId) {
+  currentDay = DAYS.find(d => d.id === dayId);
+  if (!currentDay) return;
+  document.getElementById('day_appbar_title').textContent = 'Day ' + dayId;
+  document.getElementById('day_appbar_sub').textContent = currentDay.title;
+  document.getElementById('day_meta_num').textContent = 'Day ' + dayId + ' of 10 · Week ' + currentDay.week;
+  document.getElementById('day_meta_title').textContent = currentDay.title;
+  document.getElementById('day_meta_focus').textContent = currentDay.focus;
+  const rba = document.getElementById('report_btn_area');
+  if (rba) rba.style.display = currentDay.id === 10 ? 'block' : 'none';
+  renderDaySections();
+  showView('v_day');
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function showHome() {
+  renderHome();
+  showView('v_home');
+}
+
+function renderDaySections() {
+  const state = loadState();
+  const dayState = state[currentDay.id] || {};
+  const container = document.getElementById('day_sections');
+  container.innerHTML = '';
+
+  // Progress
+  const prog = getDayProgress(currentDay, dayState);
+  document.getElementById('day_prog_fill').style.width = Math.round(prog*100) + '%';
+
+  // Determine which sections are unlocked
+  const contentDone = dayState.content_read;
+  const tasksDone = currentDay.tasks.every(t => dayState.tasks?.[t.id]?.done);
+  const kcDone = currentDay.questions.length === 0 || dayState.kc_passed;
+  const signedOff = dayState.complete;
+
+  // Section 1: Content
+  container.appendChild(buildContentSection(dayState, contentDone));
+  // Section 2: Tasks (locked until content read)
+  container.appendChild(buildTasksSection(dayState, !contentDone, tasksDone));
+  // Section 3: Knowledge Check (locked until tasks done, skip if assessment day)
+  if (currentDay.id !== 10) {
+    container.appendChild(buildKCSection(dayState, !tasksDone, kcDone));
+  } else {
+    container.appendChild(buildAssessmentSection(dayState, !tasksDone));
+  }
+  // Section 4: Sign-off (locked until kc passed)
+  container.appendChild(buildSignoffSection(dayState, !kcDone, signedOff));
+}
+
+// ── CONTENT SECTION ──────────────────────────────────────────
+function buildContentSection(dayState, isDone) {
+  const sec = mkSection('📖', 'content', 'Learning Content',
+    isDone ? 'Read' : 'Required', isDone);
+  const body = document.createElement('div');
+
+  currentDay.content.forEach((block, bi) => {
+    const cb = document.createElement('div');
+    cb.className = 'content-block';
+    if (bi > 0) cb.style.borderTop = '1px solid var(--border)';
+    let html = `<div class="cb-title">${block.title}</div>
+      <div class="cb-text">${block.body}</div>`;
+    if (block.keyPoint) html += `<div class="key-point">${block.keyPoint}</div>`;
+    if (block.refs) html += '<div style="margin-top:8px">' + block.refs.map(r=>`<span class="ref-tag">${r}</span>`).join('') + '</div>';
+    if (block.expandable) {
+      const eid = 'exp_' + currentDay.id + '_' + bi;
+      html += `<button class="expand-btn" onclick="toggleExpand('${eid}')">▸ ${block.expandable.label}</button>
+        <div class="expandable" id="${eid}"><div class="cb-text">${block.expandable.body}</div></div>`;
+    }
+    cb.innerHTML = html;
+    body.appendChild(cb);
+  });
+
+  if (!isDone) {
+    const btn = document.createElement('button');
+    btn.className = 'kc-submit-btn';
+    btn.style.marginTop = '4px';
+    btn.textContent = '✓ Mark Content as Read';
+    btn.onclick = () => markContentRead();
+    body.appendChild(btn);
+  }
+
+  sec.querySelector('.section-body').appendChild(body);
+  if (!isDone) openSection(sec);
+  return sec;
+}
+
+function markContentRead() {
+  const state = loadState();
+  if (!state[currentDay.id]) state[currentDay.id] = {};
+  state[currentDay.id].content_read = true;
+  saveState(state);
+  showToast('✓ Content marked as read');
+  renderDaySections();
+}
+
+// ── TASKS SECTION ────────────────────────────────────────────
+function buildTasksSection(dayState, locked, allDone) {
+  const doneCount = currentDay.tasks.filter(t => dayState.tasks?.[t.id]?.done).length;
+  const sec = mkSection('✅', 'tasks', 'Tasks',
+    allDone ? `All ${currentDay.tasks.length} complete` : `${doneCount} of ${currentDay.tasks.length}`,
+    allDone, locked);
+  const body = document.createElement('div');
+
+  currentDay.tasks.forEach(task => {
+    const taskState = dayState.tasks?.[task.id] || {};
+    const checked = taskState.done;
+    const item = document.createElement('div');
+    item.className = 'task-item';
+    item.innerHTML = `
+      <div class="task-check${checked?' checked':''}" onclick="toggleTask('${task.id}')">
+        ${checked ? '✓' : ''}
+      </div>
+      <div class="task-body">
+        <div class="task-title">${task.title}</div>
+        <div class="task-sub">${task.sub}</div>
+        <textarea class="task-notes" placeholder="Notes (optional)..."
+          onchange="saveTaskNotes('${task.id}', this.value)">${taskState.notes || ''}</textarea>
+      </div>`;
+    body.appendChild(item);
+  });
+
+  sec.querySelector('.section-body').appendChild(body);
+  if (!locked && !allDone) openSection(sec);
+  return sec;
+}
+
+function toggleTask(taskId) {
+  const state = loadState();
+  if (!state[currentDay.id]) state[currentDay.id] = {};
+  if (!state[currentDay.id].tasks) state[currentDay.id].tasks = {};
+  const cur = state[currentDay.id].tasks[taskId] || {};
+  state[currentDay.id].tasks[taskId] = { ...cur, done: !cur.done };
+  saveState(state);
+  renderDaySections();
+}
+
+function saveTaskNotes(taskId, notes) {
+  const state = loadState();
+  if (!state[currentDay.id]?.tasks?.[taskId]) return;
+  state[currentDay.id].tasks[taskId].notes = notes;
+  saveState(state);
+}
+
+// ── KNOWLEDGE CHECK ───────────────────────────────────────────
+function buildKCSection(dayState, locked, isDone) {
+  const label = currentDay.checkType === 'scenario' ? 'Scenario Check' : 'Knowledge Check';
+  const sec = mkSection('🎯', 'check', label,
+    isDone ? 'Passed' : 'Required', isDone, locked);
+  const body = document.createElement('div');
+
+  if (isDone) {
+    const r = document.createElement('div');
+    r.className = 'kc-result pass';
+    r.style.display = 'block';
+    r.style.margin = '14px';
+    r.textContent = '✓ Passed — ' + (dayState.kc_score || '') ;
+    body.appendChild(r);
+  } else {
+    const intro = document.createElement('div');
+    intro.className = 'kc-intro';
+    intro.textContent = currentDay.checkType === 'scenario'
+      ? 'Read each scenario carefully. Choose the response that best reflects autonomous, standard-based decision-making.'
+      : 'Answer each question to confirm your understanding of today\'s content.';
+    body.appendChild(intro);
+
+    currentDay.questions.forEach((q, qi) => {
+      const qDiv = document.createElement('div');
+      qDiv.className = 'kc-question';
+      if (qi > 0) qDiv.style.borderTop = '1px solid var(--border)';
+      let html = `<div class="kq-num">Question ${qi+1} of ${currentDay.questions.length}</div>
+        <div class="kq-text">${q.text}</div>`;
+      if (q.scenario) html += `<div class="kq-scenario">${q.scenario}</div>`;
+      html += '<div class="kq-options" id="opts_' + currentDay.id + '_' + qi + '">';
+      q.options.forEach((opt, oi) => {
+        html += `<div class="kq-option" id="opt_${currentDay.id}_${qi}_${oi}"
+          onclick="selectOption(${qi},${oi})">
+          <div class="kq-letter">${opt.letter}</div>
+          <div class="kq-opt-text">${opt.text}</div>
+        </div>`;
+      });
+      html += `</div><div class="kq-explanation" id="exp_kc_${currentDay.id}_${qi}"></div>`;
+      qDiv.innerHTML = html;
+      body.appendChild(qDiv);
+    });
+
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'kc-submit-btn';
+    submitBtn.id = 'kc_submit_' + currentDay.id;
+    submitBtn.textContent = 'Submit Answers';
+    submitBtn.disabled = true;
+    submitBtn.onclick = () => submitKC();
+    body.appendChild(submitBtn);
+
+    const result = document.createElement('div');
+    result.className = 'kc-result';
+    result.id = 'kc_result_' + currentDay.id;
+    body.appendChild(result);
+  }
+
+  sec.querySelector('.section-body').appendChild(body);
+  if (!locked && !isDone) openSection(sec);
+  return sec;
+}
+
+const selectedAnswers = {};
+
+function selectOption(qi, oi) {
+  const state = loadState();
+  const dayState = state[currentDay.id] || {};
+  if (dayState.kc_passed) return;
+
+  if (!selectedAnswers[currentDay.id]) selectedAnswers[currentDay.id] = {};
+  selectedAnswers[currentDay.id][qi] = oi;
+
+  // Update UI
+  const q = currentDay.questions[qi];
+  document.querySelectorAll(`#opts_${currentDay.id}_${qi} .kq-option`).forEach((el,i) => {
+    el.classList.toggle('selected', i === oi);
+  });
+
+  // Enable submit if all answered
+  const allAnswered = currentDay.questions.every((_, i) =>
+    selectedAnswers[currentDay.id]?.[i] !== undefined);
+  const btn = document.getElementById('kc_submit_' + currentDay.id);
+  if (btn) btn.disabled = !allAnswered;
+}
+
+function submitKC() {
+  const answers = selectedAnswers[currentDay.id] || {};
+  let correct = 0;
+  currentDay.questions.forEach((q, qi) => {
+    const sel = answers[qi];
+    const isCorrect = sel === q.correct;
+    if (isCorrect) correct++;
+
+    document.querySelectorAll(`#opts_${currentDay.id}_${qi} .kq-option`).forEach((el,oi) => {
+      el.classList.remove('selected');
+      if (oi === q.correct) el.classList.add('correct');
+      else if (oi === sel && !isCorrect) el.classList.add('wrong');
+    });
+
+    const expEl = document.getElementById(`exp_kc_${currentDay.id}_${qi}`);
+    if (expEl) {
+      expEl.textContent = q.explanation;
+      expEl.className = 'kq-explanation show' + (isCorrect ? '' : ' wrong-exp');
+    }
+  });
+
+  const total = currentDay.questions.length;
+  const passed = correct >= Math.ceil(total * 0.7); // 70% threshold
+  const score = correct + '/' + total;
+  const resultEl = document.getElementById('kc_result_' + currentDay.id);
+  if (resultEl) {
+    resultEl.className = 'kc-result ' + (passed ? 'pass' : 'fail');
+    resultEl.style.display = 'block';
+    resultEl.textContent = passed
+      ? '✓ Passed — ' + score + ' correct'
+      : '✗ ' + score + ' correct — review the explanations above and discuss with your RSS before proceeding';
+  }
+
+  const btn = document.getElementById('kc_submit_' + currentDay.id);
+  if (btn) btn.style.display = 'none';
+
+  if (passed) {
+    const state = loadState();
+    if (!state[currentDay.id]) state[currentDay.id] = {};
+    state[currentDay.id].kc_passed = true;
+    state[currentDay.id].kc_score = score;
+    saveState(state);
+    setTimeout(() => renderDaySections(), 800);
+  }
+}
+
+// ── ASSESSMENT SECTION (Day 10) ───────────────────────────────
+function buildAssessmentSection(dayState, locked) {
+  const sec = mkSection('🎯', 'check', 'Competency Assessment',
+    dayState.assessment_passed ? 'Passed' : 'Pending RSS', dayState.assessment_passed, locked);
+  const body = document.createElement('div');
+  body.className = 'competency-section';
+
+  const criteria = document.createElement('div');
+  criteria.className = 'comp-criteria';
+  criteria.innerHTML = `<div class="cc-title">Assessment Criteria</div>
+    ${['Operational awareness — reading the situation before it develops',
+       'SQOR execution — complete, accurate, independent observation',
+       'Incident response — correct and immediate action',
+       'Interview conduct — three-step framework applied without prompting',
+       'Documentation — ILX package holds up to review'
+    ].map(c => `<div class="comp-item"><span>•</span><span>${c}</span></div>`).join('')}`;
+  body.appendChild(criteria);
+
+  if (!dayState.assessment_passed) {
+    const obsLabel = document.createElement('div');
+    obsLabel.className = 'sf-label';
+    obsLabel.textContent = 'RSS Observations';
+    obsLabel.style.cssText = 'padding:0 0 4px;font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.05em';
+    body.appendChild(obsLabel);
+
+    const obs = document.createElement('textarea');
+    obs.className = 'obs-field';
+    obs.placeholder = 'RSS records observations during competency scenario...';
+    obs.value = dayState.assessment_notes || '';
+    obs.onchange = () => saveAssessmentNotes(obs.value);
+    body.appendChild(obs);
+
+    const btns = document.createElement('div');
+    btns.className = 'result-btns';
+    btns.innerHTML = `
+      <button class="result-btn pass" onclick="setAssessmentResult(true)">✓ Pass</button>
+      <button class="result-btn fail" onclick="setAssessmentResult(false)">✗ Needs Work</button>`;
+    body.appendChild(btns);
+  } else {
+    const done = document.createElement('div');
+    done.className = 'signoff-complete';
+    done.style.display = 'block';
+    done.innerHTML = `<div class="sc-icon">🎖</div>
+      <div class="sc-text">Competency Assessment Passed</div>
+      <div class="sc-detail">${dayState.assessment_notes || ''}</div>`;
+    body.appendChild(done);
+  }
+
+  sec.querySelector('.section-body').appendChild(body);
+  if (!locked) openSection(sec);
+  return sec;
+}
+
+function saveAssessmentNotes(notes) {
+  const state = loadState();
+  if (!state[currentDay.id]) state[currentDay.id] = {};
+  state[currentDay.id].assessment_notes = notes;
+  saveState(state);
+}
+
+function setAssessmentResult(passed) {
+  const state = loadState();
+  if (!state[currentDay.id]) state[currentDay.id] = {};
+  const notes = document.querySelector('.obs-field')?.value || '';
+  state[currentDay.id].assessment_notes = notes;
+  state[currentDay.id].assessment_passed = passed;
+  if (!passed) {
+    showToast('Noted — RSS to provide remediation plan');
+    return;
+  }
+  saveState(state);
+  showToast('✓ Competency assessment passed');
+  renderDaySections();
+}
+
+// ── SIGN-OFF SECTION ──────────────────────────────────────────
+function buildSignoffSection(dayState, locked, isDone) {
+  const sec = mkSection('🖊', 'signoff', 'Daily Sign-Off',
+    isDone ? 'Signed' : 'Pending', isDone, locked);
+  const body = document.createElement('div');
+
+  if (isDone) {
+    const done = document.createElement('div');
+    done.className = 'signoff-complete';
+    done.style.display = 'block';
+    done.innerHTML = `<div class="sc-icon">✅</div>
+      <div class="sc-text">Day ${currentDay.id} Complete</div>
+      <div class="sc-detail">
+        Specialist: ${dayState.specialist_name || '—'}<br>
+        RSS: ${dayState.rss_name || '—'}<br>
+        ${new Date(dayState.signoff_time).toLocaleString('en-CA')}
+      </div>`;
+    body.appendChild(done);
+  } else {
+    const note = document.createElement('div');
+    note.className = 'signoff-note';
+    note.textContent = 'Both the specialist and the RSS must sign off to complete this day. The RSS signature confirms that all tasks were observed and the knowledge check reflects genuine understanding.';
+    body.appendChild(note);
+
+    const so = document.createElement('div');
+    so.className = 'signoff-body';
+    so.innerHTML = `
+      <div class="signoff-field">
+        <div class="sf-label">Specialist Name</div>
+        <input class="sf-input" id="so_specialist" type="text"
+          placeholder="Full name"
+          value="${loadSpecialist()}">
+      </div>
+      <div class="signoff-field">
+        <div class="sf-label">RSS Name &amp; Signature</div>
+        <input class="sf-input" id="so_rss" type="text"
+          placeholder="RSS full name">
+        <div class="sf-timestamp" id="so_ts">${new Date().toLocaleString('en-CA')}</div>
+      </div>
+      <button class="signoff-btn" id="signoff_btn" onclick="completeSignoff()">
+        Complete Day ${currentDay.id} Sign-Off
+      </button>`;
+    body.appendChild(so);
+  }
+
+  sec.querySelector('.section-body').appendChild(body);
+  if (!locked && !isDone) openSection(sec);
+  return sec;
+}
+
+function completeSignoff() {
+  const specialist = document.getElementById('so_specialist')?.value?.trim();
+  const rss = document.getElementById('so_rss')?.value?.trim();
+  if (!specialist || !rss) { showToast('Both names required to sign off'); return; }
+
+  const state = loadState();
+  if (!state[currentDay.id]) state[currentDay.id] = {};
+  state[currentDay.id].complete = true;
+  state[currentDay.id].specialist_name = specialist;
+  state[currentDay.id].rss_name = rss;
+  state[currentDay.id].signoff_time = new Date().toISOString();
+  localStorage.setItem('gw_orientation_specialist', specialist);
+  saveState(state);
+  showToast('✓ Day ' + currentDay.id + ' signed off');
+  setTimeout(() => renderDaySections(), 400);
+}
+
+// ── SECTION BUILDER HELPERS ───────────────────────────────────
+function mkSection(icon, type, title, status, isDone, locked=false) {
+  const sec = document.createElement('div');
+  sec.className = 'section' + (locked ? ' locked-section' : '');
+  sec.innerHTML = `
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="sh-icon ${isDone?'complete':type}">${isDone?'✓':icon}</div>
+      <div class="sh-title">${title}</div>
+      <div class="sh-status">${status}</div>
+      <div class="sh-chevron">▼</div>
+    </div>
+    <div class="section-body"></div>`;
+  return sec;
+}
+
+function openSection(sec) {
+  sec.classList.add('open');
+}
+
+function toggleSection(header) {
+  const sec = header.closest('.section');
+  if (sec.classList.contains('locked-section')) return;
+  sec.classList.toggle('open');
+}
+
+function toggleExpand(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+// ── REPORT GENERATOR ─────────────────────────────────────────
+function generateReport() {
+  const state = loadState();
+  const specialist = loadSpecialist();
+  const now = new Date().toLocaleString('en-CA');
+
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Orientation Training Record — ${specialist}</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:12px;color:#111;margin:30px;max-width:800px}
+      h1{font-size:20px;color:#1A2D5A;margin-bottom:4px}
+      h2{font-size:15px;color:#1A2D5A;margin:20px 0 8px;border-bottom:2px solid #1A2D5A;padding-bottom:4px}
+      h3{font-size:13px;color:#333;margin:12px 0 4px}
+      .meta{background:#F2F2F2;padding:10px 14px;border-radius:6px;margin-bottom:16px;font-size:12px}
+      .meta strong{color:#1A2D5A}
+      .task{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #eee}
+      .task-check{width:14px;height:14px;border:2px solid #ccc;border-radius:3px;
+        flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
+      .task-check.done{background:#48AF44;border-color:#48AF44;color:#fff;font-size:9px}
+      .task-title{font-weight:600}
+      .task-notes{font-size:11px;color:#666;margin-top:2px}
+      .kc-result{padding:6px 10px;border-radius:4px;font-size:11px;font-weight:600}
+      .kc-pass{background:#e8f5e9;color:#2E7D32}
+      .kc-fail{background:#ffebee;color:#C8101E}
+      .signoff{background:#F2F2F2;padding:10px 14px;border-radius:6px;margin-top:10px}
+      .signoff-row{display:flex;gap:40px;margin-top:6px}
+      .sig-box{flex:1;border-bottom:1.5px solid #333;padding-bottom:20px;font-size:11px;color:#666}
+      .not-complete{opacity:.5}
+      @media print{body{margin:20px}h2{page-break-before:auto}}
+    </style></head><body>
+    <h1>Safety Specialist Orientation — Training Record</h1>
+    <div class="meta">
+      <strong>Specialist:</strong> ${specialist || '—'}&nbsp;&nbsp;
+      <strong>Location:</strong> Gate Gourmet YYZ&nbsp;&nbsp;
+      <strong>Generated:</strong> ${now}<br>
+      <strong>Programme:</strong> CF Black Aviation Field-Ready Safety Specialist · 10-Day / 2-Week
+    </div>`;
+
+  DAYS.forEach(day => {
+    const ds = state[day.id] || {};
+    const complete = ds.complete;
+    html += `<h2 class="${complete?'':'not-complete'}">Day ${day.id}: ${day.title}</h2>`;
+    html += `<p style="font-size:11px;color:#666;margin-bottom:8px">${day.focus}</p>`;
+
+    // Tasks
+    html += '<h3>Tasks</h3>';
+    day.tasks.forEach(t => {
+      const ts = ds.tasks?.[t.id] || {};
+      html += `<div class="task">
+        <div class="task-check${ts.done?' done':''}">
+          ${ts.done?'✓':''}
+        </div>
+        <div>
+          <div class="task-title">${t.title}</div>
+          <div class="task-notes">${t.sub}</div>
+          ${ts.notes ? '<div class="task-notes" style="margin-top:3px;font-style:italic">Notes: ' + ts.notes + '</div>' : ''}
+        </div>
+      </div>`;
+    });
+
+    // Knowledge check
+    if (day.questions.length > 0) {
+      html += '<h3>Knowledge Check</h3>';
+      html += `<div class="kc-result ${ds.kc_passed?'kc-pass':'kc-fail'}">
+        ${ds.kc_passed ? '✓ Passed — ' + (ds.kc_score || '') : '✗ Not yet passed'}
+      </div>`;
+    } else if (day.id === 10) {
+      html += '<h3>Competency Assessment</h3>';
+      html += `<div class="kc-result ${ds.assessment_passed?'kc-pass':'kc-fail'}">
+        ${ds.assessment_passed ? '✓ Passed' : '✗ Pending / Not passed'}
+      </div>`;
+      if (ds.assessment_notes) html += `<p style="font-size:11px;color:#444;margin-top:6px">RSS Notes: ${ds.assessment_notes}</p>`;
+    }
+
+    // Sign-off
+    html += `<div class="signoff">
+      <strong>Daily Sign-Off</strong>
+      <div class="signoff-row">
+        <div class="sig-box">
+          Specialist: <strong>${ds.specialist_name || '—'}</strong><br>
+          ${ds.signoff_time ? new Date(ds.signoff_time).toLocaleString('en-CA') : 'Not signed'}
+        </div>
+        <div class="sig-box">
+          RSS: <strong>${ds.rss_name || '—'}</strong><br>
+          ${ds.signoff_time ? new Date(ds.signoff_time).toLocaleString('en-CA') : 'Not signed'}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  html += `<div style="margin-top:30px;padding-top:20px;border-top:2px solid #1A2D5A">
+    <h2 style="border:none">Final Certification Sign-Off</h2>
+    <div class="signoff-row" style="margin-top:16px">
+      <div class="sig-box" style="padding-bottom:40px">
+        <strong>Specialist Signature</strong><br><br><br>
+        Name: ___________________________<br>Date: ___________________________
+      </div>
+      <div class="sig-box" style="padding-bottom:40px">
+        <strong>RSS Signature</strong><br><br><br>
+        Name: ___________________________<br>Date: ___________________________
+      </div>
+    </div>
+  </div>
+  <p style="font-size:10px;color:#999;margin-top:20px">
+    Gate Gourmet YYZ · Safety Specialist Orientation Programme · CF Black Aviation · ${now}
+  </p>
+
+<!-- ══ COPYRIGHT FOOTER ══════════════════════════════════════════════════════ -->
+<div style="text-align:center;padding:10px 16px 20px;font-size:10px;
+  color:rgba(255,255,255,.2);font-family:Arial,sans-serif;letter-spacing:.02em;
+  user-select:none;-webkit-user-select:none" id="cfa_copyright_footer">
+  © 2026 CF Black Aviation · All Rights Reserved · GroundWatch™
+  <br>Third-party trademarks are the property of their respective owners
+</div>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+renderHome();
+</script>
+
+<!-- Report button visible on Day 10 bottom, rendered dynamically in section -->
+</body>
+</html>

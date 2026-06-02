@@ -1,7 +1,71 @@
 <!DOCTYPE html>
+<!--
+================================================================================
+  GroundWatch Safety Suite
+  © 2026 CF Black Aviation. All Rights Reserved.
+
+  This software, including its source code, design, structure, and all associated
+  content, is the exclusive intellectual property of CF Black Aviation.
+
+  Unauthorized reproduction, copying, distribution, modification, reverse-
+  engineering, or use of this software — in whole or in part — without the express
+  written permission of CF Black Aviation is strictly prohibited and may constitute
+  an infringement of copyright and/or trademark rights.
+
+  GroundWatch™ and Heimdal™ are trademarks of CF Black Aviation.
+
+  THIRD-PARTY ATTRIBUTION
+  Third-party logos, trademarks, brand names, aircraft type designations, and
+  airline livery references displayed within this software (including but not
+  limited to Gate Gourmet, Air Canada, WestJet, Porter Airlines, Boeing, Airbus,
+  and associated marks) are the intellectual property of their respective owners
+  and are referenced herein solely for operational identification purposes.
+  Their display does not imply endorsement of, sponsorship by, or affiliation
+  with CF Black Aviation.
+
+  For licensing enquiries: CF Black Aviation
+================================================================================
+-->
 <html lang="en">
 <head>
+<script>
+(function(){
+  'use strict';
+  // CF Black Aviation - GroundWatch Safety Suite
+  // (c) 2026 CF Black Aviation. All Rights Reserved.
+  function cfbProtect(){
+    document.addEventListener('contextmenu',function(e){
+      e.preventDefault();
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(26,45,90,.95);color:#fff;padding:9px 18px;border-radius:8px;font-size:12px;font-family:Arial,sans-serif;z-index:99999;pointer-events:none;box-shadow:0 2px 12px rgba(0,0,0,.3)';
+      t.textContent=String.fromCharCode(169)+' 2026 CF Black Aviation — All Rights Reserved';
+      document.body.appendChild(t);
+      setTimeout(function(){t.remove();},2200);
+      return false;
+    },true);
+    window.addEventListener('contextmenu',function(e){e.preventDefault();return false;},true);
+    document.addEventListener('keydown',function(e){
+      var ctrl=e.ctrlKey||e.metaKey;
+      if(ctrl&&['s','S','u','U'].indexOf(e.key)>-1){e.preventDefault();return false;}
+      if(ctrl&&e.shiftKey&&['i','I','j','J'].indexOf(e.key)>-1){e.preventDefault();return false;}
+      if(e.key==='F12'){e.preventDefault();return false;}
+    },true);
+    document.addEventListener('dragstart',function(e){e.preventDefault();return false;},true);
+    console.log('%c GroundWatch Safety Suite ','color:#C8101E;font-size:16px;font-weight:800');
+    console.log('%c'+String.fromCharCode(169)+' 2026 CF Black Aviation. All Rights Reserved.','color:#1A2D5A;font-size:12px;font-weight:600');
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',cfbProtect);
+  } else {
+    cfbProtect();
+  }
+})();
+</script>
 <meta charset="UTF-8">
+  <meta name="copyright" content="© 2026 CF Black Aviation. All Rights Reserved.">
+  <meta name="author" content="CF Black Aviation">
+  <meta name="application-name" content="GroundWatch Safety Suite">
+  <meta name="rights" content="Unauthorized reproduction prohibited. © 2026 CF Black Aviation.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>WxWatch · Aerodrome Weather</title>
 <!--
@@ -230,6 +294,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','SF Pro Display',Ar
   font-weight:700;z-index:9999;opacity:0;transition:all .2s;pointer-events:none;
   white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── SUITE BACK BUTTON ───────────────────────────── */
+.suite-back{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  right:16px;z-index:9000;background:rgba(28,35,49,.92);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:50px;
+  padding:10px 18px 10px 14px;font-size:13px;font-weight:700;
+  font-family:inherit;cursor:pointer;display:flex;align-items:center;
+  gap:7px;box-shadow:0 4px 20px rgba(0,0,0,.4);
+  -webkit-tap-highlight-color:transparent;transition:opacity .15s}
+.suite-back:active{opacity:.7}
+.suite-back .sb-arrow{font-size:16px;line-height:1}
+.suite-back .sb-label{font-size:12px;color:rgba(255,255,255,.7);letter-spacing:.02em}
 </style>
 </head>
 <body>
@@ -1237,6 +1314,26 @@ document.getElementById('airport_input').value = currentIcao;
 loadAlarmSettings();
 startClock();
 loadAllData();
+
+// ── SUITE NAVIGATION ─────────────────────────────
+function goHome() {
+  const base = window.location.href.replace(/[^/]+$/, '');
+  window.location.href = base + 'index.html';
+}
 </script>
+
+<!-- Suite Back Button -->
+<button class="suite-back" onclick="goHome()" title="Back to GroundWatch Suite">
+  <span class="sb-arrow">⌂</span>
+  <span class="sb-label">Suite</span>
+</button>
+
+<!-- ══ COPYRIGHT FOOTER ══════════════════════════════════════════════════════ -->
+<div style="text-align:center;padding:10px 16px 20px;font-size:10px;
+  color:rgba(255,255,255,.2);font-family:Arial,sans-serif;letter-spacing:.02em;
+  user-select:none;-webkit-user-select:none" id="cfa_copyright_footer">
+  © 2026 CF Black Aviation · All Rights Reserved · GroundWatch™
+  <br>Third-party trademarks are the property of their respective owners
+</div>
 </body>
 </html>
